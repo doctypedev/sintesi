@@ -128,159 +128,28 @@ npm run clean    # Clean dist/
 
 ## Architecture
 
-### Core/AST Module (Phase 1)
+Doctype uses a layered architecture with independent modules:
 
-The Core/AST module provides the deterministic foundation for drift detection through three interconnected components:
+### Phase 1: Core/AST Module ✅
 
-#### 1. **Type System** (`types.ts`)
+Deterministic foundation for drift detection:
 
-Defines the core data structures used throughout Doctype:
+- **AST Analyzer**: Extracts TypeScript signatures using ts-morph
+- **Signature Hasher**: Generates SHA256 hashes for drift detection
+- **Type System**: Core data structures (`CodeSignature`, `SignatureHash`, etc.)
 
-```typescript
-// Code signature extracted from TypeScript
-interface CodeSignature {
-  symbolName: string;        // e.g., "calculateTotal"
-  symbolType: SymbolType;    // function | class | interface | type | enum | variable
-  signatureText: string;     // Normalized signature
-  isExported: boolean;       // true for public APIs
-}
-
-// SHA256 hash with metadata
-interface SignatureHash {
-  hash: string;              // Deterministic SHA256 hash
-  signature: CodeSignature;  // Original signature
-  timestamp: number;         // When hash was generated
-}
-
-// Future: doctype-map.json entries (Phase 2)
-interface DoctypeMapEntry {
-  id: string;                      // Unique anchor UUID
-  codeRef: CodeRef;                // Source file + symbol name
-  codeSignatureHash: string;       // SHA256 hash for drift detection
-  docRef: DocRef;                  // Markdown file location
-  originalMarkdownContent: string; // Content between anchors
-  lastUpdated: number;             // Timestamp
-}
+**Data Flow:**
+```
+TypeScript Code → AST Analyzer → Signature Hasher → doctype-map.json
 ```
 
-#### 2. **AST Analyzer** (`ast-analyzer.ts`)
+📖 **[Detailed Core/AST Documentation](./src/core/README.md)**
 
-Extracts and normalizes TypeScript code signatures using [ts-morph](https://ts-morph.com):
+### Future Phases
 
-**Key Features:**
-- **Symbol Extraction**: Functions, classes, interfaces, type aliases, enums, variables
-- **Export Filtering**: Distinguishes public API (exported) from internal symbols
-- **Signature Normalization**: Removes whitespace/comments for deterministic comparison
-- **Dual Input**: Analyzes both files (`analyzeFile()`) and code strings (`analyzeCode()`)
-
-**Example Flow:**
-```typescript
-const analyzer = new ASTAnalyzer();
-
-// Input code
-const code = `
-  export class UserService {
-    public getUser(id: string): Promise<User> { /* ... */ }
-    private _validate(): boolean { /* ... */ }
-  }
-`;
-
-// Output
-const signatures = analyzer.analyzeCode(code);
-// [{
-//   symbolName: "UserService",
-//   symbolType: "class",
-//   signatureText: "class UserService { getUser(id: string): Promise<User> }",
-//   isExported: true
-// }]
-// Note: _validate() is excluded (private method)
-```
-
-**Normalization Process:**
-1. Remove multi-line comments (`/* ... */`)
-2. Remove single-line comments (`// ...`)
-3. Normalize whitespace to single spaces
-4. Remove whitespace around punctuation
-5. Standardize spacing after colons and commas
-
-#### 3. **Signature Hasher** (`signature-hasher.ts`)
-
-Generates deterministic SHA256 hashes for drift detection:
-
-**Key Features:**
-- **Deterministic Hashing**: Same signature → same hash (always)
-- **Serialization**: Converts `CodeSignature` to canonical string format
-- **Batch Processing**: `hashMany()` for multiple signatures
-- **Comparison Utilities**: `compare()` for hash equality checks
-
-**Hash Generation:**
-```typescript
-const hasher = new SignatureHasher();
-
-// Serialize signature to canonical format
-// "name:UserService|type:class|exported:true|signature:class UserService {...}"
-const serialized = serializeSignature(signature);
-
-// Generate SHA256 hash
-const hash = createHash('sha256').update(serialized).digest('hex');
-// "a3f5c8e..."
-```
-
-**Drift Detection Workflow:**
-```typescript
-// 1. Analyze original code
-const originalSig = analyzer.analyzeCode(originalCode)[0];
-const originalHash = hasher.hash(originalSig);
-
-// 2. Save hash to doctype-map.json (Phase 2)
-// ...
-
-// 3. Later, analyze modified code
-const modifiedSig = analyzer.analyzeCode(modifiedCode)[0];
-const modifiedHash = hasher.hash(modifiedSig);
-
-// 4. Detect drift
-if (!hasher.compare(originalHash.hash, modifiedHash.hash)) {
-  console.log('⚠️  DRIFT DETECTED!');
-  // Trigger fix workflow (Phase 4)
-}
-```
-
-### Data Flow Diagram
-
-```
-┌─────────────────┐
-│ TypeScript Code │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  AST Analyzer   │ ← ts-morph extracts symbols
-│  (Deterministic)│   normalizes signatures
-└────────┬────────┘
-         │ CodeSignature[]
-         ▼
-┌─────────────────┐
-│Signature Hasher │ ← SHA256 hash generation
-│  (Deterministic)│   serialization
-└────────┬────────┘
-         │ SignatureHash[]
-         ▼
-┌─────────────────┐
-│doctype-map.json │ ← Saved for drift detection
-│   (Phase 2)     │   (CI compares hashes)
-└─────────────────┘
-```
-
-### Design Principles
-
-1. **Determinism**: Same input → same output (no randomness)
-2. **Separation of Concerns**: AST analysis ≠ hashing ≠ documentation updates
-3. **Type Safety**: Full TypeScript typing for all interfaces
-4. **Testability**: 98.37% coverage with isolated unit tests
-5. **Modularity**: Each component is independently usable
-
----
+- **Phase 2**: Data Model & Mapping (doctype-map.json, Markdown anchors)
+- **Phase 3**: CLI Commands (`check`, `fix`)
+- **Phase 4**: Gen AI Integration (OpenAI/Gemini, auto-commit)
 
 For complete project architecture and roadmap, see [CLAUDE.md](./CLAUDE.md).
 
