@@ -8,6 +8,7 @@ Doctype is the ultimate guardrail for conceptual documentation. By leveraging Ab
 - **Real-Time Documentation Updates**: Automatically updates documentation when code changes, ensuring that your guides are always up-to-date.
 - **Generative AI Integration**: Utilizes AI models to provide insights and suggestions for documentation improvements.
 - **GitHub Workflow Support**: Seamlessly integrates into your GitHub workflows to automate pull request reviews with AI-generated feedback.
+- **New Claude Integration**: Integrates with Anthropic's Claude AI to provide alternative AI insights for documentation and code reviews.
 
 ## Usage
 
@@ -52,10 +53,10 @@ The AI code review feature leverages a Node.js script to interact with the GitHu
 - **Functionality**: 
   - Fetches the pull request diff.
   - Trims the diff if it exceeds a specified length to optimize costs and efficiency.
-  - Constructs a review prompt tailored for TypeScript projects and sends it to the OpenAI API.
+  - Constructs a review prompt tailored for TypeScript projects and sends it to the OpenAI API or Claude for analysis.
   - Posts the generated review as a comment on the pull request.
 
-- **AI Model**: Utilizes `gpt-4o` or `gpt-3.5-turbo` for generating concise and insightful code reviews.
+- **AI Model**: Utilizes `gpt-4o`, `gpt-3.5-turbo`, or Anthropic's `Claude` for generating concise and insightful code reviews.
 
 - **Error Handling**: Includes comprehensive error checks to ensure API keys are present and handles API response errors gracefully.
 
