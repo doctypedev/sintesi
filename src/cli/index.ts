@@ -54,6 +54,11 @@ yargs(hideBin(process.argv))
 
       const result = await checkCommand(options);
 
+      // Always exit with error if there's a configuration error
+      if (result.configError) {
+        process.exit(1);
+      }
+
       // Exit with error code if drift detected and strict mode
       if (!result.success && options.strict) {
         process.exit(1);
@@ -107,6 +112,11 @@ yargs(hideBin(process.argv))
       };
 
       const result = await fixCommand(options);
+
+      // Always exit with error if there's a configuration error
+      if (result.configError) {
+        process.exit(1);
+      }
 
       // Exit with error code if any fixes failed
       if (!result.success) {

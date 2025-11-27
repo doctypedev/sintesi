@@ -9,6 +9,7 @@ import { ASTAnalyzer } from '../core/ast-analyzer';
 import { SignatureHasher } from '../core/signature-hasher';
 import { Logger } from './logger';
 import { CheckResult, CheckOptions, DriftDetail } from './types';
+import { detectDrift } from './drift-detector';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 
@@ -30,6 +31,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
       driftedEntries: 0,
       drifts: [],
       success: false,
+      configError: `Map file not found: ${mapPath}`,
     };
   }
 
@@ -53,62 +55,23 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
   logger.info(`Checking ${entries.length} documentation entries...`);
   logger.newline();
 
-  // Analyze current code and detect drift
+  // Analyze current code and detect drift using centralized logic
   const analyzer = new ASTAnalyzer();
   const hasher = new SignatureHasher();
-  const drifts: DriftDetail[] = [];
-  const currentHashes = new Map<string, string>();
+  const detectedDrifts = detectDrift(mapManager, analyzer, hasher, { logger });
 
-  for (const entry of entries) {
-    logger.debug(`Analyzing ${entry.codeRef.filePath}#${entry.codeRef.symbolName}`);
-
-    try {
-      // Check if code file exists
-      if (!existsSync(entry.codeRef.filePath)) {
-        logger.warn(
-          `Code file not found: ${Logger.path(entry.codeRef.filePath)} (${Logger.symbol(entry.codeRef.symbolName)})`
-        );
-        continue;
-      }
-
-      // Analyze the code file
-      const signatures = analyzer.analyzeFile(entry.codeRef.filePath);
-      const currentSignature = signatures.find((sig) => sig.symbolName === entry.codeRef.symbolName);
-
-      if (!currentSignature) {
-        logger.warn(
-          `Symbol ${Logger.symbol(entry.codeRef.symbolName)} not found in ${Logger.path(entry.codeRef.filePath)}`
-        );
-        continue;
-      }
-
-      // Generate current hash
-      const currentHashObj = hasher.hash(currentSignature);
-      const currentHash = currentHashObj.hash;
-      currentHashes.set(entry.id, currentHash);
-
-      // Check for drift
-      if (mapManager.hasDrift(entry.id, currentHash)) {
-        drifts.push({
-          id: entry.id,
-          symbolName: entry.codeRef.symbolName,
-          codeFilePath: entry.codeRef.filePath,
-          docFilePath: entry.docRef.filePath,
-          docLine: entry.docRef.startLine,
-          oldHash: entry.codeSignatureHash,
-          newHash: currentHash,
-          oldSignature: undefined, // Could be retrieved from map if needed
-          newSignature: currentSignature.signatureText,
-        });
-      }
-    } catch (error) {
-      logger.error(
-        `Error analyzing ${entry.codeRef.filePath}#${entry.codeRef.symbolName}: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
-    }
-  }
+  // Convert DriftInfo to DriftDetail format for API compatibility
+  const drifts: DriftDetail[] = detectedDrifts.map((drift) => ({
+    id: drift.entry.id,
+    symbolName: drift.entry.codeRef.symbolName,
+    codeFilePath: drift.entry.codeRef.filePath,
+    docFilePath: drift.entry.docRef.filePath,
+    docLine: drift.entry.docRef.startLine,
+    oldHash: drift.oldHash,
+    newHash: drift.currentHash,
+    oldSignature: undefined, // Could be retrieved from map if needed
+    newSignature: drift.currentSignature.signatureText,
+  }));
 
   // Display results
   logger.divider();

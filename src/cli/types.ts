@@ -14,6 +14,8 @@ export interface CheckResult {
   drifts: DriftDetail[];
   /** Overall success status (false if any drift detected) */
   success: boolean;
+  /** Configuration error (e.g., map file not found) - should always exit with error regardless of --strict */
+  configError?: string;
 }
 
 /**
@@ -54,6 +56,8 @@ export interface FixResult {
   fixes: FixDetail[];
   /** Overall success status */
   success: boolean;
+  /** Configuration error (e.g., map file not found) - should always exit with error */
+  configError?: string;
 }
 
 /**
