@@ -553,8 +553,8 @@ MIT License - see [LICENSE](./LICENSE) for details
 
 ## 🙋 Support
 
-- **Issues:** [GitHub Issues](https://github.com/your-org/doctype/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/your-org/doctype/discussions)
+- **Issues:** [GitHub Issues](https://github.com/alessiopelliccione/doctype/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/alessiopelliccione/doctype/discussions)
 - **Documentation:** [Complete Docs](./docs/)
 
 ---
@@ -565,4 +565,4 @@ If Doctype helps you maintain better documentation, give it a star on GitHub!
 
 ---
 
-**Made with ❤️ by the Doctype Team**
+**Made with ❤️**
