@@ -130,17 +130,31 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
       let newContent: string;
 
       // Phase 4: Use AI Agent if available
-      if (useAI && aiAgent && oldSignature) {
+      if (useAI && aiAgent) {
         logger.debug('Generating AI-powered documentation...');
 
         try {
-          newContent = await aiAgent.generateFromDrift(
-            entry.codeRef.symbolName,
-            oldSignature,
-            currentSignature,
-            entry.originalMarkdownContent || '',
-            entry.codeRef.filePath
-          );
+          // If we have old signature, use it; otherwise AI will infer from old docs
+          if (oldSignature) {
+            newContent = await aiAgent.generateFromDrift(
+              entry.codeRef.symbolName,
+              oldSignature,
+              currentSignature,
+              entry.originalMarkdownContent || '',
+              entry.codeRef.filePath
+            );
+          } else {
+            // No old signature available - generate based on current signature only
+            logger.debug('No old signature available, generating from current signature');
+            newContent = await aiAgent.generateInitial(
+              entry.codeRef.symbolName,
+              currentSignature,
+              {
+                includeExamples: true,
+                style: 'detailed',
+              }
+            );
+          }
 
           logger.debug(`AI generated content (${newContent.length} chars)`);
         } catch (aiError) {
