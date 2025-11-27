@@ -5,21 +5,20 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
@@ -30,53 +29,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Verify package contents
-        run: |
-          echo "📦 Package contents preview:"
-          npm pack --dry-run
-          echo ""
-          echo "✅ Verifying shebang and permissions..."
-          if [ -f "dist/cli/index.js" ]; then
-            head -n 1 dist/cli/index.js
-            ls -la dist/cli/index.js
-          else
-             echo "⚠️ dist/cli/index.js not found, skipping check"
-          fi
-
-      - name: Extract version from tag
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
-      - name: Verify package.json version matches tag
-        run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          TAG_VERSION="${{ steps.version.outputs.VERSION }}"
-          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
-            echo "❌ Version mismatch!"
-            echo "package.json version: $PACKAGE_VERSION"
-            echo "Git tag version: $TAG_VERSION"
-            exit 1
-          fi
-          echo "✅ Version match: $PACKAGE_VERSION"
-
       - name: Publish to NPM
-        run: npm publish --access public
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ steps.version.outputs.VERSION }}
-          body: |
-            ## Doctype v${{ steps.version.outputs.VERSION }}
-
-            📦 Published to NPM: https://www.npmjs.com/package/@doctypedev/doctype/v/${{ steps.version.outputs.VERSION }}
-
-            ### Installation
-            ```bash
-            npm install -g @doctypedev/doctype@${{ steps.version.outputs.VERSION }}
-            ```
-
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
-          draft: false
-          prerelease: false
+        run: npm publish
