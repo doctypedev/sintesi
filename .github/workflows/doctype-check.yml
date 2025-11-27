@@ -36,10 +36,13 @@ jobs:
         run: npx doctype check --verbose
         continue-on-error: true
 
+      # Add another check to avoid running when npx doctype check passes
       - name: Fix documentation
         if: github.ref == 'refs/heads/main'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
+          git config --global user.name "Doctype Bot"
+          git config --global user.email "bot@doctype.sh"
           npx doctype fix --auto-commit
           git push
