@@ -174,7 +174,15 @@ Comprehensive test suites for all modules:
 }
 ```
 
-Note: `unified`, `remark-parse`, and `remark-stringify` were initially added but removed as we implemented custom Markdown parsing that better suits our anchor-based approach.
+**Note on Markdown Parsing**: Initially, we considered using the `unified`, `remark-parse`, `remark-stringify`, and `remark-html` ecosystem. However, these were removed in favor of custom regex-based parsing for the following reasons:
+
+- **Simplicity**: Doctype only needs to extract HTML comment anchors, not full Markdown AST
+- **Performance**: Regex parsing is faster for our specific use case
+- **Bundle Size**: Removes 64 unnecessary packages (~2MB)
+- **Security**: Smaller dependency tree reduces attack surface
+- **Maintainability**: Self-contained parsing logic, no external API changes
+
+The custom parser uses simple regex patterns to match `<!-- doctype:start -->` and `<!-- doctype:end -->` comments, which is sufficient and more appropriate for our anchor-extraction needs.
 
 ## Example Usage
 
