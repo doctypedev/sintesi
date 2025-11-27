@@ -1,4 +1,4 @@
-name: "PR AI Reviewer"
+name: 'PR: AI Quality Gate'
 
 on:
   issue_comment:

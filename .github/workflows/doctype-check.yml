@@ -1,4 +1,4 @@
-name: Doctype - Documentation Drift Detection
+name: 'Doctype: Verify Docs'
 
 on:
   push:
