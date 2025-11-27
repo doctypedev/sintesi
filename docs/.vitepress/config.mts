@@ -25,7 +25,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/yourusername/doctype' }
+      { icon: 'github', link: 'https://github.com/alessiopelliccione/doctype' }
     ],
 
     // Brand color for buttons and accents

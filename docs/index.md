@@ -11,7 +11,7 @@ hero:
       link: /markdown-examples
     - theme: alt
       text: View on GitHub
-      link: https://github.com/yourusername/doctype
+      link: https://github.com/alessiopelliccione/doctype
 
 features:
   - icon: 🔍
