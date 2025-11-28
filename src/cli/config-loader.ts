@@ -51,7 +51,8 @@ export function loadConfig(
   }
 
   // Read and parse the file
-  let rawConfig: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rawConfig: any;
   try {
     const fileContent = fs.readFileSync(resolvedPath, 'utf-8');
     rawConfig = JSON.parse(fileContent);
