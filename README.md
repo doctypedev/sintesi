@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/doctype_logo.png" alt="Doctype Logo" width="200" />
+  <img src="assets/doctype_logo.png" alt="Doctype Logo" width="500" />
 </p>
 
 # Doctype
