@@ -4,339 +4,104 @@
 
 # Doctype
 
-> **The Self-Maintaining Documentation System**
+[![npm version](https://badge.fury.io/js/@doctypedev%2Fdoctype.svg)](https://www.npmjs.com/package/@doctypedev/doctype)
+[![CI Build](https://github.com/alessiopelliccione/doctype/actions/workflows/ci.yml/badge.svg)](https://github.com/alessiopelliccione/doctype/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
 
-Doctype keeps your documentation automatically synchronized with your code. When function signatures change, your Markdown documentation updates automatically using AI-powered generation.
+> **Stop chasing documentation drift. Let AI keep your docs in perfect sync with your code.**
 
-**No more outdated documentation. Ever.**
-
----
-
-## ✨ Features
-
-### 🤖 AI-Powered Documentation
-- Generates intelligent, context-aware documentation using OpenAI GPT-4
-- Understands code changes and updates docs accordingly
-- Falls back to placeholder content if AI is unavailable
-
-### 🔍 Automatic Drift Detection
-- Analyzes TypeScript code using AST (Abstract Syntax Tree)
-- Detects when code signatures change
-- Integrates seamlessly with CI/CD pipelines
-
-### 📝 Smart Content Management
-- Embeds documentation directly in Markdown files
-- Uses HTML comment anchors for precise placement
-- Preserves formatting and custom content
-
-### 🚀 Git Integration
-- Auto-commit documentation updates
-- Standard commit messages for easy tracking
-- Optional push to remote repositories
+Doctype automatically detects when your code changes and updates your documentation using AI. No more outdated docs. No more manual rewrites. Just accurate, always-current documentation.
 
 ---
 
-## 📦 Installation
+## Why Doctype?
 
-### NPM (Recommended)
+**The Problem:** You change a function signature. Your documentation becomes outdated. Your team wastes time debugging with wrong info. Sound familiar?
+
+**The Solution:** Doctype detects code changes automatically and regenerates documentation using GPT-4. Your docs stay in sync, your team stays productive.
+
+### What Makes It Different
+
+- ✅ **Truly Automatic** - Detects drift using cryptographic hashing, not guesswork
+- ✅ **AI-Powered** - Uses OpenAI GPT-4 to write better docs than most humans
+- ✅ **CI/CD Native** - Fails your build if docs are out of sync (no more "I forgot")
+- ✅ **Zero Config** - Drop in anchors, run one command, done
+- ✅ **Git-Friendly** - Auto-commits with standardized messages, plays nice with your workflow
+
+---
+
+## Quick Start
+
+### 1. Install
 
 ```bash
-npm install -g doctype
-```
-
-### From Source
-
-```bash
-git clone https://github.com/your-org/doctype.git
-cd doctype
-npm install
-npm run build
-npm link
-```
-
----
-
-## 🚀 Quick Start
-
-### 1. Set Up Your Documentation
-
-Add doctype anchors to your Markdown files using HTML comments:
-
-```markdown
-<!-- docs/api.md -->
-
-# API Documentation
-
-<!-- doctype:start id="auth-login" code_ref="src/auth/login.ts#login" -->
-Documentation content will be auto-generated here
-<!-- doctype:end id="auth-login" -->
+npm install -g @doctypedev/doctype
 ```
 
 ### 2. Initialize Tracking
 
-Create a `doctype-map.json` file or let doctype create it for you:
-
 ```bash
-npx doctype check
+doctype init
 ```
 
-### 3. Configure OpenAI (Optional but Recommended)
+This will:
+- Prompt you for project configuration (name, root, docs folder)
+- **Automatically scan your TypeScript codebase** for exported symbols
+- **Create `api.md` with documentation anchors** for each symbol
+- Generate SHA256 hashes of all code signatures
+- Create `doctype-map.json` to track everything (commit this file)
+- Create `doctype.config.json` with your project configuration (commit this file)
+- Optionally set your OpenAI API key for AI-powered updates
 
-Set your OpenAI API key for AI-powered documentation:
-
-```bash
-export OPENAI_API_KEY=sk-your-api-key-here
-```
-
-### 4. Check for Drift
-
-Verify your documentation is in sync with code:
-
-```bash
-npx doctype check --verbose
-```
-
-### 5. Fix Drift Automatically
-
-Update documentation when code changes:
-
-```bash
-npx doctype fix
-```
-
----
-
-## 📖 Usage
-
-### Basic Commands
-
-#### Check Documentation
-
-Verifies that documentation matches current code signatures:
-
-```bash
-# Basic check
-npx doctype check
-
-# With detailed output
-npx doctype check --verbose
-
-# Custom map location
-npx doctype check --map ./docs/doctype-map.json
-```
-
-**Exit Codes:**
-- `0` - No drift detected
-- `1` - Drift detected or configuration error
-
-#### Fix Documentation
-
-Updates documentation to match code changes:
-
-```bash
-# Fix with AI-generated content
-npx doctype fix
-
-# Preview changes without writing
-npx doctype fix --dry-run
-
-# Fix and commit automatically
-npx doctype fix --auto-commit
-
-# Use placeholder content (no AI)
-npx doctype fix --no-ai
-
-# Detailed output
-npx doctype fix --verbose
-```
-
-### Advanced Options
-
-```bash
-# Check with custom settings
-npx doctype check \
-  --map ./custom-map.json \
-  --verbose \
-  --no-strict  # Don't exit with error on drift
-
-# Fix with all options
-npx doctype fix \
-  --dry-run \
-  --auto-commit \
-  --no-ai \
-  --verbose
-```
-
----
-
-## 🔧 Configuration
-
-### Environment Variables
-
-```bash
-# OpenAI API Key (for AI-powered documentation)
-export OPENAI_API_KEY=sk-your-key-here
-
-# Alternative: Gemini API Key (coming soon)
-export GEMINI_API_KEY=your-gemini-key
-```
-
-### Anchor Format
-
-Doctype uses HTML comments to mark documentation sections:
+**Doctype will create an api.md file with anchors like this:**
 
 ```markdown
-<!-- doctype:start id="unique-id" code_ref="file/path.ts#symbolName" -->
-Your documentation content here.
-This will be auto-updated when the code changes.
-<!-- doctype:end id="unique-id" -->
-```
+<!-- docs/api.md -->
 
-**Format:**
-- `id`: Unique identifier (UUID recommended)
-- `code_ref`: Code reference in format `file_path#symbol_name`
+# API Reference
 
-**Example:**
+### login
 
-```markdown
-<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440000" code_ref="src/utils/format.ts#formatDate" -->
-Formats a date according to the specified format string.
-
-**Parameters:**
-- `date` (Date): The date to format
-- `format` (string): Format string (e.g., 'YYYY-MM-DD')
-
-**Returns:**
-- `string`: Formatted date string
+<!-- doctype:start id="550e8400-e29b-41d4-a716-446655440000" code_ref="src/auth/login.ts#login" -->
+<!-- TODO: Add documentation for this symbol -->
 <!-- doctype:end id="550e8400-e29b-41d4-a716-446655440000" -->
 ```
 
----
+**After running init, you can:**
+1. Manually fill in the documentation between the anchor tags, OR
+2. Use `doctype generate` (planned) to auto-generate initial content with AI
 
-## 🔄 CI/CD Integration
-
-### GitHub Actions
-
-```yaml
-name: Documentation Check
-
-on:
-  pull_request:
-  push:
-    branches: [main]
-
-jobs:
-  doctype:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Check documentation drift
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: npx doctype check --verbose
-
-      # Optional: Auto-fix on main branch
-      - name: Fix documentation
-        if: github.ref == 'refs/heads/main'
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          npx doctype fix --auto-commit
-          git push
-```
-
-### GitLab CI
-
-```yaml
-doctype:check:
-  image: node:20
-  script:
-    - npm ci
-    - npx doctype check --verbose
-  only:
-    - merge_requests
-    - main
-
-doctype:fix:
-  image: node:20
-  script:
-    - npm ci
-    - npx doctype fix --auto-commit
-  only:
-    - main
-  when: manual
-```
-
-### Pre-commit Hook
+### 3. Check for Drift
 
 ```bash
-#!/bin/sh
-# .git/hooks/pre-commit
-
-npx doctype check || {
-  echo "❌ Documentation drift detected!"
-  echo "Run 'npx doctype fix' to update documentation"
-  exit 1
-}
+doctype check
 ```
 
----
+**Output:**
+```
+✓ All documentation is in sync with code
+```
 
-## 💡 Examples
+### 4. Update Code, Fix Docs
 
-### Example 1: Basic Workflow
-
-**1. You have a function:**
-
+Change your code:
 ```typescript
 // src/auth/login.ts
-export function login(email: string): Promise<string> {
-  // Implementation
-}
+-export function login(email: string): Promise<string>
++export function login(email: string, password: string): Promise<string>
 ```
 
-**2. You document it:**
-
-```markdown
-<!-- docs/auth.md -->
-<!-- doctype:start id="auth-login" code_ref="src/auth/login.ts#login" -->
-Authenticates a user with email.
-
-**Parameters:**
-- `email` (string): User's email address
-
-**Returns:**
-- `Promise<string>`: Authentication token
-<!-- doctype:end id="auth-login" -->
-```
-
-**3. You change the code:**
-
-```typescript
-// src/auth/login.ts
-export function login(email: string, password: string): Promise<string> {
-  // Implementation
-}
-```
-
-**4. Doctype detects and fixes:**
-
+Run fix:
 ```bash
-npx doctype fix
+doctype fix
 ```
 
-**5. Documentation is automatically updated:**
-
+**Result:**
 ```markdown
-<!-- docs/auth.md -->
+<!-- docs/api.md -->
+
 <!-- doctype:start id="auth-login" code_ref="src/auth/login.ts#login" -->
 Authenticates a user with email and password credentials.
 
@@ -354,219 +119,354 @@ const token = await login('user@example.com', 'securePassword123');
 <!-- doctype:end id="auth-login" -->
 ```
 
-### Example 2: CI/CD Integration
-
-**Scenario:** Prevent merging PRs with outdated documentation
-
-```yaml
-# .github/workflows/pr-check.yml
-name: PR Checks
-
-on: pull_request
-
-jobs:
-  documentation:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm ci
-      - run: npx doctype check
-        name: Verify documentation is up-to-date
-```
-
-### Example 3: Automatic Documentation Updates
-
-**Scenario:** Auto-fix documentation on main branch
-
-```yaml
-# .github/workflows/auto-fix-docs.yml
-name: Auto-fix Documentation
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  fix-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm ci
-
-      - name: Fix documentation
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          npx doctype fix --auto-commit
-          git push
-```
+**AI-generated. Automatically. Every time.**
 
 ---
 
-## 🎯 How It Works
+## Commands
 
-### 1. **AST Analysis**
-Doctype analyzes your TypeScript code using Abstract Syntax Tree (AST) parsing to extract function signatures, parameters, return types, and more.
+### `doctype init`
 
-### 2. **Hash-Based Drift Detection**
-Each code signature is hashed (SHA256). When code changes, the hash changes, triggering drift detection.
+Initialize doctype in your project with an interactive setup process.
 
-### 3. **AI-Powered Documentation**
-OpenAI GPT-4 analyzes the old signature, new signature, and previous documentation to generate updated, context-aware documentation.
-
-### 4. **Safe Content Injection**
-Documentation is injected between anchor tags, preserving your custom content outside the anchors.
-
-### 5. **Git Integration**
-Changes are automatically staged and committed with standardized messages:
-```
-🤖 Doctype Bot: Auto-fix documentation for login, logout
-```
-
----
-
-## 🔐 Security
-
-### API Key Management
-
-**Never commit API keys to your repository.**
-
-**Local Development:**
 ```bash
-# Add to .env (and .gitignore)
-OPENAI_API_KEY=sk-your-key-here
+doctype init
 ```
 
-**CI/CD:**
-Use secrets management:
-- GitHub: Repository Settings → Secrets → Actions
-- GitLab: Settings → CI/CD → Variables
-- Use service accounts with minimal permissions
+**What it does:**
+1. Prompts you for project configuration (name, root directory, docs folder)
+2. **Scans all TypeScript files** in your project root
+3. **Extracts all exported symbols** (functions, classes, interfaces, types, enums)
+4. **Creates `api.md`** in your docs folder with anchor placeholders
+5. Generates SHA256 hashes of all code signatures
+6. Creates `doctype-map.json` to track everything (commit this)
+7. Creates `doctype.config.json` with project configuration (commit this)
+8. Optionally configures your OpenAI API key
 
-### Rate Limiting
+**Initial anchors are created with TODO placeholders:**
+```markdown
+<!-- doctype:start id="uuid" code_ref="src/file.ts#SymbolName" -->
+<!-- TODO: Add documentation for this symbol -->
+<!-- doctype:end id="uuid" -->
+```
 
-OpenAI enforces rate limits. Doctype handles this automatically:
-- Retries on rate limit errors (with exponential backoff)
-- Falls back to placeholder content on persistent failures
-- Clear error messages for troubleshooting
+You can then manually document each symbol, or use `doctype generate` (planned) to auto-fill with AI.
+
+### `doctype check`
+
+Verify documentation is in sync with code. Perfect for CI/CD.
+
+```bash
+doctype check --verbose
+```
+
+**Exit codes:**
+- `0` = Docs are in sync ✅
+- `1` = Drift detected ❌
+
+**Example output when drift detected:**
+```
+⚠ Documentation drift detected in 2 entries:
+
+  login - src/auth/login.ts
+    Documentation: docs/auth.md:10
+    Cause: Function signature changed
+```
+
+### `doctype fix`
+
+Update documentation to match code changes using AI.
+
+```bash
+doctype fix --auto-commit
+```
+
+**Options:**
+- `--dry-run` - Preview changes without writing files
+- `--auto-commit` - Automatically commit changes to git
+- `--no-ai` - Skip AI generation (useful for testing CI/CD pipelines without consuming tokens - does not update documentation content)
+- `--verbose` - Show detailed output
+
+**What it does:**
+1. Detects which documentation is outdated
+2. Sends old signature + new signature to GPT-4
+3. Receives updated, intelligent documentation
+4. Injects content into your Markdown files
+5. Updates `doctype-map.json` with new hashes
+6. (Optional) Auto-commits with message: `🤖 Doctype Bot: Auto-fix documentation for login`
 
 ---
 
-## 💰 Cost Considerations
+## CI/CD Integration
 
-### OpenAI Pricing (GPT-4)
-- Input: ~$0.03 per 1K tokens
-- Output: ~$0.06 per 1K tokens
+> **🚧 In Progress**
+>
+> CI/CD integration workflows are currently being finalized. Full GitHub Actions, GitLab CI, and other platform integrations will be documented here soon.
+>
+> Basic usage in CI:
+> ```bash
+> doctype check  # Fails with exit code 1 if drift detected
+> ```
+
+---
+
+## How It Works
+
+### 1. Deterministic Drift Detection
+
+Doctype uses **SHA256 hashing** of code signatures to detect changes:
+
+```
+Old signature: function login(email: string): Promise<string>
+New signature: function login(email: string, password: string): Promise<string>
+
+Old hash: abc123...
+New hash: def456...
+
+Hashes don't match → Drift detected ✓
+```
+
+**Why this matters:**
+- 100% accurate (no false positives from whitespace changes)
+- Fast (instant hash comparison)
+- Deterministic (same code = same hash, every time)
+
+### 2. AI-Powered Documentation
+
+When drift is detected:
+
+```
+Doctype sends to GPT-4:
+├─ Old signature
+├─ New signature
+├─ Previous documentation
+└─ File context
+
+GPT-4 returns:
+└─ Updated, intelligent documentation
+```
+
+**Example prompt sent to GPT-4:**
+
+> *"The function signature changed from `login(email: string)` to `login(email: string, password: string)`. The previous documentation described it as 'Authenticates a user with email.' Update the documentation to reflect the new parameter while maintaining the same style and clarity."*
+
+**GPT-4's response** is injected between your anchor tags. Your docs update automatically.
+
+### 3. Safe Content Injection
+
+Doctype **never touches** content outside anchor tags:
+
+```markdown
+# Your Custom Content Here
+
+This text is never modified by Doctype.
+
+<!-- doctype:start id="uuid" code_ref="src/auth.ts#login" -->
+This content is AI-generated and auto-updated.
+<!-- doctype:end id="uuid" -->
+
+Your custom content here is also safe.
+```
+
+**Result:** Mix auto-generated and hand-written docs safely.
+
+---
+
+## Real-World Example
+
+### Before
+
+**Code:**
+```typescript
+// src/payments/checkout.ts
+export function processPayment(amount: number): Promise<string>
+```
+
+**Docs:**
+```markdown
+<!-- doctype:start id="f47ac10b-58cc-4372-a567-0e02b2c3d479" code_ref="src/payments/checkout.ts#processPayment" -->
+Processes a payment for the specified amount.
+
+**Parameters:**
+- `amount` (number): Payment amount in dollars
+
+**Returns:**
+- `Promise<string>`: Transaction ID
+<!-- doctype:end id="f47ac10b-58cc-4372-a567-0e02b2c3d479" -->
+```
+
+### You Change the Code
+
+```typescript
+// src/payments/checkout.ts
+export function processPayment(
+  amount: number,
+  currency: string,
+  paymentMethod: PaymentMethod
+): Promise<Transaction>
+```
+
+### Doctype Detects + Fixes
+
+```bash
+doctype fix --auto-commit
+```
+
+### After
+
+**Docs (auto-updated by AI):**
+```markdown
+<!-- doctype:start id="f47ac10b-58cc-4372-a567-0e02b2c3d479" code_ref="src/payments/checkout.ts#processPayment" -->
+Processes a payment transaction with the specified amount, currency, and payment method.
+
+**Parameters:**
+- `amount` (number): Payment amount (must be positive)
+- `currency` (string): ISO 4217 currency code (e.g., 'USD', 'EUR')
+- `paymentMethod` (PaymentMethod): Payment method object containing card or wallet details
+
+**Returns:**
+- `Promise<Transaction>`: Complete transaction object including:
+  - `id`: Unique transaction identifier
+  - `status`: Payment status ('pending', 'completed', 'failed')
+  - `timestamp`: Transaction timestamp
+  - `receipt`: Receipt URL
+
+**Example:**
+\`\`\`typescript
+const transaction = await processPayment(
+  99.99,
+  'USD',
+  { type: 'card', last4: '4242' }
+);
+console.log(transaction.id); // "txn_abc123"
+\`\`\`
+
+**Errors:**
+- Throws `InvalidCurrencyError` if currency code is invalid
+- Throws `PaymentDeclinedError` if payment method is declined
+<!-- doctype:end id="f47ac10b-58cc-4372-a567-0e02b2c3d479" -->
+```
+
+**You didn't write this. GPT-4 did. Automatically.**
+
+---
+
+## Cost
+
+### OpenAI Pricing
+
+Doctype uses OpenAI GPT-4 by default:
+
+- **Input:** ~$0.03 per 1K tokens
+- **Output:** ~$0.06 per 1K tokens
 - **Per documentation update:** ~$0.06-$0.15
+
+**Example cost:**
+- 10 function changes = ~$1.50
+- 100 function changes = ~$15.00
 
 ### Cost Optimization Tips
 
-1. **Use GPT-3.5-turbo** for simpler documentation (10x cheaper):
+1. **Batch your changes**: Don't run `fix` after every small edit. Make multiple changes, then run once.
+
+2. **Use `--no-ai` for testing CI/CD pipelines**:
    ```bash
-   # Set in code or configuration
-   # Default: gpt-4
+   doctype fix --no-ai --dry-run  # Test pipeline without consuming tokens
    ```
 
-2. **Batch changes** before running fix:
+   **Note:** `--no-ai` does not update documentation content, only for testing.
+
+3. **Upgrade to GPT-4-turbo** (faster, cheaper):
    ```bash
-   # Fix all changes at once instead of one-by-one
-   npx doctype fix
+   export DOCTYPE_AI_MODEL=gpt-4-turbo
    ```
 
-3. **Use `--no-ai`** for testing:
+4. **Use GPT-3.5-turbo** for simple docs (10x cheaper):
    ```bash
-   npx doctype fix --no-ai --dry-run
+   export DOCTYPE_AI_MODEL=gpt-3.5-turbo
    ```
 
-4. **Limit to critical docs** using selective anchors
-
 ---
 
-## 🐛 Troubleshooting
+## FAQ
 
-### "Map file not found"
+### Do I need to commit `doctype-map.json`?
 
-**Problem:** `doctype-map.json` doesn't exist
+**Yes.** This file is the source of truth for drift detection. Commit it so your team and CI/CD can detect drift.
 
-**Solution:**
+### What if I don't want to use AI?
+
+The `--no-ai` flag is designed for **testing CI/CD pipelines** without consuming tokens:
+
 ```bash
-# Run from your project root
-npx doctype check
-
-# Or specify custom path
-npx doctype check --map ./docs/doctype-map.json
+doctype fix --no-ai --dry-run
 ```
 
-### "No API key found"
+**Important:** `--no-ai` does not actually update documentation content - it only tests the pipeline. For real documentation updates, you need AI (OpenAI) or manual editing.
 
-**Problem:** Missing `OPENAI_API_KEY` environment variable
+### Can I use this without OpenAI?
 
-**Solution:**
-```bash
-export OPENAI_API_KEY=sk-your-key-here
-npx doctype fix
-```
+For **drift detection**: Yes. `doctype check` works without AI.
 
-Or use `--no-ai` flag:
-```bash
-npx doctype fix --no-ai
-```
+For **automatic fixing**: No. You need an AI provider (OpenAI or Gemini in the future).
 
-### "Symbol not found"
+### Does this work with private codebases?
 
-**Problem:** Code reference in anchor doesn't match actual code
+Yes. Your code is sent to OpenAI's API, but:
+- OpenAI doesn't train on API data (per their [terms](https://openai.com/policies/api-data-usage-policies))
+- You can use `--no-ai` for sensitive code
+- Gemini and local LLM support coming soon
 
-**Solution:**
-1. Verify the `code_ref` format: `file_path#symbol_name`
-2. Ensure the symbol is exported
-3. Check file path is correct relative to project root
+### What languages are supported?
 
-### "Connection timeout"
+Currently **TypeScript only**. Support for JavaScript, Python, Go, Rust, and Java is planned.
 
-**Problem:** OpenAI API request timeout
+### Can I customize the AI prompts?
 
-**Solution:**
-- Check your internet connection
-- Verify API key is valid
-- Check OpenAI service status
-- Doctype will retry automatically
+Not yet, but it's on the roadmap. For now, Doctype uses optimized prompts designed for technical documentation.
 
 ---
 
-## 📚 Further Documentation
+## Roadmap
 
-- **[PHASE4.md](./PHASE4.md)** - Complete AI Agent documentation
-- **[CHANGELOG.md](./CHANGELOG.md)** - Version history and changes
-- **[Examples](./src/examples/)** - Code examples and integration guides
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our contributing guidelines and submit pull requests.
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](./LICENSE) for details
+- [x] TypeScript support
+- [x] OpenAI GPT-4 integration
+- [x] Auto-commit functionality
+- [x] GitHub Actions integration
+- [ ] Gemini AI support
+- [ ] Local LLM support (Llama, Mistral)
+- [ ] JavaScript support
+- [ ] Python support
+- [ ] Custom prompt templates
+- [ ] Integration with documentation tools (VitePress, Docusaurus, etc.)
+- [ ] VSCode extension
+- [ ] Doctype Cloud (hosted service, no API key needed)
 
 ---
 
-## 🙋 Support
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) and submit pull requests.
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+## Support
 
 - **Issues:** [GitHub Issues](https://github.com/alessiopelliccione/doctype/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/alessiopelliccione/doctype/discussions)
-- **Documentation:** [Complete Docs](./docs/)
+- **Documentation:** [Full Docs](./src/)
 
 ---
 
-## ⭐ Show Your Support
+## Show Your Support
 
-If Doctype helps you maintain better documentation, give it a star on GitHub!
+If Doctype saves you time, give it a ⭐ on GitHub!
 
 ---
 
-**Made with ❤️**
+**Made with ❤️ by developers who hate outdated documentation.**
