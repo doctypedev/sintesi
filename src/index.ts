@@ -4,7 +4,7 @@
  * Main entry point for the Doctype library
  */
 
-// Phase 1: Core AST & Drift Detection
+// Core AST & Drift Detection
 export { ASTAnalyzer } from './core/ast-analyzer';
 export { SignatureHasher } from './core/signature-hasher';
 export { SymbolType } from './core/types';
@@ -17,11 +17,11 @@ export type {
   DoctypeMap,
 } from './core/types';
 
-// Phase 2: Content & Mapping
+// Content & Mapping
 export { MarkdownParser, DoctypeMapManager, ContentInjector } from './content';
 export type { DoctypeAnchor, InjectionResult } from './content';
 
-// Phase 4: Gen AI Agent
+// Gen AI Agent
 export { AIAgent, createOpenAIAgent, createAgentFromEnv, PromptBuilder } from './ai';
 export type {
   AIProvider,

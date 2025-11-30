@@ -8,7 +8,7 @@
  * - check: Verify documentation is in sync with code
  * - fix: Update documentation when drift is detected (with AI-powered generation)
  *
- * Phase 4: Now with AI-powered documentation generation using OpenAI or Gemini APIs
+ * Now with AI-powered documentation generation using OpenAI or Gemini APIs
  */
 
 // Load environment variables from .env file

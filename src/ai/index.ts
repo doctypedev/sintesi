@@ -1,5 +1,5 @@
 /**
- * AI Agent module - Phase 4
+ * AI Agent module
  *
  * Provides AI-powered documentation generation using OpenAI or Gemini APIs
  */

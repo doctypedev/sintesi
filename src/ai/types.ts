@@ -1,5 +1,5 @@
 /**
- * Type definitions for AI Agent module (Phase 4)
+ * Type definitions for AI Agent module
  */
 
 import { CodeSignature } from '../core/types';

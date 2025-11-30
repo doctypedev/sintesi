@@ -3,8 +3,8 @@
  *
  * Fixes documentation drift by updating Markdown files with AI-generated content
  *
- * Phase 3: Manual content updates (placeholder)
- * Phase 4: AI-powered documentation generation (OpenAI, Gemini)
+ * Manual content updates (placeholder)
+ * AI-powered documentation generation (OpenAI, Gemini)
  */
 
 import { DoctypeMapManager } from '../content/map-manager';
@@ -117,7 +117,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
   logger.newline();
   logger.divider();
 
-  // Initialize AI Agent if API key is available (Phase 4)
+  // Initialize AI Agent if API key is available
   let aiAgent: AIAgent | null = null;
   let useAI = false;
 
@@ -159,7 +159,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
     try {
       let newContent: string;
 
-      // Phase 4: Use AI Agent if available
+      // Use AI Agent if available
       if (useAI && aiAgent) {
         logger.debug('Generating AI-powered documentation...');
 
@@ -195,7 +195,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
           newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
         }
       } else {
-        // Phase 3: Simple placeholder content
+        // Simple placeholder content
         newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
         logger.debug(`Generated placeholder content (${newContent.length} chars)`);
       }
@@ -211,7 +211,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
         successCount++;
         logger.success(`Updated documentation (${result.linesChanged} lines changed)`);
 
-        // Update the map with new hash and signature text (Phase 4)
+        // Update the map with new hash and signature text
         if (!options.dryRun) {
           const newHash = hasher.hash(currentSignature).hash;
           mapManager.updateEntry(entry.id, {
@@ -279,7 +279,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
   if (options.dryRun) {
     logger.info('Dry run complete - no files were modified');
   } else if (options.autoCommit && successCount > 0) {
-    // Phase 4: Auto-commit functionality
+    // Auto-commit functionality
     logger.newline();
     logger.info('Auto-committing changes...');
 

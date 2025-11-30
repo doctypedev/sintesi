@@ -73,7 +73,7 @@ export interface DoctypeMapEntry {
   codeRef: CodeRef;
   /** Hash of the code signature */
   codeSignatureHash: string;
-  /** The signature text (added in Phase 4 for AI context) */
+  /** The signature text (for AI context) */
   codeSignatureText?: string;
   /** Reference to the documentation */
   docRef: DocRef;

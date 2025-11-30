@@ -1,5 +1,5 @@
 /**
- * Phase 2 - Content & Mapping Module
+ * Content & Mapping Module
  *
  * This module handles:
  * - Markdown parsing and anchor extraction
