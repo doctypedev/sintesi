@@ -152,13 +152,16 @@ jobs:
         if: ${{ !matrix.settings.docker }}
         working-directory: src/rust-core
         run: |
+          rm -f *.node
           npm install
           ${{ matrix.settings.build }}
         shell: bash
 
       - name: Build Rust Core (Docker)
         if: ${{ matrix.settings.docker }}
-        run: ${{ matrix.settings.build }}
+        run: |
+          rm -f src/rust-core/*.node
+          ${{ matrix.settings.build }}
         shell: bash
 
       - name: Upload artifact
@@ -192,7 +195,9 @@ jobs:
 
       - name: Move artifacts
         working-directory: src/rust-core
-        run: npm run artifacts
+        run: |
+          mkdir -p npm
+          npm run artifacts
 
       - name: Publish @doctypedev/core
         working-directory: src/rust-core
