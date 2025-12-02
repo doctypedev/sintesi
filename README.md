@@ -446,7 +446,7 @@ Not yet, but it's on the roadmap. For now, Doctype uses optimized prompts design
 
 ## Contributing
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) and submit pull requests.
+Contributions are welcome! Please read our [Contributing Guide](https://github.com/doctypedev/.github/blob/main/CONTRIBUTING.md) and submit pull requests.
 
 ---
 
