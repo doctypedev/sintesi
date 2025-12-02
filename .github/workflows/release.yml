@@ -196,8 +196,6 @@ jobs:
 
       - name: Publish Packages
         uses: actions/github-script@v7
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         with:
           script: |
             const publish = require('./.github/scripts/release/publish-packages.js');
@@ -239,8 +237,6 @@ jobs:
 
       - name: Publish @doctypedev/doctype
         run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
