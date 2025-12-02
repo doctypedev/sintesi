@@ -1,0 +1,248 @@
+name: Publish to NPM
+
+env:
+  DEBUG: napi:*
+  APP_NAME: doctype-core
+  MACOSX_DEPLOYMENT_TARGET: '10.13'
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release Type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: read
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    outputs:
+      NEW_TAG: ${{ steps.bump.outputs.NEW_TAG }}
+      OLD_VERSION: ${{ steps.bump.outputs.OLD_VERSION }}
+      CORE_CHANGED: ${{ steps.changes.outputs.core }}
+      SHOULD_PUBLISH: ${{ steps.bump.outputs.type != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Check for Core Changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            core:
+              - 'src/rust-core/**'
+
+      - name: Detect Release Label & Bump
+        id: bump
+        uses: actions/github-script@v7
+        env:
+          RELEASE_TYPE_INPUT: ${{ inputs.release_type }}
+        with:
+          script: |
+            const bumpVersion = require('./.github/scripts/release/bump-version.js');
+            await bumpVersion({ 
+              github, 
+              context, 
+              core, 
+              releaseTypeInput: process.env.RELEASE_TYPE_INPUT 
+            });
+
+  build-core:
+    needs: version-bump
+    if: needs.version-bump.outputs.SHOULD_PUBLISH == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: macos-latest
+            target: x86_64-apple-darwin
+            build: |
+              npm run build
+              strip -x *.node
+          - host: windows-latest
+            build: npm run build
+            target: x86_64-pc-windows-msvc
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            build: docker run --rm -v $(pwd):/build -w /build/src/rust-core ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine sh -c "npm install && npm run build -- --target x86_64-unknown-linux-musl"
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            build: |
+              npm run build -- --target aarch64-apple-darwin
+              strip -x *.node
+    name: Core Build - ${{ matrix.settings.target }}
+    runs-on: ${{ matrix.settings.host }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.version-bump.outputs.NEW_TAG }}
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        if: ${{ !matrix.settings.docker }}
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Check if Reuse Possible
+        id: reuse
+        uses: actions/github-script@v7
+        env:
+          TARGET: ${{ matrix.settings.target }}
+          OLD_VERSION: ${{ needs.version-bump.outputs.OLD_VERSION }}
+          CORE_CHANGED: ${{ needs.version-bump.outputs.CORE_CHANGED }}
+        with:
+          script: |
+            const checkReuse = require('./.github/scripts/release/check-reuse.js');
+            await checkReuse({
+              core,
+              target: process.env.TARGET,
+              oldVersion: process.env.OLD_VERSION,
+              coreChanged: process.env.CORE_CHANGED
+            });
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        if: ${{ !matrix.settings.docker && steps.reuse.outputs.skip != 'true' }}
+        with:
+          toolchain: stable
+          targets: ${{ matrix.settings.target }}
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        if: ${{ steps.reuse.outputs.skip != 'true' }}
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
+
+      - name: Build Rust Core
+        if: ${{ !matrix.settings.docker && steps.reuse.outputs.skip != 'true' }}
+        working-directory: src/rust-core
+        run: |
+          rm -f *.node
+          npm install
+          ${{ matrix.settings.build }}
+        shell: bash
+
+      - name: Build Rust Core (Docker)
+        if: ${{ matrix.settings.docker && steps.reuse.outputs.skip != 'true' }}
+        run: |
+          rm -f src/rust-core/*.node
+          ${{ matrix.settings.build }}
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-${{ matrix.settings.target }}
+          path: src/rust-core/${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+
+  publish-core:
+    needs: [version-bump, build-core]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.version-bump.outputs.NEW_TAG }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: src/rust-core/artifacts
+
+      - name: Install dependencies
+        working-directory: src/rust-core
+        run: npm install
+
+      - name: Prepare Artifacts & Package.json
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prepare = require('./.github/scripts/release/prepare-artifacts.js');
+            await prepare();
+
+      - name: Publish Packages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const publish = require('./.github/scripts/release/publish-packages.js');
+            await publish();
+
+  publish-cli:
+    needs: [version-bump, publish-core]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.version-bump.outputs.NEW_TAG }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      # Install dependencies but ignore the optional @doctypedev/core dependency
+      # because we are going to use the local build logic for tests anyway
+      - name: Install dependencies
+        run: npm install --omit=optional
+
+      # We reuse the pre-built binary from the build-core job to avoid recompiling
+      - name: Download Linux Core Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bindings-x86_64-unknown-linux-musl
+          path: src/rust-core
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build CLI
+        run: npm run build
+
+      - name: Publish @doctypedev/doctype
+        run: npm publish --provenance
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.version-bump.outputs.NEW_TAG }}
+          generate_release_notes: true
