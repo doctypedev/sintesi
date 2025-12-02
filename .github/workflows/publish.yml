@@ -269,11 +269,47 @@ jobs:
       - name: Move artifacts
         working-directory: src/rust-core
         run: |
-          mkdir -p npm/win32-x64-msvc
-          mkdir -p npm/darwin-arm64
-          mkdir -p npm/darwin-x64
-          mkdir -p npm/linux-x64-musl
+          mkdir -p npm
           npm run artifacts
+
+      - name: Generate Platform Package.json files
+        working-directory: src/rust-core
+        run: |
+          node -e '
+            const fs = require("fs");
+            const path = require("path");
+            const version = require("./package.json").version;
+            
+            const npmDir = "npm";
+            if (!fs.existsSync(npmDir)) return;
+            
+            const platforms = fs.readdirSync(npmDir);
+            
+            platforms.forEach(platform => {
+              const dir = path.join(npmDir, platform);
+              if (!fs.statSync(dir).isDirectory()) return;
+              
+              const files = fs.readdirSync(dir);
+              const binary = files.find(f => f.endsWith(".node"));
+              
+              if (binary) {
+                const pkgJson = {
+                  name: `@doctypedev/core-${platform}`,
+                  version: version,
+                  os: [platform.split("-")[0].replace("win32", "win").replace("darwin", "darwin").replace("linux", "linux")],
+                  cpu: [platform.includes("arm64") ? "arm64" : "x64"],
+                  main: binary,
+                  files: [binary]
+                };
+                
+                // Fix OS name for Windows
+                if (pkgJson.os[0] === "win") pkgJson.os[0] = "win32";
+                
+                fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify(pkgJson, null, 2));
+                console.log(`Generated package.json for ${platform}`);
+              }
+            });
+          '
 
       - name: Publish @doctypedev/core
         working-directory: src/rust-core
@@ -284,6 +320,11 @@ jobs:
               if [ -d "$dir" ]; then
                 echo "Publishing $dir..."
                 cd "$dir"
+                # Verify package.json exists
+                if [ ! -f "package.json" ]; then
+                  echo "Error: No package.json found in $dir"
+                  exit 1
+                fi
                 npm publish --access public --provenance
                 cd ../..
               fi
