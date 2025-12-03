@@ -123,6 +123,9 @@ jobs:
       - name: Pull latest changes (including new tag)
         run: git pull --tags
 
+      - name: Update npm
+        run: npm install -g npm@latest
+
       - name: Install root dependencies
         run: npm ci
 
