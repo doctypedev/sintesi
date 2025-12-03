@@ -8,8 +8,6 @@
 export {
   ASTAnalyzer,
   SignatureHasher,
-  scanAndCreateAnchors,
-  determineOutputFile,
   SymbolType,
   discoverFiles,
   helloWorld,
@@ -17,10 +15,6 @@ export {
 } from './core';
 
 export type {
-  InitConfig,
-  ScanResult,
-  OutputStrategy,
-  ProgressCallback,
   CodeRef,
   CodeSignature,
   SignatureHash,

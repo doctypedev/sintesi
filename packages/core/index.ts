@@ -25,4 +25,5 @@ export type {
   DoctypeMap,
   FileDiscoveryResult,
   FileDiscoveryOptions,
+  SymbolTypeValue,
 } from './native-loader';
