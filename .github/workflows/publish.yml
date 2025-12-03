@@ -112,9 +112,6 @@ jobs:
 
       - name: Build and Publish Native Package
         env:
-          # Using OIDC for trusted publishing, no token needed if configured
-          # But if explicit token is needed for native packages:
-          NODE_AUTH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           CARGO_BUILD_TARGET: ${{ matrix.settings.target }}
         run: |
           # Build Rust binary
@@ -143,6 +140,8 @@ jobs:
           if [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
             echo "📦 Version $VERSION already published, skipping"
           else
+            echo "🚀 Publishing $PACKAGE_NAME@$VERSION..."
             # Publish with public access using OIDC (provenance)
+            # Note: OIDC requires --provenance
             npm publish --access public --provenance
           fi
