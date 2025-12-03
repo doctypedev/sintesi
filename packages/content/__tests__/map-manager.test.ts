@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { DoctypeMapManager } from '../map-manager';
-import { DoctypeMapEntry } from '../../core/types';
+import { DoctypeMapEntry } from '@doctypedev/core';
 import { existsSync, unlinkSync } from 'fs';
 
 describe('DoctypeMapManager', () => {

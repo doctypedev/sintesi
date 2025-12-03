@@ -2,6 +2,10 @@
 
 use napi_derive::napi;
 
+// Expose Types
+pub mod types;
+pub use types::{SymbolType, CodeRef, CodeSignature, SignatureHash, DocRef, DoctypeMapEntry, DoctypeMap};
+
 /// AST Analyzer for TypeScript/JavaScript code
 #[napi]
 pub struct AstAnalyzer {

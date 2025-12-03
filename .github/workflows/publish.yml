@@ -185,11 +185,11 @@ jobs:
       - name: Download previous binary (if no Rust changes)
         if: steps.rust_changes.outputs.has_changes == 'false'
         run: |
-          PREV_VERSION=$(npm view @doctypedev/doctype-${{ matrix.settings.platform }}-${{ matrix.settings.arch }} version 2>/dev/null || echo "")
+          PREV_VERSION=$(npm view @doctypedev/core-${{ matrix.settings.platform }}-${{ matrix.settings.arch }} version 2>/dev/null || echo "")
 
           if [ -n "$PREV_VERSION" ]; then
             echo "📦 Downloading previous version: $PREV_VERSION"
-            npm pack @doctypedev/doctype-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}@$PREV_VERSION
+            npm pack @doctypedev/core-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}@$PREV_VERSION
 
             # Extract binary from tarball
             tar -xzf *.tgz
@@ -248,7 +248,7 @@ jobs:
           # TODO: Refine version check by comparing current (publishing) version with latest available
           # to handle edge cases more robustly (e.g., downgrades, prereleases)
           # See: https://github.com/doctypedev/doctype/issues/70
-          PACKAGE_NAME="@doctypedev/doctype-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
+          PACKAGE_NAME="@doctypedev/core-${{ matrix.settings.platform }}-${{ matrix.settings.arch }}"
           VERSION=$(node -p "require('./package.json').version")
           PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
 

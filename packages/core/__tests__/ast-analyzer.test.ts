@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ASTAnalyzer } from '../ast-analyzer';
-import { SymbolType } from '../types';
+import { SymbolType } from '@doctypedev/core';
 import path from 'path';
 
 describe('ASTAnalyzer', () => {
@@ -26,11 +26,11 @@ describe('ASTAnalyzer', () => {
 
       expect(signatures).toHaveLength(2);
       expect(signatures[0].symbolName).toBe('add');
-      expect(signatures[0].symbolType).toBe(SymbolType.FUNCTION);
+      expect(signatures[0].symbolType).toBe(SymbolType.Function);
       expect(signatures[0].isExported).toBe(true);
 
       expect(signatures[1].symbolName).toBe('fetchData');
-      expect(signatures[1].symbolType).toBe(SymbolType.FUNCTION);
+      expect(signatures[1].symbolType).toBe(SymbolType.Function);
       expect(signatures[1].isExported).toBe(true);
     });
 
@@ -62,7 +62,7 @@ describe('ASTAnalyzer', () => {
 
       expect(signatures).toHaveLength(1);
       expect(signatures[0].symbolName).toBe('Calculator');
-      expect(signatures[0].symbolType).toBe(SymbolType.CLASS);
+      expect(signatures[0].symbolType).toBe(SymbolType.Class);
       expect(signatures[0].isExported).toBe(true);
     });
 
@@ -84,10 +84,10 @@ describe('ASTAnalyzer', () => {
 
       expect(signatures).toHaveLength(2);
       expect(signatures[0].symbolName).toBe('User');
-      expect(signatures[0].symbolType).toBe(SymbolType.INTERFACE);
+      expect(signatures[0].symbolType).toBe(SymbolType.Interface);
 
       expect(signatures[1].symbolName).toBe('ApiResponse');
-      expect(signatures[1].symbolType).toBe(SymbolType.INTERFACE);
+      expect(signatures[1].symbolType).toBe(SymbolType.Interface);
     });
 
     it('should extract exported type aliases', () => {
@@ -104,10 +104,10 @@ describe('ASTAnalyzer', () => {
 
       expect(signatures).toHaveLength(2);
       expect(signatures[0].symbolName).toBe('StringOrNumber');
-      expect(signatures[0].symbolType).toBe(SymbolType.TYPE_ALIAS);
+      expect(signatures[0].symbolType).toBe(SymbolType.TypeAlias);
 
       expect(signatures[1].symbolName).toBe('Point');
-      expect(signatures[1].symbolType).toBe(SymbolType.TYPE_ALIAS);
+      expect(signatures[1].symbolType).toBe(SymbolType.TypeAlias);
     });
 
     it('should extract exported enums', () => {
@@ -123,7 +123,7 @@ describe('ASTAnalyzer', () => {
 
       expect(signatures).toHaveLength(1);
       expect(signatures[0].symbolName).toBe('Status');
-      expect(signatures[0].symbolType).toBe(SymbolType.ENUM);
+      expect(signatures[0].symbolType).toBe(SymbolType.Enum);
     });
 
     it('should extract exported const variables', () => {
@@ -136,10 +136,10 @@ describe('ASTAnalyzer', () => {
 
       expect(signatures).toHaveLength(2);
       expect(signatures[0].symbolName).toBe('API_URL');
-      expect(signatures[0].symbolType).toBe(SymbolType.CONST);
+      expect(signatures[0].symbolType).toBe(SymbolType.Const);
 
       expect(signatures[1].symbolName).toBe('DEFAULT_TIMEOUT');
-      expect(signatures[1].symbolType).toBe(SymbolType.CONST);
+      expect(signatures[1].symbolType).toBe(SymbolType.Const);
     });
 
     it('should extract exported let/var variables', () => {
@@ -151,8 +151,8 @@ describe('ASTAnalyzer', () => {
       const signatures = analyzer.analyzeCode(code);
 
       expect(signatures).toHaveLength(2);
-      expect(signatures[0].symbolType).toBe(SymbolType.VARIABLE);
-      expect(signatures[1].symbolType).toBe(SymbolType.VARIABLE);
+      expect(signatures[0].symbolType).toBe(SymbolType.Variable);
+      expect(signatures[1].symbolType).toBe(SymbolType.Variable);
     });
 
     it('should normalize whitespace in signatures', () => {
@@ -219,12 +219,12 @@ describe('ASTAnalyzer', () => {
       expect(signatures).toHaveLength(6);
 
       const types = signatures.map(s => s.symbolType);
-      expect(types).toContain(SymbolType.FUNCTION);
-      expect(types).toContain(SymbolType.CLASS);
-      expect(types).toContain(SymbolType.INTERFACE);
-      expect(types).toContain(SymbolType.TYPE_ALIAS);
-      expect(types).toContain(SymbolType.ENUM);
-      expect(types).toContain(SymbolType.CONST);
+      expect(types).toContain(SymbolType.Function);
+      expect(types).toContain(SymbolType.Class);
+      expect(types).toContain(SymbolType.Interface);
+      expect(types).toContain(SymbolType.TypeAlias);
+      expect(types).toContain(SymbolType.Enum);
+      expect(types).toContain(SymbolType.Const);
     });
   });
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SignatureHasher } from '../signature-hasher';
-import { CodeSignature, SymbolType } from '../types';
+import { CodeSignature, SymbolType } from '@doctypedev/core';
 
 describe('SignatureHasher', () => {
   let hasher: SignatureHasher;

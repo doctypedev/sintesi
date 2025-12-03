@@ -9,7 +9,7 @@ import {
   PropertyDeclaration,
   FunctionDeclaration
 } from 'ts-morph';
-import { CodeSignature, SymbolType } from './types';
+import { CodeSignature, SymbolType } from '@doctypedev/core';
 
 /**
  * Analyzes TypeScript source files to extract code signatures
@@ -71,7 +71,7 @@ export class ASTAnalyzer {
       .filter((fn) => this.isExported(fn))
       .map((fn) => ({
         symbolName: fn.getName() || '<anonymous>',
-        symbolType: SymbolType.FUNCTION,
+        symbolType: SymbolType.Function,
         signatureText: this.normalizeFunctionSignature(fn),
         isExported: true,
       }));
@@ -83,7 +83,7 @@ export class ASTAnalyzer {
       .filter((cls) => this.isExported(cls))
       .map((cls) => ({
         symbolName: cls.getName() || '<anonymous>',
-        symbolType: SymbolType.CLASS,
+        symbolType: SymbolType.Class,
         signatureText: this.normalizeClassSignature(cls),
         isExported: true,
       }));
@@ -95,7 +95,7 @@ export class ASTAnalyzer {
       .filter((iface) => this.isExported(iface))
       .map((iface) => ({
         symbolName: iface.getName(),
-        symbolType: SymbolType.INTERFACE,
+        symbolType: SymbolType.Interface,
         signatureText: this.normalizeText(iface.getText()),
         isExported: true,
       }));
@@ -107,7 +107,7 @@ export class ASTAnalyzer {
       .filter((type) => this.isExported(type))
       .map((type) => ({
         symbolName: type.getName(),
-        symbolType: SymbolType.TYPE_ALIAS,
+        symbolType: SymbolType.TypeAlias,
         signatureText: this.normalizeText(type.getText()),
         isExported: true,
       }));
@@ -119,7 +119,7 @@ export class ASTAnalyzer {
       .filter((en) => this.isExported(en))
       .map((en) => ({
         symbolName: en.getName(),
-        symbolType: SymbolType.ENUM,
+        symbolType: SymbolType.Enum,
         signatureText: this.normalizeText(en.getText()),
         isExported: true,
       }));
@@ -139,7 +139,7 @@ export class ASTAnalyzer {
 
         signatures.push({
           symbolName: name,
-          symbolType: isConst ? SymbolType.CONST : SymbolType.VARIABLE,
+          symbolType: isConst ? SymbolType.Const : SymbolType.Variable,
           signatureText: this.normalizeText(decl.getText()),
           isExported: true,
         });

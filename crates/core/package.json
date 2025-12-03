@@ -1,8 +1,9 @@
 {
-  "name": "@doctypedev/doctype-core-build",
+  "name": "@doctypedev/core",
   "version": "0.1.0",
-  "private": true,
-  "description": "Build package for Doctype Rust core",
+  "description": "Rust-powered core types and AST analysis for Doctype",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "build": "napi build --platform --release --pipe \"prettier -w\"",
     "build:debug": "napi build --platform",

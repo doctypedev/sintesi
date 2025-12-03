@@ -1,5 +1,5 @@
 {
-  "name": "@doctypedev/doctype-darwin-arm64",
+  "name": "@doctypedev/core-darwin-arm64",
   "version": "0.3.10",
   "description": "Doctype native core for macOS ARM64",
   "main": "index.js",

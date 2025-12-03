@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { dirname } from 'path';
 import { mkdirSync } from 'fs';
-import { DoctypeMap, DoctypeMapEntry } from '../core/types';
+import { DoctypeMap, DoctypeMapEntry } from '@doctypedev/core';
 
 /**
  * Manages the doctype-map.json file

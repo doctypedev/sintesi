@@ -8,7 +8,7 @@
 import { DoctypeMapManager } from '../content';
 import { ASTAnalyzer } from '../core/ast-analyzer';
 import { SignatureHasher } from '../core/signature-hasher';
-import { CodeSignature, DoctypeMapEntry } from '../core/types';
+import { CodeSignature, DoctypeMapEntry } from '@doctypedev/core';
 import { Logger } from './logger';
 import { existsSync } from 'fs';
 import { resolve } from 'path';

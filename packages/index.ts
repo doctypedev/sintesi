@@ -7,7 +7,7 @@
 // Core AST & Drift Detection
 export { ASTAnalyzer } from './core/ast-analyzer';
 export { SignatureHasher } from './core/signature-hasher';
-export { SymbolType } from './core/types';
+export { SymbolType } from '@doctypedev/core';
 export type {
   CodeRef,
   CodeSignature,
@@ -15,7 +15,7 @@ export type {
   DocRef,
   DoctypeMapEntry,
   DoctypeMap,
-} from './core/types';
+} from '@doctypedev/core';
 
 // Content & Mapping
 export { MarkdownParser, DoctypeMapManager, ContentInjector } from './content';

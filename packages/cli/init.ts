@@ -22,7 +22,7 @@ import { ASTAnalyzer } from '../core/ast-analyzer';
 import { SignatureHasher } from '../core/signature-hasher';
 import { DoctypeMapManager } from '../content/map-manager';
 import { MarkdownAnchorInserter } from '../content/markdown-anchor-inserter';
-import { DoctypeMapEntry, SymbolType } from '../core/types';
+import { DoctypeMapEntry, SymbolType } from '@doctypedev/core';
 
 /**
  * Recursively find all TypeScript files in a directory
@@ -81,17 +81,17 @@ export function determineOutputFile(
 
   if (effectiveStrategy === 'type') {
     switch (symbolType) {
-      case SymbolType.CLASS:
+      case SymbolType.Class:
         return path.join(docsFolder, 'classes.md');
-      case SymbolType.FUNCTION:
+      case SymbolType.Function:
         return path.join(docsFolder, 'functions.md');
-      case SymbolType.INTERFACE:
+      case SymbolType.Interface:
         return path.join(docsFolder, 'interfaces.md');
-      case SymbolType.TYPE_ALIAS:
-      case SymbolType.ENUM:
+      case SymbolType.TypeAlias:
+      case SymbolType.Enum:
         return path.join(docsFolder, 'types.md');
-      case SymbolType.VARIABLE:
-      case SymbolType.CONST:
+      case SymbolType.Variable:
+      case SymbolType.Const:
         return path.join(docsFolder, 'variables.md');
       default:
         return path.join(docsFolder, 'api.md');

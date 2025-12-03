@@ -3,7 +3,7 @@ import { initCommand, determineOutputFile } from '../init';
 import { readFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { DoctypeConfig } from '../types';
-import { SymbolType } from '../../core/types';
+import { SymbolType } from '@doctypedev/core';
 
 // Mock @clack/prompts - use vi.hoisted to ensure variables are available during hoisting
 const {
@@ -596,63 +596,63 @@ describe('determineOutputFile', () => {
 
   it('should handle "mirror" strategy correctly', () => {
     // src/auth/login.ts -> docs/src/auth/login.md
-    const result = determineOutputFile('mirror', docsFolder, 'src/auth/login.ts', SymbolType.FUNCTION);
+    const result = determineOutputFile('mirror', docsFolder, 'src/auth/login.ts', SymbolType.Function);
     expect(result).toBe(join(docsFolder, 'src/auth/login.md'));
     
     // Windows style path input should still work with join
     // (Simulating what might happen if passed from a non-normalized source, though scanAndCreateAnchors normalizes it)
     // But here we test the logic of determineOutputFile itself
-    const result2 = determineOutputFile('mirror', docsFolder, 'src/utils.ts', SymbolType.CLASS);
+    const result2 = determineOutputFile('mirror', docsFolder, 'src/utils.ts', SymbolType.Class);
     expect(result2).toBe(join(docsFolder, 'src/utils.md'));
   });
 
   it('should handle "module" strategy correctly', () => {
     // src/auth/login.ts -> docs/src/auth.md
-    const result = determineOutputFile('module', docsFolder, 'src/auth/login.ts', SymbolType.FUNCTION);
+    const result = determineOutputFile('module', docsFolder, 'src/auth/login.ts', SymbolType.Function);
     expect(result).toBe(join(docsFolder, 'src/auth.md'));
 
     // src/index.ts -> docs/src.md
-    const result2 = determineOutputFile('module', docsFolder, 'src/index.ts', SymbolType.VARIABLE);
+    const result2 = determineOutputFile('module', docsFolder, 'src/index.ts', SymbolType.Variable);
     expect(result2).toBe(join(docsFolder, 'src.md'));
 
     // index.ts (root) -> docs/index.md
-    const result3 = determineOutputFile('module', docsFolder, 'index.ts', SymbolType.FUNCTION);
+    const result3 = determineOutputFile('module', docsFolder, 'index.ts', SymbolType.Function);
     expect(result3).toBe(join(docsFolder, 'index.md'));
   });
 
   it('should handle "type" strategy correctly', () => {
     // Class -> classes.md
-    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.CLASS))
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.Class))
       .toBe(join(docsFolder, 'classes.md'));
 
     // Function -> functions.md
-    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.FUNCTION))
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.Function))
       .toBe(join(docsFolder, 'functions.md'));
 
     // Interface -> interfaces.md
-    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.INTERFACE))
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.Interface))
       .toBe(join(docsFolder, 'interfaces.md'));
 
     // Type Alias -> types.md
-    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.TYPE_ALIAS))
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.TypeAlias))
       .toBe(join(docsFolder, 'types.md'));
       
     // Enum -> types.md
-    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.ENUM))
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.Enum))
       .toBe(join(docsFolder, 'types.md'));
 
     // Variable -> variables.md
-    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.VARIABLE))
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.Variable))
       .toBe(join(docsFolder, 'variables.md'));
 
     // Const -> variables.md
-    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.CONST))
+    expect(determineOutputFile('type', docsFolder, 'src/foo.ts', SymbolType.Const))
       .toBe(join(docsFolder, 'variables.md'));
   });
 
   it('should default to "mirror" strategy if undefined', () => {
     // @ts-expect-error - testing undefined strategy
-    const result = determineOutputFile(undefined, docsFolder, 'src/file.ts', SymbolType.FUNCTION);
+    const result = determineOutputFile(undefined, docsFolder, 'src/file.ts', SymbolType.Function);
     expect(result).toBe(join(docsFolder, 'src/file.md'));
   });
 });
