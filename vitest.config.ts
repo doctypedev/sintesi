@@ -5,17 +5,17 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/**/*.{test,spec}.ts'],
-    exclude: ['node_modules', 'dist'],
+    include: ['packages/**/*.{test,spec}.ts'],
+    exclude: ['node_modules', 'dist', 'crates'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
-      include: ['src/**/*.ts'],
+      include: ['packages/**/*.ts'],
       exclude: [
-        'src/**/*.d.ts',
-        'src/**/*.test.ts',
-        'src/**/*.spec.ts',
-        'src/**/__tests__/**',
+        'packages/**/*.d.ts',
+        'packages/**/*.test.ts',
+        'packages/**/*.spec.ts',
+        'packages/**/__tests__/**',
       ],
       thresholds: {
         branches: 80,
@@ -27,7 +27,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, './packages'),
     },
   },
 });

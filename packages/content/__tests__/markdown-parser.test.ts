@@ -177,7 +177,7 @@ Content`;
 
   describe('parseFile', () => {
     it('should parse a file with valid anchors', () => {
-      const anchors = parser.parseFile('src/content/__tests__/fixtures/example-docs.md');
+      const anchors = parser.parseFile('packages/content/__tests__/fixtures/example-docs.md');
 
       expect(anchors.length).toBeGreaterThan(0);
       expect(anchors.every((a) => a.id && a.codeRef)).toBe(true);

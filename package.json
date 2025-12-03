@@ -22,7 +22,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint packages --ext .ts",
     "clean": "rm -rf dist",
     "generate:sidebar": "tsx docs/scripts/generateSidebar.ts",
     "docs:dev": "npm run generate:sidebar && vitepress dev docs",
