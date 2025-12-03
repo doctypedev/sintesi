@@ -1,30 +1,40 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+// Check platform support - must be hoisted for vi.mock
+const { isNativeModuleSupported } = vi.hoisted(() => {
+  const platform = `${process.platform}-${process.arch}`;
+  return { isNativeModuleSupported: platform === 'darwin-arm64' };
+});
+
+// Mock @doctypedev/core for platforms without native module support
+vi.mock('@doctypedev/core', async () => {
+  if (isNativeModuleSupported) {
+    // On supported platforms, use the real module
+    const actual = await vi.importActual<typeof import('@doctypedev/core')>('@doctypedev/core');
+    return actual;
+  } else {
+    // On unsupported platforms, return a mock
+    return {
+      SymbolType: {
+        Function: 'Function',
+        Class: 'Class',
+        Interface: 'Interface',
+        TypeAlias: 'TypeAlias',
+        Enum: 'Enum',
+        Variable: 'Variable',
+        Const: 'Const',
+      },
+      ASTAnalyzer: vi.fn(),
+      SignatureHasher: vi.fn(),
+    };
+  }
+});
+
 import { initCommand } from '../init';
 import { determineOutputFile } from '../init-orchestrator';
 import { readFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { DoctypeConfig } from '../types';
-
-// Mock @doctypedev/core for platforms without native module support
-const platform = `${process.platform}-${process.arch}`;
-const isNativeModuleSupported = platform === 'darwin-arm64';
-
-if (!isNativeModuleSupported) {
-  vi.mock('@doctypedev/core', () => ({
-    SymbolType: {
-      Function: 'Function',
-      Class: 'Class',
-      Interface: 'Interface',
-      TypeAlias: 'TypeAlias',
-      Enum: 'Enum',
-      Variable: 'Variable',
-      Const: 'Const',
-    },
-    ASTAnalyzer: vi.fn(),
-    SignatureHasher: vi.fn(),
-  }));
-}
-
 import { SymbolType } from '@doctypedev/core';
 
 // Mock @clack/prompts - use vi.hoisted to ensure variables are available during hoisting
