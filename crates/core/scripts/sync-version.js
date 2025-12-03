@@ -39,4 +39,29 @@ for (const platform of platforms) {
   }
 }
 
-console.log(`\n✨ Updated ${updated} package(s)`);
+// Update optionalDependencies in main package.json
+console.log(`\n📝 Updating optionalDependencies in main package.json...`);
+
+let mainUpdated = false;
+if (mainPackage.optionalDependencies) {
+  for (const [depName, depVersion] of Object.entries(mainPackage.optionalDependencies)) {
+    // Only update @doctypedev/core-* packages
+    if (depName.startsWith('@doctypedev/core-')) {
+      const expectedVersion = `^${version}`;
+      if (depVersion !== expectedVersion) {
+        mainPackage.optionalDependencies[depName] = expectedVersion;
+        console.log(`✅ Updated ${depName}: ${depVersion} → ${expectedVersion}`);
+        mainUpdated = true;
+      } else {
+        console.log(`⏭️  ${depName}: already at ${expectedVersion}`);
+      }
+    }
+  }
+
+  if (mainUpdated) {
+    fs.writeFileSync(mainPackagePath, JSON.stringify(mainPackage, null, 2) + '\n');
+    console.log(`✅ Main package.json updated`);
+  }
+}
+
+console.log(`\n✨ Updated ${updated} platform package(s)${mainUpdated ? ' and main package.json' : ''}`);

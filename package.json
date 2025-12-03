@@ -47,7 +47,7 @@
     "yargs": "^17.7.2"
   },
   "optionalDependencies": {
-    "@doctypedev/core-darwin-arm64": "^0.3.10"
+    "@doctypedev/core-darwin-arm64": "^0.3.21"
   },
   "devDependencies": {
     "@doctypedev/core": "file:./crates/core",
