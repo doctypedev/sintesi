@@ -45,56 +45,58 @@ function getPlatformPackageName(): string {
  * Load the native module
  */
 function loadNativeModule(): any {
-  // Test mode: return mock for unsupported platforms
-  if (process.env.VITEST || process.env.NODE_ENV === 'test') {
-    const platform = `${os.platform()}-${os.arch()}`;
-    if (!PLATFORM_PACKAGES[platform]) {
-      // Return a mock object for testing on unsupported platforms
-      return {
-        SymbolType: {
-          Function: 'Function',
-          Class: 'Class',
-          Interface: 'Interface',
-          TypeAlias: 'TypeAlias',
-          Enum: 'Enum',
-          Variable: 'Variable',
-          Const: 'Const',
-        },
-        discoverFiles: () => ({
-          markdownFiles: [],
-          sourceFiles: [],
-          totalFiles: 0,
-          errors: 0,
-        }),
-        helloWorld: () => 'mock hello',
-        getVersion: () => '0.0.0-mock',
-        AstAnalyzer: class MockAstAnalyzer {
-          analyzeFile() { return 'mock'; }
-          getSymbols() { return []; }
-        },
-        // Markdown extraction mocks
-        extractAnchors: () => ({
-          anchors: [],
-          anchorCount: 0,
-          errors: [],
-        }),
-        validateMarkdownAnchors: () => [],
-        parseCodeRef: (ref: string) => {
-          const [filePath, symbolName] = ref.split('#');
-          return { filePath, symbolName };
-        },
-      };
-    }
-  }
+  const platform = `${os.platform()}-${os.arch()}`;
+  const isSupported = !!PLATFORM_PACKAGES[platform];
+  const isTestMode = process.env.VITEST || process.env.NODE_ENV === 'test';
 
-  // Development mode: try to load from local crates/core first
+  // Development/Test mode: try to load from local crates/core first
+  // This allows CI to build and test the native module on any platform
   if (process.env.NODE_ENV !== 'production') {
     try {
-      const localPath = path.join(__dirname, '../../crates/core');
+      // __dirname is packages/core/dist, so we need to go up 3 levels to reach crates/core
+      const localPath = path.join(__dirname, '../../../crates/core');
       return require(localPath);
     } catch (err) {
+      // If local load fails in test mode on unsupported platform, return mock
+      if (!isSupported && isTestMode) {
+        // Return a mock object for testing on unsupported platforms without local build
+        return {
+          SymbolType: {
+            Function: 'Function',
+            Class: 'Class',
+            Interface: 'Interface',
+            TypeAlias: 'TypeAlias',
+            Enum: 'Enum',
+            Variable: 'Variable',
+            Const: 'Const',
+          },
+          discoverFiles: () => ({
+            markdownFiles: [],
+            sourceFiles: [],
+            totalFiles: 0,
+            errors: 0,
+          }),
+          helloWorld: () => 'mock hello',
+          getVersion: () => '0.0.0-mock',
+          AstAnalyzer: class MockAstAnalyzer {
+            analyzeFile() { return []; }
+            analyzeCode() { return []; }
+            analyzeWithErrors() { return { signatures: [], errors: [] }; }
+          },
+          // Markdown extraction mocks
+          extractAnchors: () => ({
+            anchors: [],
+            anchorCount: 0,
+            errors: [],
+          }),
+          validateMarkdownAnchors: () => [],
+          parseCodeRef: (ref: string) => {
+            const [filePath, symbolName] = ref.split('#');
+            return { filePath, symbolName };
+          },
+        };
+      }
       // Fall through to platform-specific package
-      // This is expected when running tests or in CI without local build
     }
   }
 

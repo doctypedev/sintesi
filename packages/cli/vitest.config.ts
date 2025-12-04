@@ -11,7 +11,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@doctypedev/core': path.resolve(__dirname, '../core/index.ts'),
+      '@doctypedev/core': path.resolve(__dirname, '../core/dist/index.js'),
     },
   },
 });

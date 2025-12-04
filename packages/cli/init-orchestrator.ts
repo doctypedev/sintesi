@@ -12,7 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ASTAnalyzer, SignatureHasher, SymbolType, discoverFiles } from '@doctypedev/core';
+import { AstAnalyzer, SignatureHasher, SymbolType, discoverFiles } from '@doctypedev/core';
 import { DoctypeMapManager } from '../content/map-manager';
 import { MarkdownAnchorInserter } from '../content/markdown-anchor-inserter';
 import type { DoctypeMapEntry, SymbolTypeValue } from '@doctypedev/core';
@@ -151,7 +151,7 @@ export async function scanAndCreateAnchors(
   }
 
   // Initialize modules
-  const analyzer = new ASTAnalyzer();
+  const analyzer = new AstAnalyzer();
   const hasher = new SignatureHasher();
   const mapManager = new DoctypeMapManager(mapFilePath);
   const anchorInserter = new MarkdownAnchorInserter();

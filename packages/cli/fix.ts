@@ -9,7 +9,7 @@
 
 import { DoctypeMapManager } from '../content/map-manager';
 import { ContentInjector } from '../content/content-injector';
-import { ASTAnalyzer, SignatureHasher } from '@doctypedev/core';
+import { AstAnalyzer, SignatureHasher } from '@doctypedev/core';
 import { Logger } from './logger';
 import { FixResult, FixOptions, FixDetail } from './types';
 import { detectDrift } from './drift-detector';
@@ -97,7 +97,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
     : dirname(mapPath);
 
   // Detect drift using centralized logic
-  const analyzer = new ASTAnalyzer();
+  const analyzer = new AstAnalyzer();
   const hasher = new SignatureHasher();
   const detectedDrifts = detectDrift(mapManager, analyzer, hasher, {
     logger,

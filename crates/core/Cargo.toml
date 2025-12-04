@@ -22,8 +22,12 @@ sha2 = "0.10"
 pulldown-cmark = "0.12"
 regex = "1"
 
-# Future dependencies:
-# tree-sitter = "0.20"
+# Oxc for TypeScript/JavaScript AST parsing
+oxc_parser = "0.39"
+oxc_ast = "0.39"
+oxc_span = "0.39"
+oxc_allocator = "0.39"
+oxc_semantic = "0.39"
 
 [build-dependencies]
 napi-build = "2"

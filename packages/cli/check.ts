@@ -5,7 +5,7 @@
  */
 
 import { DoctypeMapManager } from '../content/map-manager';
-import { ASTAnalyzer, SignatureHasher } from '@doctypedev/core';
+import { AstAnalyzer, SignatureHasher } from '@doctypedev/core';
 import { Logger } from './logger';
 import { CheckResult, CheckOptions, DriftDetail } from './types';
 import { detectDrift } from './drift-detector';
@@ -89,7 +89,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     : dirname(mapPath);
 
   // Analyze current code and detect drift using centralized logic
-  const analyzer = new ASTAnalyzer();
+  const analyzer = new AstAnalyzer();
   const hasher = new SignatureHasher();
   const detectedDrifts = detectDrift(mapManager, analyzer, hasher, {
     logger,

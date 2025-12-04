@@ -4,8 +4,13 @@
  * This module exports both TypeScript implementations and Rust native bindings.
  */
 
+// Import Rust analyzer
+import { AstAnalyzer as RustAstAnalyzer } from './native-loader';
+
+// Re-export with TypeScript-compatible name for backward compatibility
+export { RustAstAnalyzer as ASTAnalyzer };
+
 // TypeScript implementations
-export { ASTAnalyzer } from './ast-analyzer';
 export { SignatureHasher } from './signature-hasher';
 
 // Rust native bindings (loaded via platform-specific package)
@@ -14,6 +19,7 @@ export {
   discoverFiles,
   helloWorld,
   getVersion,
+  AstAnalyzer, // Also export with Rust name
   // Markdown extraction (Rust-powered)
   extractAnchors,
   validateMarkdownAnchors,

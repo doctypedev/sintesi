@@ -6,7 +6,7 @@
  */
 
 import { DoctypeMapManager } from '../content';
-import { ASTAnalyzer, SignatureHasher, CodeSignature, DoctypeMapEntry } from '@doctypedev/core';
+import { SignatureHasher, CodeSignature, DoctypeMapEntry, AstAnalyzer } from '@doctypedev/core';
 import { Logger } from './logger';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
@@ -51,7 +51,7 @@ export interface DriftDetectionOptions {
  */
 export function detectDrift(
   mapManager: DoctypeMapManager,
-  analyzer: ASTAnalyzer,
+  analyzer: InstanceType<typeof AstAnalyzer>,
   hasher: SignatureHasher,
   options: DriftDetectionOptions = {}
 ): DriftInfo[] {
@@ -76,7 +76,7 @@ export function detectDrift(
 
       // Analyze the code file
       const signatures = analyzer.analyzeFile(codeFilePath);
-      const currentSignature = signatures.find((sig) => sig.symbolName === entry.codeRef.symbolName);
+      const currentSignature = signatures.find((sig: CodeSignature) => sig.symbolName === entry.codeRef.symbolName);
 
       if (!currentSignature) {
         logger?.warn(

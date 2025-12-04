@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { fixCommand } from '../fix';
 import { DoctypeMapManager } from '../../content/map-manager';
-import { ASTAnalyzer } from '../../core/ast-analyzer';
-import { SignatureHasher } from '../../core/signature-hasher';
+import { AstAnalyzer, SignatureHasher } from '@doctypedev/core';
 import { writeFileSync, unlinkSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -46,7 +45,7 @@ Old documentation
     const oldCode = `export function testFunc(x: number): number {
   return x;
 }`;
-    const analyzer = new ASTAnalyzer();
+    const analyzer = new AstAnalyzer();
     const hasher = new SignatureHasher();
     const oldSignatures = analyzer.analyzeCode(oldCode);
     const oldSignature = oldSignatures.find((s) => s.symbolName === 'testFunc');
@@ -148,7 +147,7 @@ Old documentation
 
   it('should handle no drift detected', async () => {
     // Update map to match current code
-    const analyzer = new ASTAnalyzer();
+    const analyzer = new AstAnalyzer();
     const hasher = new SignatureHasher();
     const signatures = analyzer.analyzeFile(testCodeFile);
     const signature = signatures.find((s) => s.symbolName === 'testFunc');
@@ -185,7 +184,7 @@ Old documentation
     expect(entry).toBeDefined();
 
     // Verify hash was updated
-    const analyzer = new ASTAnalyzer();
+    const analyzer = new AstAnalyzer();
     const hasher = new SignatureHasher();
     const signatures = analyzer.analyzeFile(testCodeFile);
     const signature = signatures.find((s) => s.symbolName === 'testFunc');
