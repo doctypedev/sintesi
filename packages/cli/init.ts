@@ -26,6 +26,7 @@ const AI_PROVIDERS: { value: AIProvider; label: string; hint?: string }[] = [
   { value: 'mistral', label: 'Mistral AI', hint: 'MISTRAL_API_KEY' },
 ];
 import { scanAndCreateAnchors, OutputStrategy } from './init-orchestrator';
+import { AIAgent } from '../ai';
 
 
 /**
@@ -68,6 +69,21 @@ function getApiKeyEnvVarName(provider: AIProvider): string {
       return 'MISTRAL_API_KEY';
     default:
       return 'OPENAI_API_KEY'; // Default to OpenAI
+  }
+}
+
+function getDefaultModel(provider: AIProvider): string {
+  switch (provider) {
+    case 'openai':
+      return 'gpt-4o-mini';
+    case 'gemini':
+      return 'gemini-1.5-flash-8b';
+    case 'anthropic':
+      return 'claude-3-5-haiku-20241022';
+    case 'mistral':
+      return 'ministral-8b-latest';
+    default:
+      return 'gpt-4o-mini';
   }
 }
 
@@ -297,6 +313,22 @@ export async function initCommand(
     const s2 = p.spinner();
     s2.start('Scanning codebase and creating documentation anchors...');
 
+    let aiAgent: AIAgent | undefined;
+    if (apiKey && config.aiProvider) {
+      try {
+        aiAgent = new AIAgent({
+          model: {
+            provider: config.aiProvider,
+            modelId: getDefaultModel(config.aiProvider),
+            apiKey: apiKey,
+          },
+          debug: false,
+        });
+      } catch (error) {
+        // Ignore AI init errors, just proceed without it
+      }
+    }
+
     try {
       const result = await scanAndCreateAnchors(
         {
@@ -304,6 +336,7 @@ export async function initCommand(
           docsFolder: config.docsFolder,
           mapFile: config.mapFile,
           outputStrategy: config.outputStrategy,
+          aiAgent: aiAgent,
         },
         (message) => s2.message(message)
       );

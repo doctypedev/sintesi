@@ -166,3 +166,6 @@ crates/core/*.node
 # napi-rs generated files
 crates/core/index.js
 crates/core/index.d.ts
+
+# Docs generated file
+/docs/.vitepress/sidebar-auto.ts

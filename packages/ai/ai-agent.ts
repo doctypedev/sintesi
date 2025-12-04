@@ -10,7 +10,7 @@ import {
   IAIProvider,
   AIProviderError,
 } from './types';
-import { OpenAIProvider } from './providers/openai-provider';
+import { VercelAIProvider } from './providers/vercel-ai-provider';
 import { CodeSignature } from '../core/native-loader';
 
 /**
@@ -33,19 +33,10 @@ export class AIAgent {
    * Create provider based on configuration
    */
   private createProvider(): IAIProvider {
-    const { model, timeout, debug } = this.config;
+    const { model, debug } = this.config;
 
-    switch (model.provider) {
-      case 'openai':
-        return new OpenAIProvider(model, timeout, debug);
-
-      case 'gemini':
-        // TODO: Implement Gemini provider in future
-        throw new Error('Gemini provider not yet implemented. Please use OpenAI for now.');
-
-      default:
-        throw new Error(`Unsupported provider: ${model.provider}`);
-    }
+    // Use Vercel AI SDK for all supported providers
+    return new VercelAIProvider(model, debug);
   }
 
   /**
@@ -86,6 +77,40 @@ export class AIAgent {
 
     const response = await this.generateDocumentation(request);
     return response.content;
+  }
+
+  /**
+   * Generate documentation for a batch of symbols
+   */
+  async generateBatch(
+    items: Array<{ symbolName: string; signatureText: string }>
+  ): Promise<Array<{ symbolName: string; content: string }>> {
+    this.log(`Generating batch documentation for ${items.length} items`);
+    
+    // We assume the provider supports batch generation if it's our VercelAIProvider
+    // Ideally we'd update the IAIProvider interface, but for now we cast
+    if (typeof (this.provider as any).generateBatchDocumentation === 'function') {
+        return this.executeWithRetry(() => 
+            (this.provider as any).generateBatchDocumentation(items)
+        );
+    }
+    
+    // Fallback: sequential generation if provider doesn't support batching
+    this.log('Provider does not support batching, falling back to sequential generation');
+    const results = [];
+    for (const item of items) {
+        try {
+            const content = await this.generateInitial(
+                item.symbolName, 
+                { signatureText: item.signatureText } as CodeSignature
+            );
+            results.push({ symbolName: item.symbolName, content });
+        } catch (error) {
+            // Log and continue, omitting this item
+            this.log(`Failed to generate for ${item.symbolName}`, error);
+        }
+    }
+    return results;
   }
 
   /**
@@ -234,24 +259,64 @@ export function createAgentFromEnv(
     debug?: boolean;
   } = {}
 ): AIAgent {
-  // Check for OpenAI API key
-  const openaiKey = process.env.OPENAI_API_KEY;
-
-  if (openaiKey) {
-    return createOpenAIAgent(
-      openaiKey,
-      options.modelId || 'gpt-4',
-      options
-    );
+  // Check for supported API keys
+  if (process.env.OPENAI_API_KEY) {
+    return new AIAgent({
+      model: {
+        provider: 'openai',
+        modelId: options.modelId || 'gpt-4o-mini', // Default to gpt-4o-mini
+        apiKey: process.env.OPENAI_API_KEY,
+        maxTokens: options.maxTokens,
+        temperature: options.temperature,
+      },
+      timeout: options.timeout,
+      debug: options.debug,
+    });
   }
 
-  // Check for Gemini API key (future)
-  const geminiKey = process.env.GEMINI_API_KEY;
-  if (geminiKey) {
-    throw new Error('Gemini provider not yet implemented. Please use OPENAI_API_KEY.');
+  if (process.env.GEMINI_API_KEY) {
+    return new AIAgent({
+      model: {
+        provider: 'gemini',
+        modelId: options.modelId || 'gemini-1.5-flash-8b',
+        apiKey: process.env.GEMINI_API_KEY,
+        maxTokens: options.maxTokens,
+        temperature: options.temperature,
+      },
+      timeout: options.timeout,
+      debug: options.debug,
+    });
+  }
+
+  if (process.env.ANTHROPIC_API_KEY) {
+    return new AIAgent({
+      model: {
+        provider: 'anthropic',
+        modelId: options.modelId || 'claude-3-5-haiku-20241022',
+        apiKey: process.env.ANTHROPIC_API_KEY,
+        maxTokens: options.maxTokens,
+        temperature: options.temperature,
+      },
+      timeout: options.timeout,
+      debug: options.debug,
+    });
+  }
+
+  if (process.env.MISTRAL_API_KEY) {
+    return new AIAgent({
+      model: {
+        provider: 'mistral',
+        modelId: options.modelId || 'ministral-8b-latest',
+        apiKey: process.env.MISTRAL_API_KEY,
+        maxTokens: options.maxTokens,
+        temperature: options.temperature,
+      },
+      timeout: options.timeout,
+      debug: options.debug,
+    });
   }
 
   throw new Error(
-    'No API key found. Please set OPENAI_API_KEY or GEMINI_API_KEY environment variable.'
+    'No API key found. Please set OPENAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, or MISTRAL_API_KEY environment variable.'
   );
 }

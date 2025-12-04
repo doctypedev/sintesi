@@ -1,9 +1,27 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fixCommand } from '../fix';
 import { DoctypeMapManager } from '../../content/map-manager';
 import { AstAnalyzer } from '@doctypedev/core';
 import { writeFileSync, unlinkSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
+
+// Mock the AI module to avoid dependency issues and prevent real AI calls
+vi.mock('../../ai', () => {
+  return {
+    createAgentFromEnv: (): any => ({
+      validateConnection: (): Promise<boolean> => Promise.resolve(true),
+      generateFromDrift: (): Promise<string> => Promise.resolve('**testFunc**\n\nGenerated documentation'),
+      generateInitial: (): Promise<string> => Promise.resolve('**testFunc**\n\nGenerated documentation'),
+      getProvider: (): string => 'mock-provider',
+    }),
+    AIAgent: class {
+      validateConnection(): Promise<boolean> { return Promise.resolve(true); }
+      generateFromDrift(): Promise<string> { return Promise.resolve('**testFunc**\n\nGenerated documentation'); }
+      generateInitial(): Promise<string> { return Promise.resolve('**testFunc**\n\nGenerated documentation'); }
+      getProvider(): string { return 'mock-provider'; }
+    }
+  };
+});
 
 describe('CLI: fix command', () => {
   let originalCwd: string;
@@ -201,6 +219,7 @@ Old documentation
       map: testMapPath,
       verbose: false,
       dryRun: false,
+      noAI: true, // Force placeholder generation
     });
 
     expect(result.fixes[0].newContent).toContain('testFunc');

@@ -1,11 +1,10 @@
 /**
  * AI Agent module
  *
- * Provides AI-powered documentation generation using OpenAI or Gemini APIs
+ * Provides AI-powered documentation generation using OpenAI, Gemini, Anthropic or Mistral APIs
  */
 
 export * from './types';
 export * from './ai-agent';
 export * from './prompt-builder';
-export * from './providers/base-provider';
-export * from './providers/openai-provider';
+export * from './providers/vercel-ai-provider';

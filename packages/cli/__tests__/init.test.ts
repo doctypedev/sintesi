@@ -6,6 +6,17 @@ import { join, resolve } from 'path';
 import { DoctypeConfig } from '../types';
 import { SymbolType } from '@doctypedev/core';
 
+// Mock the AI module to avoid dependency issues
+vi.mock('../../ai', () => {
+  return {
+    AIAgent: class {
+      constructor(_config: any) {}
+      generateInitial(): Promise<string> { return Promise.resolve('AI Generated Content'); }
+      generateBatch(): Promise<any[]> { return Promise.resolve([]); }
+    }
+  };
+});
+
 // Mock @clack/prompts - use vi.hoisted to ensure variables are available during hoisting
 const {
   mockIntro,

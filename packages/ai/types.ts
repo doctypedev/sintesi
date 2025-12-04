@@ -7,7 +7,7 @@ import { CodeSignature } from '../core/native-loader';
 /**
  * Supported AI providers
  */
-export type AIProvider = 'openai' | 'gemini';
+export type AIProvider = 'openai' | 'gemini' | 'anthropic' | 'mistral';
 
 /**
  * AI model configuration

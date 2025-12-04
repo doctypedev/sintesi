@@ -15,7 +15,8 @@ import * as path from 'path';
 import { AstAnalyzer, SymbolType, discoverFiles } from '@doctypedev/core';
 import { DoctypeMapManager } from '../content/map-manager';
 import { MarkdownAnchorInserter } from '../content/markdown-anchor-inserter';
-import type { DoctypeMapEntry, SymbolTypeValue } from '@doctypedev/core';
+import type { DoctypeMapEntry, SymbolTypeValue, CodeSignature } from '@doctypedev/core';
+import { AIAgent } from '../ai';
 
 /**
  * Output strategy for documentation files
@@ -30,6 +31,7 @@ export interface InitConfig {
   docsFolder: string;
   mapFile: string;
   outputStrategy?: OutputStrategy;
+  aiAgent?: AIAgent;
 }
 
 /**
@@ -116,6 +118,30 @@ function generateMarkdownTitle(docPath: string): string {
 }
 
 /**
+ * Helper function to limit concurrency
+ */
+async function pMap<T, R>(
+    items: T[],
+    mapper: (item: T) => Promise<R>,
+    concurrency: number
+): Promise<R[]> {
+    const results: R[] = new Array(items.length);
+    let index = 0;
+    const execThread = async (): Promise<void> => {
+        while (index < items.length) {
+            const curIndex = index++;
+            results[curIndex] = await mapper(items[curIndex]);
+        }
+    };
+    const threads = [];
+    for (let i = 0; i < concurrency; i++) {
+        threads.push(execThread());
+    }
+    await Promise.all(threads);
+    return results;
+}
+
+/**
  * Scan codebase and create documentation anchors
  *
  * This is the core orchestration function that:
@@ -163,7 +189,18 @@ export async function scanAndCreateAnchors(
     maxDepth: undefined, // Unlimited depth
   });
 
-  const tsFiles = discoveryResult.sourceFiles;
+  const tsFiles = discoveryResult.sourceFiles.filter((file: string) => {
+    const relativeToRoot = path.relative(projectRoot, file);
+    const relativeDocs = path.relative(projectRoot, docsFolder);
+    
+    // Exclude files inside docs folder
+    if (relativeToRoot.startsWith(relativeDocs)) {
+        return false;
+    }
+    
+    return true;
+  });
+  
   result.totalFiles = tsFiles.length;
 
   if (tsFiles.length === 0) {
@@ -181,6 +218,7 @@ export async function scanAndCreateAnchors(
     signatureText: string;
     hash: string;
     targetDocFile: string;
+    originalSignature: CodeSignature;
   }> = [];
 
   for (const tsFile of tsFiles) {
@@ -214,6 +252,7 @@ export async function scanAndCreateAnchors(
             signatureText: signature.signatureText,
             hash: hash,
             targetDocFile,
+            originalSignature: signature,
           });
         }
       }
@@ -242,7 +281,80 @@ export async function scanAndCreateAnchors(
     symbolsByDoc.get(sym.targetDocFile)!.push(sym);
   }
 
-  // Process each document file
+  // 1. Identify all missing symbols to batch AI processing
+  const missingSymbols: typeof symbolsToDocument = [];
+  
+  // To avoid re-reading files later, we might cache content, but files are modified in loop.
+  // However, anchor insertion is sequential per file.
+  // We only need to know which symbols need documentation.
+  
+  // First pass: Check what's missing
+  for (const [docPath, symbols] of symbolsByDoc.entries()) {
+      let docContent = '';
+      if (fs.existsSync(docPath)) {
+          docContent = fs.readFileSync(docPath, 'utf-8');
+      } else {
+          // New file - all symbols are missing
+          missingSymbols.push(...symbols);
+          continue;
+      }
+      
+      const existingCodeRefs = new Set(anchorInserter.getExistingCodeRefs(docContent));
+      
+      for (const symbol of symbols) {
+          const codeRef = `${symbol.filePath}#${symbol.symbolName}`;
+          if (!existingCodeRefs.has(codeRef)) {
+              missingSymbols.push(symbol);
+          }
+      }
+  }
+
+  // 2. Generate AI Content in Batches
+  const generatedContentMap = new Map<string, string>();
+  
+  if (config.aiAgent && missingSymbols.length > 0) {
+      onProgress?.(`Generating documentation for ${missingSymbols.length} symbols...`);
+      
+      const BATCH_SIZE = 10;
+      const BATCH_CONCURRENCY = 5; // Process 5 batches in parallel
+      const chunks = [];
+      
+      for (let i = 0; i < missingSymbols.length; i += BATCH_SIZE) {
+          chunks.push(missingSymbols.slice(i, i + BATCH_SIZE));
+      }
+      
+      let completedBatches = 0;
+
+      await pMap(chunks, async (chunk) => {
+          try {
+              const batchItems = chunk.map(s => ({
+                  symbolName: s.symbolName,
+                  signatureText: s.signatureText
+              }));
+              
+              const results = await config.aiAgent!.generateBatch(batchItems);
+              
+              results.forEach(res => {
+                  const originalSymbol = chunk.find(s => s.symbolName === res.symbolName);
+                  if (originalSymbol) {
+                      const codeRef = `${originalSymbol.filePath}#${originalSymbol.symbolName}`;
+                      generatedContentMap.set(codeRef, res.content);
+                  }
+              });
+
+              completedBatches++;
+              onProgress?.(`Processed batch ${completedBatches}/${chunks.length} (${generatedContentMap.size}/${missingSymbols.length} symbols done)`);
+              
+          } catch (error) {
+              // Log and continue - this batch failed, will use placeholders
+              completedBatches++; // still count as processed (though failed)
+              // const msg = error instanceof Error ? error.message : String(error);
+              // onProgress?.(`Batch failed: ${msg}`);
+          }
+      }, BATCH_CONCURRENCY);
+  }
+
+  // 3. Process files and insert content
   for (const [docPath, symbols] of symbolsByDoc.entries()) {
     let docContent = '';
     let isNewFile = false;
@@ -273,9 +385,18 @@ export async function scanAndCreateAnchors(
         continue;
       }
 
+      let content = 'TODO: Add documentation for this symbol';
+      
+      // Check if we have pre-generated content
+      if (generatedContentMap.has(codeRef)) {
+          content = generatedContentMap.get(codeRef)!;
+      }
+
+      const normalizedContent = content.trim();
+
       const insertResult = anchorInserter.insertIntoContent(docContent, codeRef, {
         createSection: true,
-        placeholder: 'TODO: Add documentation for this symbol',
+        placeholder: normalizedContent,
       });
 
       if (insertResult.success) {
@@ -295,9 +416,16 @@ export async function scanAndCreateAnchors(
             startLine: insertResult.location.startLine,
             endLine: insertResult.location.endLine,
           },
-          originalMarkdownContent: `<!-- TODO: Add documentation for this symbol -->`,
+          originalMarkdownContent: `<!-- ${normalizedContent.substring(0, 50).replace(/\n/g, ' ')}... -->`, // Approximate original content for drift detection context
           lastUpdated: Date.now(),
         };
+
+        // Store full generated content if AI was used/available
+        if (generatedContentMap.has(codeRef)) {
+            mapEntry.originalMarkdownContent = normalizedContent;
+        } else {
+            mapEntry.originalMarkdownContent = `<!-- TODO: Add documentation for this symbol -->`;
+        }
 
         mapManager.addEntry(mapEntry);
         result.anchorsCreated++;

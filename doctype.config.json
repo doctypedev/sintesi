@@ -2,5 +2,7 @@
   "projectName": "doctype",
   "projectRoot": ".",
   "docsFolder": "./docs",
-  "mapFile": "doctype-map.json"
+  "mapFile": "doctype-map.json",
+  "outputStrategy": "mirror",
+  "aiProvider": "openai"
 }

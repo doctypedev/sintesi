@@ -41,13 +41,20 @@
   "author": "doctypedev",
   "license": "MIT",
   "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.53",
+    "@ai-sdk/google": "^2.0.44",
+    "@ai-sdk/mistral": "^2.0.25",
+    "@ai-sdk/openai": "^2.0.77",
+    "@ai-sdk/provider": "^2.0.0",
     "@clack/prompts": "^0.11.0",
     "@doctypedev/core": "workspace:*",
     "@types/uuid": "^10.0.0",
+    "ai": "^5.0.106",
     "dotenv": "^17.2.3",
     "ts-morph": "^21.0.1",
     "uuid": "^13.0.0",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",

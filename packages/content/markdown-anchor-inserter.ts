@@ -156,7 +156,7 @@ export class MarkdownAnchorInserter {
       `### ${symbolName}`,
       '',
       `<!-- doctype:start id="${anchorId}" code_ref="${codeRef}" -->`,
-      `<!-- ${placeholder} -->`,
+      `${placeholder}`,
       `<!-- doctype:end id="${anchorId}" -->`,
       '',
     ];
