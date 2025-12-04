@@ -12,10 +12,10 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ASTAnalyzer, SignatureHasher, SymbolType, discoverFiles } from '../core';
+import { ASTAnalyzer, SignatureHasher, SymbolType, discoverFiles } from '@doctypedev/core';
 import { DoctypeMapManager } from '../content/map-manager';
 import { MarkdownAnchorInserter } from '../content/markdown-anchor-inserter';
-import type { DoctypeMapEntry, SymbolTypeValue } from '../core';
+import type { DoctypeMapEntry, SymbolTypeValue } from '@doctypedev/core';
 
 /**
  * Output strategy for documentation files

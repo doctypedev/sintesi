@@ -14,6 +14,10 @@ export {
   discoverFiles,
   helloWorld,
   getVersion,
+  // Markdown extraction (Rust-powered)
+  extractAnchors,
+  validateMarkdownAnchors,
+  parseCodeRef,
 } from './native-loader';
 
 export type {
@@ -26,4 +30,8 @@ export type {
   FileDiscoveryResult,
   FileDiscoveryOptions,
   SymbolTypeValue,
+  // Markdown extraction types
+  DoctypeAnchor,
+  ExtractionResult,
+  CodeRefParts,
 } from './native-loader';

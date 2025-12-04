@@ -159,3 +159,115 @@ export declare class AstAnalyzer {
   /** Get a list of exported symbols from a file (placeholder) */
   getSymbols(filePath: string): Array<string>;
 }
+/** NAPI-compatible doctype anchor structure */
+export interface DoctypeAnchor {
+  /** Unique anchor ID */
+  id: string;
+  /** Code reference (e.g., "src/auth.ts#login") */
+  codeRef?: string;
+  /** File path where anchor was found */
+  filePath: string;
+  /** Start line number (0-indexed) */
+  startLine: number;
+  /** End line number (0-indexed) */
+  endLine: number;
+  /** Content between anchor tags */
+  content: string;
+}
+/** NAPI-compatible extraction result */
+export interface ExtractionResult {
+  /** Map of anchor ID to anchor data (as a flat array for NAPI compatibility) */
+  anchors: Array<DoctypeAnchor>;
+  /** Number of anchors found */
+  anchorCount: number;
+  /** Errors encountered during extraction */
+  errors: Array<string>;
+}
+/**
+ * Extract doctype anchors from markdown content
+ *
+ * # Arguments
+ * * `file_path` - Path to the markdown file (for reference)
+ * * `content` - Markdown content to parse
+ *
+ * # Returns
+ * ExtractionResult with all found anchors and any errors
+ *
+ * # Example (Node.js)
+ * ```javascript
+ * const { extractAnchors } = require('@doctypedev/core');
+ *
+ * const content = fs.readFileSync('docs/api.md', 'utf-8');
+ * const result = extractAnchors('docs/api.md', content);
+ *
+ * console.log('Found', result.anchorCount, 'anchors');
+ *
+ * for (const anchor of result.anchors) {
+ *   console.log('Anchor:', anchor.id);
+ *   console.log('  Code ref:', anchor.codeRef);
+ *   console.log('  Lines:', anchor.startLine, '-', anchor.endLine);
+ * }
+ *
+ * if (result.errors.length > 0) {
+ *   console.error('Errors:', result.errors);
+ * }
+ * ```
+ */
+export declare function extractAnchors(
+  filePath: string,
+  content: string,
+): ExtractionResult;
+/**
+ * Validate markdown content for doctype anchors
+ *
+ * This performs validation without extracting content, making it faster
+ * for checking if markdown is valid.
+ *
+ * # Arguments
+ * * `content` - Markdown content to validate
+ *
+ * # Returns
+ * Array of validation error messages, empty if valid
+ *
+ * # Example (Node.js)
+ * ```javascript
+ * const { validateMarkdownAnchors } = require('@doctypedev/core');
+ *
+ * const content = fs.readFileSync('docs/api.md', 'utf-8');
+ * const errors = validateMarkdownAnchors(content);
+ *
+ * if (errors.length === 0) {
+ *   console.log('✓ All anchors are valid');
+ * } else {
+ *   console.error('⚠ Validation errors:');
+ *   errors.forEach(err => console.error('  -', err));
+ * }
+ * ```
+ */
+export declare function validateMarkdownAnchors(content: string): Array<string>;
+/**
+ * Parse a code_ref string into file path and symbol name
+ *
+ * # Arguments
+ * * `code_ref` - Code reference string (format: "file_path#symbol_name")
+ *
+ * # Returns
+ * Object with filePath and symbolName properties
+ *
+ * # Throws
+ * Error if the code_ref format is invalid
+ *
+ * # Example (Node.js)
+ * ```javascript
+ * const { parseCodeRef } = require('@doctypedev/core');
+ *
+ * const { filePath, symbolName } = parseCodeRef('src/auth.ts#login');
+ * console.log('File:', filePath);    // "src/auth.ts"
+ * console.log('Symbol:', symbolName); // "login"
+ * ```
+ */
+export interface CodeRefParts {
+  filePath: string;
+  symbolName: string;
+}
+export declare function parseCodeRef(codeRef: string): CodeRefParts;
