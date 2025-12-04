@@ -64,10 +64,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # NPM_TOKEN not needed for trusted publishing (OIDC)
 
+  check-native-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      native_changed: ${{ steps.filter.outputs.native }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # Check changes with the base branch (main)
+          base: main
+          filters: |
+            native:
+              - 'crates/**'
+
   release-native:
     name: Release Native (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
-    needs: release
-    if: needs.release.outputs.published == 'true'
+    needs: [release, check-native-changes]
+    if: needs.release.outputs.published == 'true' && needs.check-native-changes.outputs.native_changed == 'true'
     runs-on: ${{ matrix.settings.host }}
     strategy:
       fail-fast: false
