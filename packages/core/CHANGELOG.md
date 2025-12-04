@@ -1,5 +1,11 @@
 # @doctypedev/core
 
+## 0.4.2
+
+### Patch Changes
+
+- f314c60: Fix deprecated optional dependency
+
 ## 0.4.1
 
 ### Patch Changes
