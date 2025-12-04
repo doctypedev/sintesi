@@ -1,4 +1,5 @@
 ---
+"@doctypedev/doctype": patch
 "@doctypedev/core": patch
 ---
 
