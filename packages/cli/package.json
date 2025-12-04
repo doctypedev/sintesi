@@ -1,6 +1,6 @@
 {
   "name": "@doctypedev/doctype",
-  "version": "0.3.28",
+  "version": "0.3.29",
   "publishConfig": {
     "access": "public"
   },
