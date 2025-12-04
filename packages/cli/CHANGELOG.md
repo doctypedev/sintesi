@@ -1,5 +1,13 @@
 # @doctypedev/doctype
 
+## 0.3.33
+
+### Patch Changes
+
+- c1b56c9: Multi-Provider AI Support in CLI
+- Updated dependencies [c1b56c9]
+  - @doctypedev/core@0.3.33
+
 ## 0.3.32
 
 ### Patch Changes
