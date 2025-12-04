@@ -7,16 +7,32 @@ import { writeFileSync, unlinkSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
 describe('CLI: check command', () => {
-  const testDir = './test-cli';
-  const testMapPath = join(testDir, 'doctype-map.json');
-  const testCodeFile = join(testDir, 'test.ts');
-  const testDocFile = join(testDir, 'test.md');
+  let originalCwd: string;
+  let testDir: string;
+  let testMapPath: string;
+  let testCodeFile: string;
+  let testDocFile: string;
 
   beforeEach(() => {
+    originalCwd = process.cwd();
+    testDir = join(originalCwd, 'test-cli');
+    testMapPath = join(testDir, 'doctype-map.json');
+    testCodeFile = join(testDir, 'test.ts');
+    testDocFile = join(testDir, 'test.md');
     // Create test directory
     if (!existsSync(testDir)) {
       mkdirSync(testDir, { recursive: true });
     }
+
+    // Create doctype config file
+    const configPath = join(testDir, 'doctype.config.json');
+    const config = {
+      projectName: 'test-project',
+      projectRoot: testDir,
+      docsFolder: 'docs',
+      mapFile: 'doctype-map.json',
+    };
+    writeFileSync(configPath, JSON.stringify(config, null, 2));
 
     // Create test code file
     const testCode = `export function testFunc(x: number): number {
@@ -57,13 +73,21 @@ Test documentation
       });
       manager.save();
     }
+
+    // Change to test directory
+    process.chdir(testDir);
   });
 
   afterEach(() => {
+    // Restore original directory
+    process.chdir(originalCwd);
+
     // Cleanup test files
+    const configPath = join(testDir, 'doctype.config.json');
     if (existsSync(testCodeFile)) unlinkSync(testCodeFile);
     if (existsSync(testDocFile)) unlinkSync(testDocFile);
     if (existsSync(testMapPath)) unlinkSync(testMapPath);
+    if (existsSync(configPath)) unlinkSync(configPath);
     if (existsSync(testDir)) {
       try {
         unlinkSync(testDir);
