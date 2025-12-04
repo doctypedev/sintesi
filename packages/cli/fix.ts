@@ -9,8 +9,7 @@
 
 import { DoctypeMapManager } from '../content/map-manager';
 import { ContentInjector } from '../content/content-injector';
-import { ASTAnalyzer } from '../core/ast-analyzer';
-import { SignatureHasher } from '../core/signature-hasher';
+import { ASTAnalyzer, SignatureHasher } from '@doctypedev/core';
 import { Logger } from './logger';
 import { FixResult, FixOptions, FixDetail } from './types';
 import { detectDrift } from './drift-detector';

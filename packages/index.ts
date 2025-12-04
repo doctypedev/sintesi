@@ -25,9 +25,20 @@ export type {
   FileDiscoveryOptions,
 } from './core';
 
-// Content & Mapping
-export { MarkdownParser, DoctypeMapManager, ContentInjector } from './content';
-export type { DoctypeAnchor, InjectionResult } from './content';
+// Content & Mapping (Markdown extraction powered by Rust)
+export {
+  extractAnchors,
+  validateMarkdownAnchors,
+  parseCodeRef,
+  DoctypeMapManager,
+  ContentInjector,
+} from './content';
+export type {
+  DoctypeAnchor,
+  ExtractionResult,
+  CodeRefParts,
+  InjectionResult,
+} from './content';
 
 // Gen AI Agent
 export { AIAgent, createOpenAIAgent, createAgentFromEnv, PromptBuilder } from './ai';

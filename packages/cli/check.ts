@@ -5,8 +5,7 @@
  */
 
 import { DoctypeMapManager } from '../content/map-manager';
-import { ASTAnalyzer } from '../core/ast-analyzer';
-import { SignatureHasher } from '../core/signature-hasher';
+import { ASTAnalyzer, SignatureHasher } from '@doctypedev/core';
 import { Logger } from './logger';
 import { CheckResult, CheckOptions, DriftDetail } from './types';
 import { detectDrift } from './drift-detector';

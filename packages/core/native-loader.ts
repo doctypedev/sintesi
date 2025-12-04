@@ -72,6 +72,17 @@ function loadNativeModule(): any {
           analyzeFile() { return 'mock'; }
           getSymbols() { return []; }
         },
+        // Markdown extraction mocks
+        extractAnchors: () => ({
+          anchors: [],
+          anchorCount: 0,
+          errors: [],
+        }),
+        validateMarkdownAnchors: () => [],
+        parseCodeRef: (ref: string) => {
+          const [filePath, symbolName] = ref.split('#');
+          return { filePath, symbolName };
+        },
       };
     }
   }
@@ -117,6 +128,10 @@ export const {
   helloWorld,
   getVersion,
   AstAnalyzer,
+  // Markdown extraction
+  extractAnchors,
+  validateMarkdownAnchors,
+  parseCodeRef,
 } = nativeModule;
 
 // Re-export types
@@ -132,6 +147,11 @@ export type DoctypeMapEntry = CoreTypes.DoctypeMapEntry;
 export type DoctypeMap = CoreTypes.DoctypeMap;
 export type FileDiscoveryResult = CoreTypes.FileDiscoveryResult;
 export type FileDiscoveryOptions = CoreTypes.FileDiscoveryOptions;
+
+// Markdown extraction types
+export type DoctypeAnchor = CoreTypes.DoctypeAnchor;
+export type ExtractionResult = CoreTypes.ExtractionResult;
+export type CodeRefParts = CoreTypes.CodeRefParts;
 
 // Export SymbolType as a type (it's a const enum in the .d.ts)
 export type { SymbolType as SymbolTypeValue } from './native-types';
