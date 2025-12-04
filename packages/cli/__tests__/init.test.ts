@@ -1,81 +1,54 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Check platform support - must be hoisted for vi.mock
-const { isNativeModuleSupported } = vi.hoisted(() => {
+const { isNativeModuleSupported, mockCore } = vi.hoisted(() => {
   const platform = `${process.platform}-${process.arch}`;
-  return { isNativeModuleSupported: platform === 'darwin-arm64' };
-});
+  const supported = platform === 'darwin-arm64';
 
-// Mock native-loader first - this is the root module that loads the native binary
-vi.mock('../../core/native-loader', async (importOriginal) => {
-  if (isNativeModuleSupported) {
-    return importOriginal();
+  // Mock implementations for unsupported platforms
+  const SymbolType = {
+    Function: 'Function',
+    Class: 'Class',
+    Interface: 'Interface',
+    TypeAlias: 'TypeAlias',
+    Enum: 'Enum',
+    Variable: 'Variable',
+    Const: 'Const',
+  };
+
+  class MockASTAnalyzer {
+    analyzeFile() { return []; }
+    analyzeCode() { return []; }
   }
-  // Mock the native-loader to prevent it from loading the platform-specific binary
+
+  class MockSignatureHasher {
+    hash() { return { hash: 'mock-hash', signature: {}, timestamp: Date.now() }; }
+  }
+
   return {
-    SymbolType: {
-      Function: 'Function',
-      Class: 'Class',
-      Interface: 'Interface',
-      TypeAlias: 'TypeAlias',
-      Enum: 'Enum',
-      Variable: 'Variable',
-      Const: 'Const',
-    },
-    discoverFiles: vi.fn(() => ({
-      markdownFiles: [],
-      sourceFiles: [],
-      totalFiles: 0,
-      errors: 0,
-    })),
-    helloWorld: vi.fn(() => 'mock hello'),
-    getVersion: vi.fn(() => '0.0.0-mock'),
-    AstAnalyzer: class MockAstAnalyzer {
-      analyzeFile() { return 'mock'; }
-      getSymbols() { return []; }
+    isNativeModuleSupported: supported,
+    mockCore: {
+      SymbolType,
+      ASTAnalyzer: MockASTAnalyzer,
+      SignatureHasher: MockSignatureHasher,
+      discoverFiles: () => ({
+        markdownFiles: [],
+        sourceFiles: [],
+        totalFiles: 0,
+        errors: 0,
+      }),
+      helloWorld: () => 'mock hello',
+      getVersion: () => '0.0.0-mock',
     },
   };
 });
 
-// Mock core modules - always mock on unsupported platforms
-vi.mock('../../core/ast-analyzer', async (importOriginal) => {
-  if (isNativeModuleSupported) {
-    return importOriginal();
-  }
-  return {
-    ASTAnalyzer: class MockASTAnalyzer {
-      analyzeFile() { return []; }
-      analyzeCode() { return []; }
-    },
-  };
-});
-
-vi.mock('../../core/signature-hasher', async (importOriginal) => {
-  if (isNativeModuleSupported) {
-    return importOriginal();
-  }
-  return {
-    SignatureHasher: class MockSignatureHasher {
-      hash() { return { hash: 'mock-hash' }; }
-    },
-  };
-});
-
+// Mock @doctypedev/core completely to prevent native-loader from being loaded
 vi.mock('@doctypedev/core', async (importOriginal) => {
   if (isNativeModuleSupported) {
     return importOriginal();
   }
-  return {
-    SymbolType: {
-      Function: 'Function',
-      Class: 'Class',
-      Interface: 'Interface',
-      TypeAlias: 'TypeAlias',
-      Enum: 'Enum',
-      Variable: 'Variable',
-      Const: 'Const',
-    },
-  };
+  return mockCore;
 });
 
 import { initCommand } from '../init';
