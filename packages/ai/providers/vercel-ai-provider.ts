@@ -1,10 +1,9 @@
 import { IAIProvider, AIProvider, DocumentationRequest, DocumentationResponse, AIModel, AIProviderError } from '../types';
 import { generateText, generateObject } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { google } from '@ai-sdk/google';
-import { anthropic } from '@ai-sdk/anthropic';
-import { mistral } from '@ai-sdk/mistral';
 import { createOpenAI } from '@ai-sdk/openai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { createMistral } from '@ai-sdk/mistral';
 import { PromptBuilder } from '../prompt-builder';
 import { z } from 'zod';
 
@@ -21,36 +20,32 @@ export class VercelAIProvider implements IAIProvider {
 
   private getModel() {
     switch (this.provider) {
-      case 'openai':
-        // Allow custom baseURL for OpenAI (e.g. generic proxies)
-        if (this.modelConfig.endpoint) {
-            const customOpenAI = createOpenAI({
-                baseURL: this.modelConfig.endpoint,
-                apiKey: this.modelConfig.apiKey,
-            });
-            return customOpenAI(this.modelConfig.modelId);
-        }
-        // We need to manually set the API key if it's not in the environment variables
-        // The SDK usually picks it up from env, but we are passing it in config
-        if (this.modelConfig.apiKey) {
-             process.env.OPENAI_API_KEY = this.modelConfig.apiKey;
-        }
-        return openai(this.modelConfig.modelId);
-      case 'gemini':
-         if (this.modelConfig.apiKey) {
-             process.env.GOOGLE_GENERATIVE_AI_API_KEY = this.modelConfig.apiKey;
-        }
-        return google(this.modelConfig.modelId); // e.g. 'gemini-1.5-pro-latest'
-      case 'anthropic':
-         if (this.modelConfig.apiKey) {
-             process.env.ANTHROPIC_API_KEY = this.modelConfig.apiKey;
-        }
-        return anthropic(this.modelConfig.modelId); // e.g. 'claude-3-sonnet-20240229'
-      case 'mistral':
-         if (this.modelConfig.apiKey) {
-             process.env.MISTRAL_API_KEY = this.modelConfig.apiKey;
-        }
-        return mistral(this.modelConfig.modelId);
+      case 'openai': {
+        // Use createOpenAI for explicit configuration without env vars
+        const provider = createOpenAI({
+          apiKey: this.modelConfig.apiKey,
+          baseURL: this.modelConfig.endpoint, // Custom endpoint if provided
+        });
+        return provider(this.modelConfig.modelId);
+      }
+      case 'gemini': {
+        const provider = createGoogleGenerativeAI({
+          apiKey: this.modelConfig.apiKey,
+        });
+        return provider(this.modelConfig.modelId);
+      }
+      case 'anthropic': {
+        const provider = createAnthropic({
+          apiKey: this.modelConfig.apiKey,
+        });
+        return provider(this.modelConfig.modelId);
+      }
+      case 'mistral': {
+        const provider = createMistral({
+          apiKey: this.modelConfig.apiKey,
+        });
+        return provider(this.modelConfig.modelId);
+      }
       default:
         throw new Error(`Unsupported provider: ${this.provider}`);
     }

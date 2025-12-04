@@ -27,6 +27,7 @@ const AI_PROVIDERS: { value: AIProvider; label: string; hint?: string }[] = [
 ];
 import { scanAndCreateAnchors, OutputStrategy } from './init-orchestrator';
 import { AIAgent } from '../ai';
+import { getDefaultModel as getAIDefaultModel } from '../ai/constants';
 
 
 /**
@@ -73,18 +74,7 @@ function getApiKeyEnvVarName(provider: AIProvider): string {
 }
 
 function getDefaultModel(provider: AIProvider): string {
-  switch (provider) {
-    case 'openai':
-      return 'gpt-4o-mini';
-    case 'gemini':
-      return 'gemini-1.5-flash-8b';
-    case 'anthropic':
-      return 'claude-3-5-haiku-20241022';
-    case 'mistral':
-      return 'ministral-8b-latest';
-    default:
-      return 'gpt-4o-mini';
-  }
+  return getAIDefaultModel(provider);
 }
 
 /**

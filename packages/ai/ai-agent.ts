@@ -12,6 +12,7 @@ import {
 } from './types';
 import { VercelAIProvider } from './providers/vercel-ai-provider';
 import { CodeSignature } from '../core/native-loader';
+import { getDefaultModel } from './constants';
 
 /**
  * AI Agent for generating documentation from code changes
@@ -86,22 +87,26 @@ export class AIAgent {
     items: Array<{ symbolName: string; signatureText: string }>
   ): Promise<Array<{ symbolName: string; content: string }>> {
     this.log(`Generating batch documentation for ${items.length} items`);
-    
-    // We assume the provider supports batch generation if it's our VercelAIProvider
-    // Ideally we'd update the IAIProvider interface, but for now we cast
-    if (typeof (this.provider as any).generateBatchDocumentation === 'function') {
-        return this.executeWithRetry(() => 
-            (this.provider as any).generateBatchDocumentation(items)
-        );
+
+    // Try batch generation if provider supports it
+    if (this.provider.generateBatchDocumentation) {
+        try {
+            return await this.executeWithRetry(() =>
+                this.provider.generateBatchDocumentation!(items)
+            );
+        } catch (error) {
+            // Batch failed, fallback to sequential
+            this.log('Batch generation failed, falling back to sequential generation', error);
+        }
     }
-    
-    // Fallback: sequential generation if provider doesn't support batching
-    this.log('Provider does not support batching, falling back to sequential generation');
+
+    // Fallback: sequential generation if provider doesn't support batching or batch failed
+    this.log('Using sequential generation');
     const results = [];
     for (const item of items) {
         try {
             const content = await this.generateInitial(
-                item.symbolName, 
+                item.symbolName,
                 { signatureText: item.signatureText } as CodeSignature
             );
             results.push({ symbolName: item.symbolName, content });
@@ -264,7 +269,7 @@ export function createAgentFromEnv(
     return new AIAgent({
       model: {
         provider: 'openai',
-        modelId: options.modelId || 'gpt-4o-mini', // Default to gpt-4o-mini
+        modelId: options.modelId || getDefaultModel('openai'),
         apiKey: process.env.OPENAI_API_KEY,
         maxTokens: options.maxTokens,
         temperature: options.temperature,
@@ -278,7 +283,7 @@ export function createAgentFromEnv(
     return new AIAgent({
       model: {
         provider: 'gemini',
-        modelId: options.modelId || 'gemini-1.5-flash-8b',
+        modelId: options.modelId || getDefaultModel('gemini'),
         apiKey: process.env.GEMINI_API_KEY,
         maxTokens: options.maxTokens,
         temperature: options.temperature,

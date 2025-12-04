@@ -135,6 +135,14 @@ export interface IAIProvider {
   generateDocumentation(request: DocumentationRequest): Promise<DocumentationResponse>;
 
   /**
+   * Generate documentation for multiple symbols in batch (optional)
+   * If not implemented, falls back to sequential generation
+   */
+  generateBatchDocumentation?(
+    items: Array<{ symbolName: string; signatureText: string }>
+  ): Promise<Array<{ symbolName: string; content: string }>>;
+
+  /**
    * Validate API key and connection
    */
   validateConnection(): Promise<boolean>;
