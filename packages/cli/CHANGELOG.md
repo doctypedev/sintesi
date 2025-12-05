@@ -1,5 +1,13 @@
 # @doctypedev/doctype
 
+## 0.4.3
+
+### Patch Changes
+
+- 098c13b: Integrate multi-provider AI to generate documentation
+  Integrate Vercel AI SDK to create/update documentation on init and fix.
+  - @doctypedev/core@0.4.3
+
 ## 0.4.2
 
 ### Patch Changes
