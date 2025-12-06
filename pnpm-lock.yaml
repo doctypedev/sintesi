@@ -144,8 +144,8 @@ importers:
         version: 5.9.3
     optionalDependencies:
       '@doctypedev/core-darwin-arm64':
-        specifier: ^0.4.1
-        version: 0.4.1
+        specifier: ^0.4.4
+        version: 0.4.4
 
 packages:
 
@@ -377,7 +377,7 @@ packages:
       search-insights:
         optional: true
 
-  '@doctypedev/core-darwin-arm64@0.4.1':
+  '@doctypedev/core-darwin-arm64@0.4.4':
     resolution: {integrity: sha512-cU5yIqLpSyxzqMtKefofgiURDdrKX1BBflkGKZxhBZhtkb2jU0yaDcZHRBRL5/wiFhIpQbSNiVBWdBrqsCCl5w==}
     cpu: [arm64]
     os: [darwin]
@@ -2688,7 +2688,7 @@ snapshots:
     transitivePeerDependencies:
       - '@algolia/client-search'
 
-  '@doctypedev/core-darwin-arm64@0.4.1':
+  '@doctypedev/core-darwin-arm64@0.4.4':
     optional: true
 
   '@esbuild/aix-ppc64@0.21.5':
