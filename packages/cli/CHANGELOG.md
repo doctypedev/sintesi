@@ -1,5 +1,12 @@
 # @doctypedev/doctype
 
+## 0.4.5
+
+### Patch Changes
+
+- f203ff1: Implement structured JSON output with deterministic Markdown builder
+  - @doctypedev/core@0.4.5
+
 ## 0.4.4
 
 ### Patch Changes
