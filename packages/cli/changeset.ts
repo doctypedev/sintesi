@@ -21,26 +21,26 @@ import { PackageSelector } from './package-selector';
 export async function changesetCommand(
   options: ChangesetOptions = {}
 ): Promise<ChangesetResult> {
-      const {
-        baseBranch = 'main',
-        stagedOnly = false,
-        packageName, // No default here - will be detected
-        outputDir = '.changeset',
-        noAI = false,
-        versionType,
-        description,
-        verbose = false,
-        interactive = false,
-        forceFetch = false, // Destructure forceFetch here
-      } = options;
-  
-      const logger = new Logger(verbose);
-  
-      logger.info('Generating changeset from code changes...');
-      logger.debug(`Base branch: ${baseBranch}`);
-      logger.debug(`Staged only: ${stagedOnly}`);
-      logger.debug(`Force fetch: ${forceFetch}`); // Log forceFetch
-    try {
+  const {
+    baseBranch = 'main',
+    stagedOnly = false,
+    packageName, // No default here - will be detected
+    outputDir = '.changeset',
+    noAI = false,
+    versionType,
+    description,
+    verbose = false,
+    interactive = false,
+    forceFetch = false, // Destructure forceFetch here
+  } = options;
+
+  const logger = new Logger(verbose);
+
+  logger.info('Generating changeset from code changes...');
+  logger.debug(`Base branch: ${baseBranch}`);
+  logger.debug(`Staged only: ${stagedOnly}`);
+  logger.debug(`Force fetch: ${forceFetch}`); // Log forceFetch
+  try {
     // Step 0: Detect monorepo and select package
     const monorepoDetector = new MonorepoDetector(logger);
     const monorepoInfo = await monorepoDetector.detect();
@@ -54,13 +54,12 @@ export async function changesetCommand(
     const packageSelector = new PackageSelector(logger);
     const selection = await packageSelector.select(monorepoInfo, packageName, interactive);
 
-    const resolvedPackageName = selection.packageName;
+    const resolvedPackageNames = selection.packageNames;
 
     logger.debug(
-      `Package: ${resolvedPackageName}${
-        packageName
-          ? ' (manual)'
-          : selection.automatic
+      `Packages: ${resolvedPackageNames.join(', ')}${packageName
+        ? ' (manual)'
+        : selection.automatic
           ? ' (auto-detected)'
           : ' (selected)'
       }`
@@ -84,6 +83,34 @@ export async function changesetCommand(
       };
     }
 
+    // Filter analysis to include only changes relevant to selected packages
+    // This ensures AI only focuses on what matters for these packages
+    const relevantPaths = resolvedPackageNames.map(name => {
+      const pkg = monorepoInfo.packages.find(p => p.name === name);
+      return pkg ? pkg.relativePath : null;
+    }).filter(p => p !== null) as string[];
+
+    // If we have package paths (monorepo), filter changes
+    // If not (relevantPaths empty or single package repo), keep all changes
+    if (relevantPaths.length > 0 && monorepoInfo.isMonorepo) {
+      // Filter symbol changes
+      analysis.symbolChanges = analysis.symbolChanges.filter(change => {
+        // change.filePath is absolute, but monorepoInfo paths are relative
+        // We need to check if filePath contains the package path
+        return relevantPaths.some(pkgPath => change.filePath.includes(pkgPath));
+      });
+
+      // Filter changed files
+      analysis.changedFiles = analysis.changedFiles.filter(file => {
+        return relevantPaths.some(pkgPath => file.includes(pkgPath));
+      });
+
+      // Update total count
+      analysis.totalChanges = analysis.symbolChanges.length;
+
+      logger.debug(`Filtered analysis to ${analysis.totalChanges} changes for selected packages`);
+    }
+
     logger.success(
       `Found ${analysis.totalChanges} symbol changes in ${analysis.changedFiles.length} files`
     );
@@ -93,7 +120,7 @@ export async function changesetCommand(
     logger.info('Generating changeset...');
 
     const result = await generator.generateChangeset(analysis, {
-      packageName: resolvedPackageName,
+      packageNames: resolvedPackageNames,
       outputDir,
       noAI,
       versionType,

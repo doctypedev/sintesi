@@ -12,8 +12,8 @@ import { Logger } from './logger';
  * Package selection result
  */
 export interface PackageSelection {
-  /** Selected package name */
-  packageName: string;
+  /** Selected package names */
+  packageNames: string[];
   /** Whether selection was automatic or manual */
   automatic: boolean;
 }
@@ -31,6 +31,9 @@ export class PackageSelector {
   /**
    * Select package(s) interactively or automatically
    */
+  /**
+   * Select package(s) interactively or automatically
+   */
   async select(
     monorepoInfo: MonorepoInfo,
     manualPackageName?: string,
@@ -39,7 +42,7 @@ export class PackageSelector {
     // If manual package name provided, use it
     if (manualPackageName) {
       return {
-        packageName: manualPackageName,
+        packageNames: [manualPackageName],
         automatic: false,
       };
     }
@@ -50,14 +53,14 @@ export class PackageSelector {
       if (pkg) {
         this.logger.debug(`Single package detected: ${pkg.name}`);
         return {
-          packageName: pkg.name,
+          packageNames: [pkg.name],
           automatic: true,
         };
       }
 
       // No package.json found
       return {
-        packageName: 'package',
+        packageNames: ['package'],
         automatic: true,
       };
     }
@@ -67,7 +70,7 @@ export class PackageSelector {
       const pkg = monorepoInfo.changedPackages[0];
       this.logger.info(`Auto-detected changed package: ${pkg.name}`);
       return {
-        packageName: pkg.name,
+        packageNames: [pkg.name],
         automatic: true,
       };
     }
@@ -103,7 +106,7 @@ export class PackageSelector {
     });
 
     // Show intro
-    clack.intro('📦 Select Package for Changeset');
+    clack.intro('📦 Select Packages for Changeset');
 
     if (changedPackages.length > 0) {
       clack.log.info(
@@ -113,10 +116,11 @@ export class PackageSelector {
     }
 
     // Prompt for selection
-    const selected = await clack.select({
-      message: 'Which package should this changeset be for?',
+    const selected = await clack.multiselect({
+      message: 'Which packages should this changeset be for?',
       options: choices,
-      initialValue: changedPackages[0]?.name,
+      initialValues: changedPackages.length > 0 ? changedPackages.map(p => p.name) : [],
+      required: true,
     });
 
     // Handle cancellation
@@ -125,10 +129,12 @@ export class PackageSelector {
       process.exit(0);
     }
 
-    clack.outro(`Selected: ${selected as string}`);
+    const selectedPackages = selected as string[];
+
+    clack.outro(`Selected: ${selectedPackages.join(', ')}`);
 
     return {
-      packageName: selected as string,
+      packageNames: selectedPackages,
       automatic: false,
     };
   }
@@ -140,7 +146,7 @@ export class PackageSelector {
     // If only one package changed, use it
     if (monorepoInfo.changedPackages.length === 1) {
       return {
-        packageName: monorepoInfo.changedPackages[0].name,
+        packageNames: [monorepoInfo.changedPackages[0].name],
         automatic: true,
       };
     }
@@ -156,7 +162,7 @@ export class PackageSelector {
       );
 
       return {
-        packageName: sorted[0].name,
+        packageNames: [sorted[0].name],
         automatic: true,
       };
     }
@@ -168,14 +174,14 @@ export class PackageSelector {
       );
 
       return {
-        packageName: monorepoInfo.packages[0].name,
+        packageNames: [monorepoInfo.packages[0].name],
         automatic: true,
       };
     }
 
     // Fallback
     return {
-      packageName: 'package',
+      packageNames: ['package'],
       automatic: true,
     };
   }

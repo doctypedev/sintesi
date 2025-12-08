@@ -34,8 +34,8 @@ export interface ChangesetResult {
  * Options for changeset generation
  */
 export interface GenerateOptions {
-  /** Package name (default: @doctypedev/doctype) */
-  packageName?: string;
+  /** Package names (default: [@doctypedev/doctype]) */
+  packageNames?: string[];
   /** Output directory (default: .changeset) */
   outputDir?: string;
   /** Skip AI analysis and use defaults */
@@ -72,12 +72,15 @@ export class ChangesetGenerator {
   /**
    * Generate a changeset file from analyzed changes
    */
+  /**
+   * Generate a changeset file from analyzed changes
+   */
   async generateChangeset(
     analysis: ChangesetAnalysis,
     options: GenerateOptions = {}
   ): Promise<ChangesetResult> {
     const {
-      packageName = '@doctypedev/doctype',
+      packageNames = ['@doctypedev/doctype'],
       outputDir = '.changeset',
       noAI = false,
       versionType: manualVersionType,
@@ -141,7 +144,7 @@ export class ChangesetGenerator {
     // Generate changeset file
     try {
       const filePath = await this.writeChangesetFile(
-        packageName,
+        packageNames,
         versionType,
         description,
         outputDir
@@ -238,7 +241,7 @@ export class ChangesetGenerator {
    * Write changeset file to disk
    */
   private async writeChangesetFile(
-    packageName: string,
+    packageNames: string[],
     versionType: VersionType,
     description: string,
     outputDir: string
@@ -250,11 +253,15 @@ export class ChangesetGenerator {
     const filename = this.generateFilename();
     const filePath = path.join(outputDir, `${filename}.md`);
 
-    // Generate changeset content
-    const content = `---
-"${packageName}": ${versionType}
----
+    // Generate changeset frontmatter
+    let frontmatter = '---\n';
+    for (const pkgName of packageNames) {
+      frontmatter += `"${pkgName}": ${versionType}\n`;
+    }
+    frontmatter += '---\n';
 
+    // Generate changeset content
+    const content = `${frontmatter}
 ${description}
 `;
 
