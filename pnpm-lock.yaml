@@ -148,6 +148,16 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
+    optionalDependencies:
+      '@doctypedev/core-darwin-arm64':
+        specifier: 0.5.0
+        version: link:../../crates/core/npm/darwin-arm64
+      '@doctypedev/core-linux-x64-gnu':
+        specifier: 0.5.0
+        version: link:../../crates/core/npm/linux-x64-gnu
+      '@doctypedev/core-win32-x64-msvc':
+        specifier: 0.5.0
+        version: link:../../crates/core/npm/win32-x64-msvc
 
 packages:
 
