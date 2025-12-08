@@ -7,92 +7,56 @@ Auto-generated documentation via Doctype.
 
 ### DEFAULT_TIMEOUT
 
-<!-- doctype:start id="b95e4d50-102e-411f-839f-65b0275d7525" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#DEFAULT_TIMEOUT" -->
-**Purpose:** A constant defining the default timeout duration for API requests.
-
-**Type:** `number`
-- `DEFAULT_TIMEOUT`: The default timeout duration is set to 5000 milliseconds.
-
-**Usage Example:**
-```typescript
-const options = {timeout: DEFAULT_TIMEOUT};
-```
-<!-- doctype:end id="b95e4d50-102e-411f-839f-65b0275d7525" -->
+<!-- doctype:start id="55c908bb-5fae-427e-a20b-a29a67b66d96" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#DEFAULT_TIMEOUT" -->
+TODO: Add documentation for this symbol
+<!-- doctype:end id="55c908bb-5fae-427e-a20b-a29a67b66d96" -->
 
 
 ### API_URL
 
-<!-- doctype:start id="e984b306-9744-49bb-b29d-aa7959dfb425" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#API_URL" -->
-**Purpose:** A constant holding the base URL for API calls.
-
-**Type:** `string`
-- `API_URL`: The base URL is 'https://'.
-
-**Usage Example:**
-```typescript
-fetch(API_URL + '/endpoint');
-```
-<!-- doctype:end id="e984b306-9744-49bb-b29d-aa7959dfb425" -->
+<!-- doctype:start id="5a0c4864-9856-459f-9229-33ea9494a128" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#API_URL" -->
+TODO: Add documentation for this symbol
+<!-- doctype:end id="5a0c4864-9856-459f-9229-33ea9494a128" -->
 
 
 ### Priority
 
-<!-- doctype:start id="771cdaf7-e1b1-4212-9622-3e68de3cb749" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#Priority" -->
-**Purpose:** An enumeration representing the priority levels of a task.
-
-**Values:**
-- `LOW`: Indicates low priority (1).
-- `MEDIUM`: Indicates medium priority (2).
-- `HIGH`: Indicates high priority (3).
-
-**Usage Example:**
-```typescript
-const taskPriority: Priority = Priority.HIGH;
-```
-<!-- doctype:end id="771cdaf7-e1b1-4212-9622-3e68de3cb749" -->
+<!-- doctype:start id="1a959776-f297-435f-91c8-17008f0fe858" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#Priority" -->
+TODO: Add documentation for this symbol
+<!-- doctype:end id="1a959776-f297-435f-91c8-17008f0fe858" -->
 
 
 ### Status
 
-<!-- doctype:start id="2f676fde-6926-4af8-bc69-4bcec3fd08a2" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#Status" -->
-**Purpose:** An enumeration representing the different statuses of an entity.
-
-**Values:**
-- `PENDING`: Indicates that the entity is pending.
-- `ACTIVE`: Indicates that the entity is currently active.
-- `INACTIVE`: Indicates that the entity is inactive.
-
-**Usage Example:**
-```typescript
-const currentStatus: Status = Status.ACTIVE;
-```
-<!-- doctype:end id="2f676fde-6926-4af8-bc69-4bcec3fd08a2" -->
+<!-- doctype:start id="acfc0eb1-4742-4b7c-8aea-80db2dfb4d7c" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#Status" -->
+TODO: Add documentation for this symbol
+<!-- doctype:end id="acfc0eb1-4742-4b7c-8aea-80db2dfb4d7c" -->
 
 
 ### Point
 
-<!-- doctype:start id="9423c6fa-4a07-4592-a821-53f47d4f882c" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#Point" -->
+<!-- doctype:start id="a82042b9-a4ed-4a20-bcea-3ad139b5cf35" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#Point" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="9423c6fa-4a07-4592-a821-53f47d4f882c" -->
+<!-- doctype:end id="a82042b9-a4ed-4a20-bcea-3ad139b5cf35" -->
 
 
 ### StringOrNumber
 
-<!-- doctype:start id="b6b2175d-7a9b-4eb9-8269-326dcab78d16" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#StringOrNumber" -->
+<!-- doctype:start id="675adf03-4982-4f80-bcb5-a4a58a506022" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#StringOrNumber" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="b6b2175d-7a9b-4eb9-8269-326dcab78d16" -->
+<!-- doctype:end id="675adf03-4982-4f80-bcb5-a4a58a506022" -->
 
 
 ### ApiResponse
 
-<!-- doctype:start id="b2682059-57ba-429e-a15c-6eb2bb6a94ad" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#ApiResponse" -->
+<!-- doctype:start id="c576d635-f003-43c5-9103-616f8abf6b61" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#ApiResponse" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="b2682059-57ba-429e-a15c-6eb2bb6a94ad" -->
+<!-- doctype:end id="c576d635-f003-43c5-9103-616f8abf6b61" -->
 
 
 
 ### UserProfile
 
-<!-- doctype:start id="d7b5ec54-4a23-43bb-9b72-da16bf351b74" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#UserProfile" -->
+<!-- doctype:start id="285615f9-07e8-4477-a4c8-70a45f0c2618" code_ref="packages/core/__tests__/fixtures/types-and-interfaces.ts#UserProfile" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="d7b5ec54-4a23-43bb-9b72-da16bf351b74" -->
+<!-- doctype:end id="285615f9-07e8-4477-a4c8-70a45f0c2618" -->

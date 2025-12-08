@@ -7,28 +7,28 @@ Auto-generated documentation via Doctype.
 
 ### multiply
 
-<!-- doctype:start id="c9f1f581-d087-426a-bbec-84c052270ee0" code_ref="packages/core/__tests__/fixtures/simple-functions.ts#multiply" -->
+<!-- doctype:start id="e9e5abea-65a8-4cb4-ab30-3bf0081b913a" code_ref="packages/core/__tests__/fixtures/simple-functions.ts#multiply" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="c9f1f581-d087-426a-bbec-84c052270ee0" -->
+<!-- doctype:end id="e9e5abea-65a8-4cb4-ab30-3bf0081b913a" -->
 
 
 ### fetchData
 
-<!-- doctype:start id="4cc6955f-a9bd-4631-9fbc-04e43539ec62" code_ref="packages/core/__tests__/fixtures/simple-functions.ts#fetchData" -->
+<!-- doctype:start id="e1e57d35-203a-4a13-a613-79519ec4575f" code_ref="packages/core/__tests__/fixtures/simple-functions.ts#fetchData" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="4cc6955f-a9bd-4631-9fbc-04e43539ec62" -->
+<!-- doctype:end id="e1e57d35-203a-4a13-a613-79519ec4575f" -->
 
 
 ### subtract
 
-<!-- doctype:start id="1bf4c8d4-6880-4613-9611-feb2b683ac2b" code_ref="packages/core/__tests__/fixtures/simple-functions.ts#subtract" -->
+<!-- doctype:start id="ada1002c-6d15-4bed-950c-3b73ab40d069" code_ref="packages/core/__tests__/fixtures/simple-functions.ts#subtract" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="1bf4c8d4-6880-4613-9611-feb2b683ac2b" -->
+<!-- doctype:end id="ada1002c-6d15-4bed-950c-3b73ab40d069" -->
 
 
 
 ### add
 
-<!-- doctype:start id="31e4c28e-d8df-4da8-8fe3-de0c1a669358" code_ref="packages/core/__tests__/fixtures/simple-functions.ts#add" -->
+<!-- doctype:start id="f7b9c956-c017-4258-a6f2-5ccb4ab5d945" code_ref="packages/core/__tests__/fixtures/simple-functions.ts#add" -->
 TODO: Add documentation for this symbol
-<!-- doctype:end id="31e4c28e-d8df-4da8-8fe3-de0c1a669358" -->
+<!-- doctype:end id="f7b9c956-c017-4258-a6f2-5ccb4ab5d945" -->

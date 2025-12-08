@@ -3,6 +3,5 @@
   "projectRoot": ".",
   "docsFolder": "./docs",
   "mapFile": "doctype-map.json",
-  "outputStrategy": "mirror",
-  "aiProvider": "openai"
+  "outputStrategy": "mirror"
 }
