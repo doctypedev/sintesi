@@ -14,6 +14,8 @@ export interface CheckResult {
   driftedEntries: number;
   /** Number of entries with missing symbols */
   missingEntries: number;
+  /** Number of untracked symbols found */
+  untrackedEntries?: number;
   /** List of drifted entry details */
   drifts: DriftDetail[];
   /** List of missing symbol details */
@@ -143,6 +145,8 @@ export interface FixOptions {
   interactive?: boolean;
   /** Disable AI-generated content (use placeholder instead) */
   noAI?: boolean;
+  /** Remove missing entries from the map */
+  prune?: boolean;
 }
 
 /**

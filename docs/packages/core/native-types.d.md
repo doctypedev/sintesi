@@ -5,6 +5,20 @@ Auto-generated documentation via Doctype.
 
 ## API Reference
 
+### AnalysisResultJs
+
+<!-- doctype:start id="8e1df251-fb79-4132-a1de-021411ab3477" code_ref="packages/core/native-types.d.ts#AnalysisResultJs" -->
+**AnalysisResultJs** - Documentation needs generation
+
+Current signature:
+```typescript
+interface AnalysisResultJs{signatures: Array<CodeSignature>;  errors: Array<string>; }
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="8e1df251-fb79-4132-a1de-021411ab3477" -->
+
+
 ### parseCodeRef
 
 <!-- doctype:start id="107fdaf5-4029-4ad6-87fc-502906c49378" code_ref="packages/core/native-types.d.ts#parseCodeRef" -->

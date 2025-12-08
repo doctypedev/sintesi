@@ -5,6 +5,62 @@ Auto-generated documentation via Doctype.
 
 ## API Reference
 
+### driftedIds
+
+<!-- doctype:start id="dbad2435-0fe1-4bb8-b45d-57ea207b4c79" code_ref="packages/cli/src/commands/generate.ts#driftedIds" -->
+**driftedIds** - Documentation needs generation
+
+Current signature:
+```typescript
+driftedIds = new Set(detectedDrifts.map(d => d.entry.id))
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="dbad2435-0fe1-4bb8-b45d-57ea207b4c79" -->
+
+
+### analyzer
+
+<!-- doctype:start id="8a0adc2a-83ec-4a17-9378-1377f90135c1" code_ref="packages/cli/src/commands/generate.ts#analyzer" -->
+**analyzer** - Documentation needs generation
+
+Current signature:
+```typescript
+analyzer = new AstAnalyzer()
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="8a0adc2a-83ec-4a17-9378-1377f90135c1" -->
+
+
+### entries
+
+<!-- doctype:start id="07ed66b1-ef07-46ba-a12a-40ef690aced5" code_ref="packages/cli/src/commands/generate.ts#entries" -->
+**entries** - Documentation needs generation
+
+Current signature:
+```typescript
+entries = mapManager.getEntries()
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="07ed66b1-ef07-46ba-a12a-40ef690aced5" -->
+
+
+### mapManager
+
+<!-- doctype:start id="7b5df41a-7fde-4c78-8d0b-5aa2212ba8ac" code_ref="packages/cli/src/commands/generate.ts#mapManager" -->
+**mapManager** - Documentation needs generation
+
+Current signature:
+```typescript
+mapManager = new DoctypeMapManager(mapPath)
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="7b5df41a-7fde-4c78-8d0b-5aa2212ba8ac" -->
+
+
 ### currentSignature
 
 <!-- doctype:start id="9de3d57a-bb1b-4fcc-9360-9dbfeec7fc02" code_ref="packages/cli/src/commands/generate.ts#currentSignature" -->

@@ -84,9 +84,6 @@ TODO: Add documentation for this symbol
 
 ### anchorId
 
-<!-- doctype:start id="0e7e37d3-d94d-4333-8b49-6118208b2c45" code_ref="packages/content/markdown-anchor-inserter.ts#anchorId" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="0e7e37d3-d94d-4333-8b49-6118208b2c45" -->
 
 
 ### result
@@ -128,5 +125,12 @@ TODO: Add documentation for this symbol
 ### AnchorInsertionOptions
 
 <!-- doctype:start id="d316de38-9e72-4a32-a071-de0bfa63cd87" code_ref="packages/content/markdown-anchor-inserter.ts#AnchorInsertionOptions" -->
-TODO: Add documentation for this symbol
+**AnchorInsertionOptions** - Documentation needs generation
+
+Current signature:
+```typescript
+interface AnchorInsertionOptions{createSection?: boolean;  sectionTitle?: string;  placeholder?: string;  anchorId?: string; }
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
 <!-- doctype:end id="d316de38-9e72-4a32-a071-de0bfa63cd87" -->

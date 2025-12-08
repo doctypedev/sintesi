@@ -11,6 +11,8 @@ export interface AnchorInsertionOptions {
   sectionTitle?: string;
   /** Placeholder text for empty anchor content */
   placeholder?: string;
+  /** Explicit anchor ID to use (optional) */
+  anchorId?: string;
 }
 
 /**
@@ -93,6 +95,7 @@ export class MarkdownAnchorInserter {
       createSection = true,
       sectionTitle = 'API Reference',
       placeholder = 'TODO: Document this symbol',
+      anchorId = randomUUID(),
     } = options;
 
     // Validate codeRef format
@@ -105,7 +108,6 @@ export class MarkdownAnchorInserter {
       };
     }
 
-    const anchorId = randomUUID();
     const [, symbolName] = codeRef.split('#');
     const lines = content.split('\n');
 

@@ -5,6 +5,104 @@ Auto-generated documentation via Doctype.
 
 ## API Reference
 
+### codeRefString
+
+<!-- doctype:start id="27c92952-5eba-4c6a-ab61-0d9c16cd307e" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#codeRefString" -->
+**codeRefString** - Documentation needs generation
+
+Current signature:
+```typescript
+codeRefString = `${entry.codeRef.filePath}#${entry.codeRef.symbolName}`
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="27c92952-5eba-4c6a-ab61-0d9c16cd307e" -->
+
+
+### anchors
+
+<!-- doctype:start id="cdc06322-17e4-42b2-bd44-6f515a8906c7" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#anchors" -->
+**anchors** - Documentation needs generation
+
+Current signature:
+```typescript
+anchors = extractAnchors(docFilePath,  content).anchors
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="cdc06322-17e4-42b2-bd44-6f515a8906c7" -->
+
+
+### content
+
+<!-- doctype:start id="ab43c9de-6fb4-4002-8a8e-a598f8862d3d" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#content" -->
+**content** - Documentation needs generation
+
+Current signature:
+```typescript
+content = readFileSync(docFilePath,  'utf-8')
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="ab43c9de-6fb4-4002-8a8e-a598f8862d3d" -->
+
+
+### anchorExists
+
+<!-- doctype:start id="91931990-6104-4b13-9192-71da7d8ed0ad" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#anchorExists" -->
+**anchorExists** - Documentation needs generation
+
+Current signature:
+```typescript
+anchorExists = false
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="91931990-6104-4b13-9192-71da7d8ed0ad" -->
+
+
+### fs
+
+<!-- doctype:start id="d4a868f2-0ad2-43f6-bf65-3208740c2094" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#fs" -->
+**fs** - Documentation needs generation
+
+Current signature:
+```typescript
+fs = await import('fs')
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="d4a868f2-0ad2-43f6-bf65-3208740c2094" -->
+
+
+### dir
+
+<!-- doctype:start id="ddc2a5b1-2be3-4aa8-9067-73d5d3167940" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#dir" -->
+**dir** - Documentation needs generation
+
+Current signature:
+```typescript
+dir = dirname(docFilePath)
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="ddc2a5b1-2be3-4aa8-9067-73d5d3167940" -->
+
+
+### inserter
+
+<!-- doctype:start id="d84269c7-2f58-4698-bcdd-e4c6a7bd0e99" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#inserter" -->
+**inserter** - Documentation needs generation
+
+Current signature:
+```typescript
+inserter = new MarkdownAnchorInserter()
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="d84269c7-2f58-4698-bcdd-e4c6a7bd0e99" -->
+
+
 ### commitResult
 
 <!-- doctype:start id="9d988cd2-8e2a-48be-832c-6a8f54f8fe65" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#commitResult" -->
@@ -64,7 +162,14 @@ TODO: Add documentation for this symbol
 ### result
 
 <!-- doctype:start id="f54c7443-f4e9-40b2-a18b-8b9e0ebf1d9b" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#result" -->
-TODO: Add documentation for this symbol
+**result** - Documentation needs generation
+
+Current signature:
+```typescript
+result
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
 <!-- doctype:end id="f54c7443-f4e9-40b2-a18b-8b9e0ebf1d9b" -->
 
 
@@ -134,7 +239,14 @@ TODO: Add documentation for this symbol
 ### processTask
 
 <!-- doctype:start id="ed85564a-da49-486d-86d4-6ddd5f35dbb7" code_ref="packages/cli/src/orchestrators/fix-orchestrator.ts#processTask" -->
-TODO: Add documentation for this symbol
+**processTask** - Documentation needs generation
+
+Current signature:
+```typescript
+processTask = async(drift: DriftInfo): Promise<FixDetail> =>{const{entry,  currentSignature,  oldSignature}= drift;  const docFilePath = resolve(projectBase,  entry.docRef.filePath);  try{let newContent: string;  if(useAI && aiAgent){try{let currentMarkdownContent = '';  if(existsSync(docFilePath)){const docContent = readFileSync(docFilePath,  'utf-8');  const extractionResult = extractAnchors(docFilePath,  docContent);  const anchor = extractionResult.anchors.find((a: DoctypeAnchor)=> a.id === entry.id);  if(anchor){currentMarkdownContent = anchor.content; }}newContent = await retry(async()=>{if(oldSignature){const request: DocumentationRequest ={symbolName: entry.codeRef.symbolName,  oldSignature,  newSignature: currentSignature,  oldDocumentation: currentMarkdownContent,  context: entry.codeRef.filePath ?{filePath: entry.codeRef.filePath}: undefined,  prompt: PromptBuilder.buildStructuredSinglePrompt(entry.codeRef.symbolName,  currentSignature.signatureText,  currentMarkdownContent),  systemPrompt: PromptBuilder.buildStructuredSystemPrompt()};  const response = await aiAgent!.generateDocumentation(request);  return response.content; }else{const request: DocumentationRequest ={symbolName: entry.codeRef.symbolName,  oldSignature: currentSignature,  newSignature: currentSignature,  oldDocumentation: '',  prompt: PromptBuilder.buildStructuredSinglePrompt(entry.codeRef.symbolName,  currentSignature.signatureText,  ''),  systemPrompt: PromptBuilder.buildStructuredSystemPrompt()};  const response = await aiAgent!.generateDocumentation(request);  return response.content; }}, {retries: 3,  onRetry:(err,  attempt)=>{logger.debug(`Retry ${attempt}/3 for ${entry.codeRef.symbolName}: ${err.message}`); }}); }catch(aiError){const errorMsg = aiError instanceof Error ? aiError.message: String(aiError);  logger.error(`AI generation failed for ${entry.codeRef.symbolName}after retries: ${errorMsg}`);  newContent = generatePlaceholderContent(entry.codeRef.symbolName,  currentSignature.signatureText); }}else{newContent = generatePlaceholderContent(entry.codeRef.symbolName,  currentSignature.signatureText); }return await fileMutex.run(docFilePath,  async()=>{try{const dir = dirname(docFilePath);  if(!existsSync(dir)){try{const fs = await import('fs');  fs.mkdirSync(dir, {recursive: true}); }catch(e){}}let anchorExists = false;  if(existsSync(docFilePath)){const content = readFileSync(docFilePath,  'utf-8');  const anchors = extractAnchors(docFilePath,  content).anchors;  anchorExists = anchors.some((a: DoctypeAnchor)=> a.id === entry.id); }const writeToFile = !options.dryRun;  let result;  if(anchorExists){result = injector.injectIntoFile(docFilePath,  entry.id,  newContent,  writeToFile); }else{const codeRefString = `${entry.codeRef.filePath}#${entry.codeRef.symbolName}`;  result = inserter.insertIntoFile(docFilePath,  codeRefString, {createSection: true,  placeholder: newContent,  anchorId: entry.id},  writeToFile); }if(result.success){if(!options.dryRun){const newHash = currentSignature.hash!;  if(mapManager.getEntryById(entry.id)){mapManager.updateEntry(entry.id, {codeSignatureHash: newHash,  codeSignatureText: currentSignature.signatureText, }); }else{mapManager.addEntry(entry); }mapManager.save(); }successCount++;  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: true,  newContent: newContent, }; }else{failCount++;  logger.error(`Failed to inject ${entry.codeRef.symbolName}: ${result.error}`);  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: false,  error: result.error, }; }}catch(e){failCount++;  const msg = e instanceof Error ? e.message: String(e);  logger.error(`Error writing ${entry.codeRef.symbolName}: ${msg}`);  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: false,  error: msg, }; }}); }catch(error){failCount++;  const errorMsg = error instanceof Error ? error.message: String(error);  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: false,  error: errorMsg, }; }}
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
 <!-- doctype:end id="ed85564a-da49-486d-86d4-6ddd5f35dbb7" -->
 
 

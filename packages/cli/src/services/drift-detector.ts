@@ -6,10 +6,10 @@
  */
 
 import { DoctypeMapManager } from '../../../content';
-import { CodeSignature, DoctypeMapEntry, AstAnalyzer } from '@doctypedev/core';
+import { CodeSignature, DoctypeMapEntry, AstAnalyzer, discoverFiles } from '@doctypedev/core';
 import { Logger } from '../utils/logger';
 import { existsSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, relative, sep } from 'path';
 
 /**
  * Information about a detected drift
@@ -37,11 +37,21 @@ export interface MissingSymbolInfo {
 }
 
 /**
+ * Information about an untracked symbol
+ */
+export interface UntrackedSymbolInfo {
+  symbolName: string;
+  filePath: string;
+  signature: CodeSignature;
+}
+
+/**
  * Result of drift detection
  */
 export interface DriftResult {
   drifts: DriftInfo[];
   missing: MissingSymbolInfo[];
+  untracked: UntrackedSymbolInfo[];
 }
 
 /**
@@ -52,6 +62,10 @@ export interface DriftDetectionOptions {
   basePath?: string;
   /** Logger for debug output (optional) */
   logger?: Logger;
+  /** Whether to scan for untracked symbols (defaults to false) */
+  discoverUntracked?: boolean;
+  /** Directory to scan for untracked symbols (required if discoverUntracked is true) */
+  projectRoot?: string;
 }
 
 /**
@@ -70,14 +84,20 @@ export function detectDrift(
   analyzer: InstanceType<typeof AstAnalyzer>,
   options: DriftDetectionOptions = {}
 ): DriftResult {
-  const { basePath = process.cwd(), logger } = options;
+  const { basePath = process.cwd(), logger, discoverUntracked = false, projectRoot } = options;
   const entries = mapManager.getEntries();
   const drifts: DriftInfo[] = [];
   const missing: MissingSymbolInfo[] = [];
+  const untracked: UntrackedSymbolInfo[] = [];
+
+  // Set of tracked symbols: "filePath#symbolName"
+  const tracked = new Set<string>();
 
   for (const entry of entries) {
     // Resolve code file path relative to base path
     const codeFilePath = resolve(basePath, entry.codeRef.filePath);
+    // Normalize tracked key
+    tracked.add(`${entry.codeRef.filePath}#${entry.codeRef.symbolName}`);
 
     logger?.debug(`Analyzing ${codeFilePath}#${entry.codeRef.symbolName}`);
 
@@ -150,5 +170,43 @@ export function detectDrift(
     }
   }
 
-  return { drifts, missing };
+  // Detect untracked symbols if requested
+  if (discoverUntracked && projectRoot) {
+    const absProjectRoot = resolve(basePath, projectRoot);
+    logger?.debug(`Scanning for untracked symbols in ${absProjectRoot}`);
+
+    try {
+        const discoveryResult = discoverFiles(absProjectRoot, {
+            respectGitignore: true,
+            includeHidden: false,
+            maxDepth: undefined,
+        });
+
+        for (const file of discoveryResult.sourceFiles) {
+            try {
+                const signatures = analyzer.analyzeFile(file);
+                const relativePath = relative(basePath, file).split(sep).join('/');
+
+                for (const sig of signatures) {
+                    if (sig.isExported) {
+                        const key = `${relativePath}#${sig.symbolName}`;
+                        if (!tracked.has(key)) {
+                            untracked.push({
+                                symbolName: sig.symbolName,
+                                filePath: relativePath,
+                                signature: sig
+                            });
+                        }
+                    }
+                }
+            } catch (e) {
+                // Ignore analysis errors for discovery
+            }
+        }
+    } catch (e) {
+        logger?.warn(`Failed to discover untracked files: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  return { drifts, missing, untracked };
 }

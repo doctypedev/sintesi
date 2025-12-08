@@ -5,6 +5,20 @@ Auto-generated documentation via Doctype.
 
 ## API Reference
 
+### analyzer
+
+<!-- doctype:start id="e9773d7b-dc06-4639-9ad8-c498de5ddac2" code_ref="packages/cli/src/commands/changeset.ts#analyzer" -->
+**analyzer** - Documentation needs generation
+
+Current signature:
+```typescript
+analyzer = new ChangesetAnalyzer(logger)
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="e9773d7b-dc06-4639-9ad8-c498de5ddac2" -->
+
+
 ### errorMessage
 
 <!-- doctype:start id="d049a534-190a-4fec-94e7-81946053a945" code_ref="packages/cli/src/commands/changeset.ts#errorMessage" -->

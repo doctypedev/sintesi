@@ -96,9 +96,11 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
 
   // Analyze current code and detect drift using centralized logic
   const analyzer = new AstAnalyzer();
-  const { drifts: detectedDrifts, missing: missingSymbols } = detectDrift(mapManager, analyzer, {
+  const { drifts: detectedDrifts, missing: missingSymbols, untracked: untrackedSymbols } = detectDrift(mapManager, analyzer, {
     logger,
     basePath: codeRoot,
+    discoverUntracked: true,
+    projectRoot: config ? config.projectRoot : undefined
   });
 
   // Convert DriftInfo to DriftDetail format for API compatibility
@@ -125,7 +127,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
   // Display results
   logger.divider();
 
-  if (drifts.length === 0 && missingDetails.length === 0) {
+  if (drifts.length === 0 && missingDetails.length === 0 && untrackedSymbols.length === 0) {
     logger.success('All documentation is in sync with code');
     logger.info(`Checked ${entries.length} entries, no drift detected`);
   } else {
@@ -160,6 +162,27 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
         }
     }
 
+    if (untrackedSymbols.length > 0) {
+        logger.warn(`Found ${untrackedSymbols.length} untracked ${untrackedSymbols.length === 1 ? 'symbol' : 'symbols'} (not documented)`);
+        logger.newline();
+        
+        // Only show top 10 if verbose is false to avoid spamming
+        const showCount = options.verbose ? untrackedSymbols.length : Math.min(untrackedSymbols.length, 10);
+        
+        for (let i = 0; i < showCount; i++) {
+            const symbol = untrackedSymbols[i];
+            logger.log(`  ${Logger.symbol(symbol.symbolName)} in ${Logger.path(symbol.filePath)}`);
+        }
+        
+        if (!options.verbose && untrackedSymbols.length > 10) {
+            logger.log(`  ...and ${untrackedSymbols.length - 10} more. Use --verbose to see all.`);
+        }
+        
+        logger.newline();
+        logger.info('Run `doctype init` or manually add these to doctype-map.json to track them.');
+        logger.newline();
+    }
+
     if (drifts.length > 0) {
         logger.info('Run `npx doctype fix` to update the documentation');
     }
@@ -171,6 +194,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     totalEntries: entries.length,
     driftedEntries: drifts.length,
     missingEntries: missingDetails.length,
+    untrackedEntries: untrackedSymbols.length,
     drifts,
     missing: missingDetails,
     success: drifts.length === 0 && missingDetails.length === 0,

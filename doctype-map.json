@@ -579,12 +579,12 @@
         "filePath": "packages/content/markdown-anchor-inserter.ts",
         "symbolName": "AnchorInsertionOptions"
       },
-      "codeSignatureHash": "aa962dcfef8c050689716e778fd886cef88025f1d42e3b1f28efd699d146a79e",
-      "codeSignatureText": "interface AnchorInsertionOptions{createSection?: boolean;  sectionTitle?: string;  placeholder?: string; }",
+      "codeSignatureHash": "6023a5133f166c6d3220beacb9702a2b7d4d5f7d7515445e4c5ddf1698bee636",
+      "codeSignatureText": "interface AnchorInsertionOptions{createSection?: boolean;  sectionTitle?: string;  placeholder?: string;  anchorId?: string; }",
       "docRef": {
         "filePath": "docs/packages/content/markdown-anchor-inserter.md"
       },
-      "lastUpdated": 1765209229029
+      "lastUpdated": 1765235098112
     },
     {
       "id": "e801fb98-bf17-48a7-a080-e59aa81f43a0",
@@ -646,19 +646,6 @@
       },
       "codeSignatureHash": "7459ac0c77e72ebb6162c40e9aac5073897b69a0174a69b0668332d4ba9691d8",
       "codeSignatureText": "result = this.insertIntoContent(content,  codeRef,  options)",
-      "docRef": {
-        "filePath": "docs/packages/content/markdown-anchor-inserter.md"
-      },
-      "lastUpdated": 1765209229029
-    },
-    {
-      "id": "0e7e37d3-d94d-4333-8b49-6118208b2c45",
-      "codeRef": {
-        "filePath": "packages/content/markdown-anchor-inserter.ts",
-        "symbolName": "anchorId"
-      },
-      "codeSignatureHash": "09eb3fb166dd7928cc2738a1f05dab894017968d47e8a3cb9d55f35b715d696f",
-      "codeSignatureText": "anchorId = randomUUID()",
       "docRef": {
         "filePath": "docs/packages/content/markdown-anchor-inserter.md"
       },
@@ -826,12 +813,12 @@
         "filePath": "packages/content/content-injector.ts",
         "symbolName": "ContentInjector"
       },
-      "codeSignatureHash": "b375b7f18828e13470507136de85f7bc71fa15ff3c9ca210ed459c8e778b72c4",
-      "codeSignatureText": "class ContentInjector{public injectIntoFile(filePath: string,  anchorId: string,  newContent: string,  writeToFile: boolean = true): InjectionResult;  public injectIntoContent(content: string,  anchorId: string,  newContent: string): InjectionResult;  public injectMultiple(filePath: string,  injections: Map<string,  string>,  writeToFile: boolean = true): InjectionResult[];  public preview(filePath: string,  anchorId: string,  newContent: string): InjectionResult;  public getAnchorLocation(filePath: string,  anchorId: string):;  public getAnchorLocationFromContent(content: string,  anchorId: string):;  public validateAnchor(content: string,  anchorId: string): string[]}",
+      "codeSignatureHash": "f3110ef95d3a1ddd63b333dbbabfa4d72c92ddb3f66cc00aac351c0c50eee767",
+      "codeSignatureText": "class ContentInjector{public injectIntoFile(filePath: string,  anchorId: string,  newContent: string,  writeToFile: boolean = true): InjectionResult;  public removeAnchor(filePath: string,  anchorId: string,  writeToFile: boolean = true): InjectionResult;  public removeAnchorFromContent(content: string,  anchorId: string): InjectionResult;  public injectIntoContent(content: string,  anchorId: string,  newContent: string): InjectionResult;  public injectMultiple(filePath: string,  injections: Map<string,  string>,  writeToFile: boolean = true): InjectionResult[];  public preview(filePath: string,  anchorId: string,  newContent: string): InjectionResult;  public getAnchorLocation(filePath: string,  anchorId: string):;  public getAnchorLocationFromContent(content: string,  anchorId: string):;  public validateAnchor(content: string,  anchorId: string): string[]}",
       "docRef": {
         "filePath": "docs/packages/content/content-injector.md"
       },
-      "lastUpdated": 1765209229029
+      "lastUpdated": 1765235631705
     },
     {
       "id": "931e7539-d40a-4bb3-9197-1c4d7323dcda",
@@ -1216,12 +1203,12 @@
         "filePath": "packages/cli/src/types/index.ts",
         "symbolName": "CheckResult"
       },
-      "codeSignatureHash": "9a6db303f912da1c536e1634bea6d3c792eb6a4eaf6d4a2539dce0bef342be1d",
-      "codeSignatureText": "interface CheckResult{totalEntries: number;  driftedEntries: number;  missingEntries: number;  drifts: DriftDetail[];  missing: MissingSymbolDetail[];  success: boolean;  configError?: string; }",
+      "codeSignatureHash": "8366f0f98a5f01bd8ed8547e95ea417c39c90b56898cc2327e77032ff20fc7fa",
+      "codeSignatureText": "interface CheckResult{totalEntries: number;  driftedEntries: number;  missingEntries: number;  untrackedEntries?: number;  drifts: DriftDetail[];  missing: MissingSymbolDetail[];  success: boolean;  configError?: string; }",
       "docRef": {
         "filePath": "docs/packages/cli/src/types/index.md"
       },
-      "lastUpdated": 1765232919551
+      "lastUpdated": 1765234320617
     },
     {
       "id": "5be2d6d9-33ea-42de-b9af-b41853d67503",
@@ -1294,12 +1281,12 @@
         "filePath": "packages/cli/src/types/index.ts",
         "symbolName": "FixOptions"
       },
-      "codeSignatureHash": "119bdc467f85cec8093843c53d65bbc57447a4ee684b5d99273981ef6b68a950",
-      "codeSignatureText": "interface FixOptions{map?: string;  verbose?: boolean;  dryRun?: boolean;  autoCommit?: boolean;  interactive?: boolean;  noAI?: boolean; }",
+      "codeSignatureHash": "e9ab4d9d502a0ca54c0fc4a56dc093d2d8477c6ad3c0bbba017e5c340eadfdcc",
+      "codeSignatureText": "interface FixOptions{map?: string;  verbose?: boolean;  dryRun?: boolean;  autoCommit?: boolean;  interactive?: boolean;  noAI?: boolean;  prune?: boolean; }",
       "docRef": {
         "filePath": "docs/packages/cli/src/types/index.md"
       },
-      "lastUpdated": 1765209229030
+      "lastUpdated": 1765235631708
     },
     {
       "id": "7a067762-58cf-4973-b3cf-cd5460e5c221",
@@ -2997,12 +2984,12 @@
         "filePath": "packages/cli/src/orchestrators/fix-orchestrator.ts",
         "symbolName": "processTask"
       },
-      "codeSignatureHash": "72b511ec65626bee3f67b2196bc084f5f79af690667bc7fda720921c54ba8368",
-      "codeSignatureText": "processTask = async(drift: DriftInfo): Promise<FixDetail> =>{const{entry,  currentSignature,  oldSignature}= drift;  const docFilePath = resolve(projectBase,  entry.docRef.filePath);  try{let newContent: string;  if(useAI && aiAgent){try{let currentMarkdownContent = '';  if(existsSync(docFilePath)){const docContent = readFileSync(docFilePath,  'utf-8');  const extractionResult = extractAnchors(docFilePath,  docContent);  const anchor = extractionResult.anchors.find((a: DoctypeAnchor)=> a.id === entry.id);  if(anchor){currentMarkdownContent = anchor.content; }}newContent = await retry(async()=>{if(oldSignature){const request: DocumentationRequest ={symbolName: entry.codeRef.symbolName,  oldSignature,  newSignature: currentSignature,  oldDocumentation: currentMarkdownContent,  context: entry.codeRef.filePath ?{filePath: entry.codeRef.filePath}: undefined,  prompt: PromptBuilder.buildStructuredSinglePrompt(entry.codeRef.symbolName,  currentSignature.signatureText,  currentMarkdownContent),  systemPrompt: PromptBuilder.buildStructuredSystemPrompt()};  const response = await aiAgent!.generateDocumentation(request);  return response.content; }else{const request: DocumentationRequest ={symbolName: entry.codeRef.symbolName,  oldSignature: currentSignature,  newSignature: currentSignature,  oldDocumentation: '',  prompt: PromptBuilder.buildStructuredSinglePrompt(entry.codeRef.symbolName,  currentSignature.signatureText,  ''),  systemPrompt: PromptBuilder.buildStructuredSystemPrompt()};  const response = await aiAgent!.generateDocumentation(request);  return response.content; }}, {retries: 3,  onRetry:(err,  attempt)=>{logger.debug(`Retry ${attempt}/3 for ${entry.codeRef.symbolName}: ${err.message}`); }}); }catch(aiError){const errorMsg = aiError instanceof Error ? aiError.message: String(aiError);  logger.error(`AI generation failed for ${entry.codeRef.symbolName}after retries: ${errorMsg}`);  newContent = generatePlaceholderContent(entry.codeRef.symbolName,  currentSignature.signatureText); }}else{newContent = generatePlaceholderContent(entry.codeRef.symbolName,  currentSignature.signatureText); }return await fileMutex.run(docFilePath,  async()=>{try{const writeToFile = !options.dryRun;  const result = injector.injectIntoFile(docFilePath,  entry.id,  newContent,  writeToFile);  if(result.success){if(!options.dryRun){const newHash = currentSignature.hash!;  mapManager.updateEntry(entry.id, {codeSignatureHash: newHash,  codeSignatureText: currentSignature.signatureText, });  mapManager.save(); }successCount++;  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: true,  newContent: newContent, }; }else{failCount++;  logger.error(`Failed to inject ${entry.codeRef.symbolName}: ${result.error}`);  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: false,  error: result.error, }; }}catch(e){failCount++;  const msg = e instanceof Error ? e.message: String(e);  logger.error(`Error writing ${entry.codeRef.symbolName}: ${msg}`);  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: false,  error: msg, }; }}); }catch(error){failCount++;  const errorMsg = error instanceof Error ? error.message: String(error);  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: false,  error: errorMsg, }; }}",
+      "codeSignatureHash": "cbce0c3906cdf6a446301cf5f5224b149453f855f3f07f891195a340e4f91b8b",
+      "codeSignatureText": "processTask = async(drift: DriftInfo): Promise<FixDetail> =>{const{entry,  currentSignature,  oldSignature}= drift;  const docFilePath = resolve(projectBase,  entry.docRef.filePath);  try{let newContent: string;  if(useAI && aiAgent){try{let currentMarkdownContent = '';  if(existsSync(docFilePath)){const docContent = readFileSync(docFilePath,  'utf-8');  const extractionResult = extractAnchors(docFilePath,  docContent);  const anchor = extractionResult.anchors.find((a: DoctypeAnchor)=> a.id === entry.id);  if(anchor){currentMarkdownContent = anchor.content; }}newContent = await retry(async()=>{if(oldSignature){const request: DocumentationRequest ={symbolName: entry.codeRef.symbolName,  oldSignature,  newSignature: currentSignature,  oldDocumentation: currentMarkdownContent,  context: entry.codeRef.filePath ?{filePath: entry.codeRef.filePath}: undefined,  prompt: PromptBuilder.buildStructuredSinglePrompt(entry.codeRef.symbolName,  currentSignature.signatureText,  currentMarkdownContent),  systemPrompt: PromptBuilder.buildStructuredSystemPrompt()};  const response = await aiAgent!.generateDocumentation(request);  return response.content; }else{const request: DocumentationRequest ={symbolName: entry.codeRef.symbolName,  oldSignature: currentSignature,  newSignature: currentSignature,  oldDocumentation: '',  prompt: PromptBuilder.buildStructuredSinglePrompt(entry.codeRef.symbolName,  currentSignature.signatureText,  ''),  systemPrompt: PromptBuilder.buildStructuredSystemPrompt()};  const response = await aiAgent!.generateDocumentation(request);  return response.content; }}, {retries: 3,  onRetry:(err,  attempt)=>{logger.debug(`Retry ${attempt}/3 for ${entry.codeRef.symbolName}: ${err.message}`); }}); }catch(aiError){const errorMsg = aiError instanceof Error ? aiError.message: String(aiError);  logger.error(`AI generation failed for ${entry.codeRef.symbolName}after retries: ${errorMsg}`);  newContent = generatePlaceholderContent(entry.codeRef.symbolName,  currentSignature.signatureText); }}else{newContent = generatePlaceholderContent(entry.codeRef.symbolName,  currentSignature.signatureText); }return await fileMutex.run(docFilePath,  async()=>{try{const dir = dirname(docFilePath);  if(!existsSync(dir)){try{const fs = await import('fs');  fs.mkdirSync(dir, {recursive: true}); }catch(e){}}let anchorExists = false;  if(existsSync(docFilePath)){const content = readFileSync(docFilePath,  'utf-8');  const anchors = extractAnchors(docFilePath,  content).anchors;  anchorExists = anchors.some((a: DoctypeAnchor)=> a.id === entry.id); }const writeToFile = !options.dryRun;  let result;  if(anchorExists){result = injector.injectIntoFile(docFilePath,  entry.id,  newContent,  writeToFile); }else{const codeRefString = `${entry.codeRef.filePath}#${entry.codeRef.symbolName}`;  result = inserter.insertIntoFile(docFilePath,  codeRefString, {createSection: true,  placeholder: newContent,  anchorId: entry.id},  writeToFile); }if(result.success){if(!options.dryRun){const newHash = currentSignature.hash!;  if(mapManager.getEntryById(entry.id)){mapManager.updateEntry(entry.id, {codeSignatureHash: newHash,  codeSignatureText: currentSignature.signatureText, }); }else{mapManager.addEntry(entry); }mapManager.save(); }successCount++;  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: true,  newContent: newContent, }; }else{failCount++;  logger.error(`Failed to inject ${entry.codeRef.symbolName}: ${result.error}`);  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: false,  error: result.error, }; }}catch(e){failCount++;  const msg = e instanceof Error ? e.message: String(e);  logger.error(`Error writing ${entry.codeRef.symbolName}: ${msg}`);  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: false,  error: msg, }; }}); }catch(error){failCount++;  const errorMsg = error instanceof Error ? error.message: String(error);  return{id: entry.id,  symbolName: entry.codeRef.symbolName,  codeFilePath: entry.codeRef.filePath,  docFilePath: entry.docRef.filePath,  success: false,  error: errorMsg, }; }}",
       "docRef": {
         "filePath": "docs/packages/cli/src/orchestrators/fix-orchestrator.md"
       },
-      "lastUpdated": 1765209229032
+      "lastUpdated": 1765235098117
     },
     {
       "id": "df9de851-36ab-4c60-8f85-849a9cee38f0",
@@ -3127,12 +3114,12 @@
         "filePath": "packages/cli/src/orchestrators/fix-orchestrator.ts",
         "symbolName": "result"
       },
-      "codeSignatureHash": "ef2fc82ff87cf1bdc04044ebd61435831c295e2cff26fac2b53fefd62e16c53b",
-      "codeSignatureText": "result = injector.injectIntoFile(docFilePath,  entry.id,  newContent,  writeToFile)",
+      "codeSignatureHash": "b5f3597fa24bc249a497b6858f124206374a4dcc53a2349b1e46975a0e02ac62",
+      "codeSignatureText": "result",
       "docRef": {
         "filePath": "docs/packages/cli/src/orchestrators/fix-orchestrator.md"
       },
-      "lastUpdated": 1765209229032
+      "lastUpdated": 1765235098123
     },
     {
       "id": "230032b5-7d42-4162-994d-449c2d67362e",
@@ -4713,12 +4700,12 @@
         "filePath": "packages/cli/src/commands/check.ts",
         "symbolName": "result"
       },
-      "codeSignatureHash": "d3243f9915f7c2ca73976aef167e1dd5ec86bbe7c3769e556dd75cae93d61395",
-      "codeSignatureText": "result: CheckResult ={totalEntries: entries.length,  driftedEntries: drifts.length,  missingEntries: missingDetails.length,  drifts,  missing: missingDetails,  success: drifts.length === 0 && missingDetails.length === 0, }",
+      "codeSignatureHash": "ad97c9142e58e04847519e320ba408d56a81d718f0c08181beb315a1847f891c",
+      "codeSignatureText": "result: CheckResult ={totalEntries: entries.length,  driftedEntries: drifts.length,  missingEntries: missingDetails.length,  untrackedEntries: untrackedSymbols.length,  drifts,  missing: missingDetails,  success: drifts.length === 0 && missingDetails.length === 0, }",
       "docRef": {
         "filePath": "docs/packages/cli/src/commands/check.md"
       },
-      "lastUpdated": 1765232916143
+      "lastUpdated": 1765234316421
     },
     {
       "id": "fc115443-1d32-4181-b86f-6ef8d6fde961",
@@ -5142,12 +5129,12 @@
         "filePath": "packages/cli/src/services/drift-detector.ts",
         "symbolName": "DriftDetectionOptions"
       },
-      "codeSignatureHash": "4b34dffae1c45c7b366a2cd70dd1a054fc62c4b58e271705bfb5cfec26b5df85",
-      "codeSignatureText": "interface DriftDetectionOptions{basePath?: string;  logger?: Logger; }",
+      "codeSignatureHash": "bc6862321152573aa18caa4ec90ec38d7fb8a8ae8be5817d00bfb97a95ae073a",
+      "codeSignatureText": "interface DriftDetectionOptions{basePath?: string;  logger?: Logger;  discoverUntracked?: boolean;  projectRoot?: string; }",
       "docRef": {
         "filePath": "docs/packages/cli/src/services/drift-detector.md"
       },
-      "lastUpdated": 1765209229035
+      "lastUpdated": 1765234335683
     },
     {
       "id": "02e09b54-a3b7-4b54-9b36-3d0399c6ce45",
@@ -6097,6 +6084,656 @@
         "filePath": "docs/packages/ai/structured-schema.md"
       },
       "lastUpdated": 1765209229039
+    },
+    {
+      "id": "4b08fa88-7cc6-4bdc-ba55-e2d6c9e309be",
+      "codeRef": {
+        "filePath": "docs/scripts/generateSidebar.ts",
+        "symbolName": "generateSidebar"
+      },
+      "codeSignatureHash": "cbdbe29e7063d7f70d4295a832df671aba483ae027fdf5f8d7925c5f4c554bc8",
+      "codeSignatureText": "function generateSidebar(customConfig?: Partial<SidebarConfig>): void",
+      "docRef": {
+        "filePath": "docs/docs/scripts/generateSidebar.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "bd88b7aa-a1ae-4162-bff1-320aee22e475",
+      "codeRef": {
+        "filePath": "docs/scripts/generateSidebar.ts",
+        "symbolName": "config"
+      },
+      "codeSignatureHash": "fdea193c96b7ef3f368ca38bc1ce462600402fd2e0e8a4e5db2765172e20cbd4",
+      "codeSignatureText": "config: SidebarConfig ={...DEFAULT_CONFIG,  ...customConfig, }",
+      "docRef": {
+        "filePath": "docs/docs/scripts/generateSidebar.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "8e1df251-fb79-4132-a1de-021411ab3477",
+      "codeRef": {
+        "filePath": "packages/core/native-types.d.ts",
+        "symbolName": "AnalysisResultJs"
+      },
+      "codeSignatureHash": "109defcff5a1ac5fe17e89ea4421fe3005d36e2bd6a5a612f8e6b82cb85cf8dd",
+      "codeSignatureText": "interface AnalysisResultJs{signatures: Array<CodeSignature>;  errors: Array<string>; }",
+      "docRef": {
+        "filePath": "docs/packages/core/native-types.d.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "49f0e557-1c6f-4ea2-b9fc-c8f44efcd7d4",
+      "codeRef": {
+        "filePath": "packages/cli/src/types/index.ts",
+        "symbolName": "MissingSymbolDetail"
+      },
+      "codeSignatureHash": "530df745f370476638ec590293392f62a0cc9791fed3c7bd48f626f309425ba5",
+      "codeSignatureText": "interface MissingSymbolDetail{id: string;  symbolName: string;  codeFilePath: string;  docFilePath: string;  reason: 'file_not_found' | 'symbol_not_found'; }",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/types/index.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "e7f00cc2-5174-4f3c-b4e3-3ba681686dea",
+      "codeRef": {
+        "filePath": "docs/scripts/generateSidebar.ts",
+        "symbolName": "sidebar"
+      },
+      "codeSignatureHash": "14205fcaf09493a06d9be3059bcb0c3656bf86d13eba7de8cd876df9d528df65",
+      "codeSignatureText": "sidebar = buildSidebarStructure(config)",
+      "docRef": {
+        "filePath": "docs/docs/scripts/generateSidebar.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "d84269c7-2f58-4698-bcdd-e4c6a7bd0e99",
+      "codeRef": {
+        "filePath": "packages/cli/src/orchestrators/fix-orchestrator.ts",
+        "symbolName": "inserter"
+      },
+      "codeSignatureHash": "f2da88a17ca0025c6da4490142a53a2d6d0ca22a055441632d2a6ff713a8251d",
+      "codeSignatureText": "inserter = new MarkdownAnchorInserter()",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/orchestrators/fix-orchestrator.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "ddc2a5b1-2be3-4aa8-9067-73d5d3167940",
+      "codeRef": {
+        "filePath": "packages/cli/src/orchestrators/fix-orchestrator.ts",
+        "symbolName": "dir"
+      },
+      "codeSignatureHash": "8069af1877590dc2914de55e27418196d1aacec0fbdfe7e83ffe5a096eab141a",
+      "codeSignatureText": "dir = dirname(docFilePath)",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/orchestrators/fix-orchestrator.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "d4a868f2-0ad2-43f6-bf65-3208740c2094",
+      "codeRef": {
+        "filePath": "packages/cli/src/orchestrators/fix-orchestrator.ts",
+        "symbolName": "fs"
+      },
+      "codeSignatureHash": "98caf27472baafe0a256f7b9e4468776aa1dee7ce7612eeab17d0720387d35e4",
+      "codeSignatureText": "fs = await import('fs')",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/orchestrators/fix-orchestrator.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "91931990-6104-4b13-9192-71da7d8ed0ad",
+      "codeRef": {
+        "filePath": "packages/cli/src/orchestrators/fix-orchestrator.ts",
+        "symbolName": "anchorExists"
+      },
+      "codeSignatureHash": "c918a7b697be42e78cc11962582cdcc600ccd2207d5b84f7b273ffd88cf9c1cb",
+      "codeSignatureText": "anchorExists = false",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/orchestrators/fix-orchestrator.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "cd3d6e50-ea36-43cb-8b6b-a4a53a47690c",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/fix.ts",
+        "symbolName": "mapManager"
+      },
+      "codeSignatureHash": "b6491eb827203e49a5757648e1d1828ad0b3644f10f3a16cd36faed15d1b303b",
+      "codeSignatureText": "mapManager = new DoctypeMapManager(mapPath)",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/fix.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "ab43c9de-6fb4-4002-8a8e-a598f8862d3d",
+      "codeRef": {
+        "filePath": "packages/cli/src/orchestrators/fix-orchestrator.ts",
+        "symbolName": "content"
+      },
+      "codeSignatureHash": "e327849427824ba20e7626764e2d39ea759d599390990bd6074f8eff0092e2bb",
+      "codeSignatureText": "content = readFileSync(docFilePath,  'utf-8')",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/orchestrators/fix-orchestrator.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "ac0fe79a-d338-4dc5-88ed-a5564031081c",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/fix.ts",
+        "symbolName": "analyzer"
+      },
+      "codeSignatureHash": "8595b7ed5c8aa848b61437a14874d8ac25d6077dc078faaaff4c79d5ebb3fc36",
+      "codeSignatureText": "analyzer = new AstAnalyzer()",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/fix.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "cdc06322-17e4-42b2-bd44-6f515a8906c7",
+      "codeRef": {
+        "filePath": "packages/cli/src/orchestrators/fix-orchestrator.ts",
+        "symbolName": "anchors"
+      },
+      "codeSignatureHash": "5f78fc0480b556007ba09ebf7dd00a4bbb3e6a520de134f1c0f247a8a1a14648",
+      "codeSignatureText": "anchors = extractAnchors(docFilePath,  content).anchors",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/orchestrators/fix-orchestrator.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "0d29f8c6-f5e1-44b7-bcd2-15127e58e94f",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/fix.ts",
+        "symbolName": "symbol"
+      },
+      "codeSignatureHash": "50374ca8ed57a2bc0b6311c852b2da86ad91317a5ab9a86616cfb941248ccadc",
+      "codeSignatureText": "symbol",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/fix.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "27c92952-5eba-4c6a-ab61-0d9c16cd307e",
+      "codeRef": {
+        "filePath": "packages/cli/src/orchestrators/fix-orchestrator.ts",
+        "symbolName": "codeRefString"
+      },
+      "codeSignatureHash": "5e2d3d85329383b11332711f61974fc6fbc086a07cbeba04fc4ccd265ee67f7f",
+      "codeSignatureText": "codeRefString = `${entry.codeRef.filePath}#${entry.codeRef.symbolName}`",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/orchestrators/fix-orchestrator.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "08f3cf26-0a13-4931-8606-859d39118fc3",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/menu.ts",
+        "symbolName": "showMainMenu"
+      },
+      "codeSignatureHash": "0358a0139592cf7a579ab024a4b5a2dd90c1f3ba0188645a3eb60b4d3205749b",
+      "codeSignatureText": "async function showMainMenu()",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/menu.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "59e97954-b613-4a0a-8cf4-74373f84e2bd",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/fix.ts",
+        "symbolName": "targetDocFile"
+      },
+      "codeSignatureHash": "7616c118360fc21b510dc66bb65c045d2edae78c9160cf6a4a4f1269f0e1dfcf",
+      "codeSignatureText": "targetDocFile = determineOutputFile(config.outputStrategy || 'mirror',  config.docsFolder,  symbol.filePath,  symbol.signature.symbolType)",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/fix.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "e9773d7b-dc06-4639-9ad8-c498de5ddac2",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/changeset.ts",
+        "symbolName": "analyzer"
+      },
+      "codeSignatureHash": "9e78c7091344c5f6f712c139d0326b7277c30bf4cb99bb30a1359d0f4ea734a0",
+      "codeSignatureText": "analyzer = new ChangesetAnalyzer(logger)",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/changeset.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "3479e3e3-5c21-4622-a567-3f2a0db4df57",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/menu.ts",
+        "symbolName": "action"
+      },
+      "codeSignatureHash": "c04e933d8162fe6377c4032984096bd025e630e2cd9dd9b5e977df470affda20",
+      "codeSignatureText": "action = await select({message: 'What would you like to do?',  options:[{value: 'init',  label: 'Initialize Doctype configuration',  hint: 'init'}, {value: 'check',  label: 'Check for documentation drift',  hint: 'check'}, {value: 'generate',  label: '[AI]Generate documentation',  hint: 'generate'}, {value: 'changeset',  label: '[AI]Generate changeset file',  hint: 'changeset'}, {value: 'fix',  label: '[AI]Fix documentation',  hint: 'fix'}, {value: 'exit',  label: 'Exit',  hint: 'exit'}, ], })",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/menu.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "08d23d35-c3c2-40b9-92a0-b21a76c92173",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/fix.ts",
+        "symbolName": "newEntry"
+      },
+      "codeSignatureHash": "b551589bf656ef8e96304aa191ff77e9ed0ca752543e85431c3af89a05111212",
+      "codeSignatureText": "newEntry ={id: uuidv4(),  codeRef:{filePath: symbol.filePath,  symbolName: symbol.symbolName},  codeSignatureHash: symbol.signature.hash!,  codeSignatureText: symbol.signature.signatureText,  docRef:{filePath: targetDocFile},  lastUpdated: Date.now()}",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/fix.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "7b5df41a-7fde-4c78-8d0b-5aa2212ba8ac",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/generate.ts",
+        "symbolName": "mapManager"
+      },
+      "codeSignatureHash": "b6491eb827203e49a5757648e1d1828ad0b3644f10f3a16cd36faed15d1b303b",
+      "codeSignatureText": "mapManager = new DoctypeMapManager(mapPath)",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/generate.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "07ed66b1-ef07-46ba-a12a-40ef690aced5",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/generate.ts",
+        "symbolName": "entries"
+      },
+      "codeSignatureHash": "ec2964e9276dc1a242d116890eb4277f255c98a215c8d4baf190438604120bec",
+      "codeSignatureText": "entries = mapManager.getEntries()",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/generate.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "161cfccf-2e45-4fba-85fe-225a42e8f407",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/check.ts",
+        "symbolName": "mapManager"
+      },
+      "codeSignatureHash": "b6491eb827203e49a5757648e1d1828ad0b3644f10f3a16cd36faed15d1b303b",
+      "codeSignatureText": "mapManager = new DoctypeMapManager(mapPath)",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/check.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "8a0adc2a-83ec-4a17-9378-1377f90135c1",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/generate.ts",
+        "symbolName": "analyzer"
+      },
+      "codeSignatureHash": "8595b7ed5c8aa848b61437a14874d8ac25d6077dc078faaaff4c79d5ebb3fc36",
+      "codeSignatureText": "analyzer = new AstAnalyzer()",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/generate.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "7e9bbe04-4c19-4ef1-9db5-c9591bbbff39",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/check.ts",
+        "symbolName": "entries"
+      },
+      "codeSignatureHash": "ec2964e9276dc1a242d116890eb4277f255c98a215c8d4baf190438604120bec",
+      "codeSignatureText": "entries = mapManager.getEntries()",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/check.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "dbad2435-0fe1-4bb8-b45d-57ea207b4c79",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/generate.ts",
+        "symbolName": "driftedIds"
+      },
+      "codeSignatureHash": "9750876fb0b4a7be55a524f266dd9518283d4ebf7368adcf44c797e2f8716271",
+      "codeSignatureText": "driftedIds = new Set(detectedDrifts.map(d => d.entry.id))",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/generate.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "9f155d6b-6d96-4e4d-9204-d15743aa4f39",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/check.ts",
+        "symbolName": "analyzer"
+      },
+      "codeSignatureHash": "8595b7ed5c8aa848b61437a14874d8ac25d6077dc078faaaff4c79d5ebb3fc36",
+      "codeSignatureText": "analyzer = new AstAnalyzer()",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/check.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "9fd1642a-75b6-4765-aeab-7d6f5aa4d139",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/check.ts",
+        "symbolName": "drifts"
+      },
+      "codeSignatureHash": "6fc2ba1f74b0ee8cb54a53c8b178de1ee0dc261f34728d021cae80798428cb3e",
+      "codeSignatureText": "drifts: DriftDetail[]= detectedDrifts.map((drift)=>({id: drift.entry.id,  symbolName: drift.entry.codeRef.symbolName,  codeFilePath: drift.entry.codeRef.filePath,  docFilePath: drift.entry.docRef.filePath,  oldHash: drift.oldHash,  newHash: drift.currentHash,  oldSignature: undefined,  newSignature: drift.currentSignature.signatureText, }))",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/check.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "c34bbf7d-ae08-4225-8cb7-8eb47faa595f",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/check.ts",
+        "symbolName": "missingDetails"
+      },
+      "codeSignatureHash": "cd5932ada5da95cd0081f093354973a297f1ee3f509d9c79c4d8b89f79f8026d",
+      "codeSignatureText": "missingDetails: import('../types').MissingSymbolDetail[]= missingSymbols.map((m)=>({id: m.entry.id,  symbolName: m.entry.codeRef.symbolName,  codeFilePath: m.entry.codeRef.filePath,  docFilePath: m.entry.docRef.filePath,  reason: m.reason, }))",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/check.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "d255c3fb-02ee-4dfe-bb09-532ac12162cf",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/check.ts",
+        "symbolName": "m"
+      },
+      "codeSignatureHash": "56c5b9df50cd713a64974faef341d9c5f991375beca20d798a25aa943122b82c",
+      "codeSignatureText": "m",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/check.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "3da63fd2-8010-4847-98c5-a172cacdb99d",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "MissingSymbolInfo"
+      },
+      "codeSignatureHash": "cb1935dead73e7f63195458275e76f3987c9a7b75f2b6b9abb8bfa09cb59b030",
+      "codeSignatureText": "interface MissingSymbolInfo{entry: DoctypeMapEntry;  reason: 'file_not_found' | 'symbol_not_found';  codeFilePath: string; }",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "b8724b5a-013e-484b-8e2c-a3b8667cdc85",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/check.ts",
+        "symbolName": "showCount"
+      },
+      "codeSignatureHash": "8684f9b89decd95d03da3f420b9a7ee778061b8d94d36deb3a8b978bed6d1d06",
+      "codeSignatureText": "showCount = options.verbose ? untrackedSymbols.length: Math.min(untrackedSymbols.length,  10)",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/check.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "a1fe33e9-904b-45a5-b02f-44b9cb6bdfa6",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "UntrackedSymbolInfo"
+      },
+      "codeSignatureHash": "2abbd58b34cdd1b7202789d29328c95854668ef67ce0bfea341a98da2679b95f",
+      "codeSignatureText": "interface UntrackedSymbolInfo{symbolName: string;  filePath: string;  signature: CodeSignature; }",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "cfa8c020-763d-4ee3-8e9c-749b27c8fd9e",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/check.ts",
+        "symbolName": "i"
+      },
+      "codeSignatureHash": "d6a4944778dbc4d6f18f78a19185379d883bcd803ebebebf8188d950fd313c7c",
+      "codeSignatureText": "i = 0",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/check.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "9518cb68-d0b8-497e-9f02-59c76fc8fa2e",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "DriftResult"
+      },
+      "codeSignatureHash": "1ee0bf33ee4086baa10ae03ba26f0ac22adfe32c005e6b125a493a13f0d8693d",
+      "codeSignatureText": "interface DriftResult{drifts: DriftInfo[];  missing: MissingSymbolInfo[];  untracked: UntrackedSymbolInfo[]; }",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "c80f4fe9-0cac-4730-81c2-4b1dfd97acae",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/check.ts",
+        "symbolName": "symbol"
+      },
+      "codeSignatureHash": "c6eb9015e74a594e3e03c43b3973dbe5f182ae23ebf9390664b1bc9d07ea753d",
+      "codeSignatureText": "symbol = untrackedSymbols[i]",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/check.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "bfe32920-da4e-4caf-802c-5cd54fb881aa",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "missing"
+      },
+      "codeSignatureHash": "ef47d5044d709b17862c1cb0930db7c1039c5330e3c1bb38de88b98a8be0fa22",
+      "codeSignatureText": "missing: MissingSymbolInfo[]=[]",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "ef21043f-2750-4b08-8228-40e302a4181b",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "untracked"
+      },
+      "codeSignatureHash": "fbe88921fcc724d91bbda0f9f7ae203e989b40c600752a87abaae69c3ac8ea1d",
+      "codeSignatureText": "untracked: UntrackedSymbolInfo[]=[]",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "a3cce4d3-9790-4a67-93f5-11ac541c1a63",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "tracked"
+      },
+      "codeSignatureHash": "f8530bf49f864347e12c4278ac73122bbdd06b3b62f55024ca7450354bc904cf",
+      "codeSignatureText": "tracked = new Set<string>()",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "5e8d1f03-eb7b-4203-9f2b-a5c9e28c41a6",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "absProjectRoot"
+      },
+      "codeSignatureHash": "b53e31725820a82dc7b023eea0962ad9b779a48a0b906357ab9ad03dcf41002f",
+      "codeSignatureText": "absProjectRoot = resolve(basePath,  projectRoot)",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "7e1b3893-ac50-449b-a200-886c9f464976",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "discoveryResult"
+      },
+      "codeSignatureHash": "8eb0ced70868e2b629aa380a87723b566ef897e82a58e86b50279f3241b0066a",
+      "codeSignatureText": "discoveryResult = discoverFiles(absProjectRoot, {respectGitignore: true,  includeHidden: false,  maxDepth: undefined, })",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "45b685ae-640a-45f0-a38e-5a34443cfc4d",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "file"
+      },
+      "codeSignatureHash": "4f06aae56e100130f902db5a33d10e14a1f8f9df9877e75be3f309e80899dced",
+      "codeSignatureText": "file",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "f51636bb-e734-4ffb-a0a7-b993cad1e05c",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "relativePath"
+      },
+      "codeSignatureHash": "7749035a8a937d76b8b19d32f0a5e0ccd25752a5ec4b005aa9806e3a12df53db",
+      "codeSignatureText": "relativePath = relative(basePath,  file).split(sep).join('/')",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "ce932dfc-ee34-4aa7-8fb1-3621f4cd5a55",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "sig"
+      },
+      "codeSignatureHash": "25272dd6733bd20ac09bdb2c76340e3acd7073fd7d771644352a98f078b53c94",
+      "codeSignatureText": "sig",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "bbb792d1-6103-478a-a5a7-371e481d78e5",
+      "codeRef": {
+        "filePath": "packages/cli/src/services/drift-detector.ts",
+        "symbolName": "key"
+      },
+      "codeSignatureHash": "ec56ba9c7440b67acbb0370799932495ec58d77ca8def442086326a480ab735a",
+      "codeSignatureText": "key = `${relativePath}#${sig.symbolName}`",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/services/drift-detector.md"
+      },
+      "lastUpdated": 1765235098103
+    },
+    {
+      "id": "f12267a3-ce67-40ad-9609-59f22e84d3cb",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/fix.ts",
+        "symbolName": "injector"
+      },
+      "codeSignatureHash": "4ffb9fa4df4c8e9ddd73ed4d24af3778875613f6dca1f16c44304d389549a286",
+      "codeSignatureText": "injector = new ContentInjector()",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/fix.md"
+      },
+      "lastUpdated": 1765235631695
+    },
+    {
+      "id": "c8f81426-6339-487e-8178-89ce9cdaa877",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/fix.ts",
+        "symbolName": "prunedCount"
+      },
+      "codeSignatureHash": "086259db86728ef6950d48101ce5a71566ccddeafd85c41bbc36a59fcfbfb4c2",
+      "codeSignatureText": "prunedCount = 0",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/fix.md"
+      },
+      "lastUpdated": 1765235631695
+    },
+    {
+      "id": "16373193-a861-40a5-a622-84fca443be46",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/fix.ts",
+        "symbolName": "m"
+      },
+      "codeSignatureHash": "56c5b9df50cd713a64974faef341d9c5f991375beca20d798a25aa943122b82c",
+      "codeSignatureText": "m",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/fix.md"
+      },
+      "lastUpdated": 1765235631695
+    },
+    {
+      "id": "3ba3c7e9-385e-41c6-aac3-b9453eb372bb",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/fix.ts",
+        "symbolName": "docFilePath"
+      },
+      "codeSignatureHash": "052e377ea2b4dfccc2930e5c5430eaa1693bbb75361157e4e393c7b354f87841",
+      "codeSignatureText": "docFilePath = resolve(config?.baseDir || process.cwd(),  m.entry.docRef.filePath)",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/fix.md"
+      },
+      "lastUpdated": 1765235631695
+    },
+    {
+      "id": "9aeac1c5-9d3d-4817-b92b-2085178a530e",
+      "codeRef": {
+        "filePath": "packages/cli/src/commands/fix.ts",
+        "symbolName": "result"
+      },
+      "codeSignatureHash": "f1a0134905bbc6032f5425f10eead4c2610bbd76def7546d44056bfc6bde30a4",
+      "codeSignatureText": "result = injector.removeAnchor(docFilePath,  m.entry.id,  true)",
+      "docRef": {
+        "filePath": "docs/packages/cli/src/commands/fix.md"
+      },
+      "lastUpdated": 1765235631695
     }
   ]
 }
