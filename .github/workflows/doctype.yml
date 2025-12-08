@@ -1,4 +1,4 @@
-name: Doctype Check
+name: Doctype
 
 on:
   push:
