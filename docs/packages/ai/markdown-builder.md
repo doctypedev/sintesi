@@ -14,9 +14,6 @@ TODO: Add documentation for this symbol
 
 ### parts
 
-<!-- doctype:start id="4bfc2210-19d8-4a40-bcd0-15c46a895e32" code_ref="packages/ai/markdown-builder.ts#parts" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="4bfc2210-19d8-4a40-bcd0-15c46a895e32" -->
 
 
 

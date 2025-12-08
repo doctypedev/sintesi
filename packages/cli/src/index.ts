@@ -202,6 +202,11 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           description: 'Disable AI-generated content (use placeholder instead)',
           default: false,
+        })
+        .option('prune', {
+          type: 'boolean',
+          description: 'Remove missing entries from the map and markdown',
+          default: false,
         });
     },
     async (argv) => {
@@ -212,6 +217,7 @@ yargs(hideBin(process.argv))
         autoCommit: argv['auto-commit'] as boolean,
         interactive: argv.interactive as boolean,
         noAI: argv['no-ai'] as boolean,
+        prune: argv.prune as boolean,
       };
 
       const result = await fixCommand(options);

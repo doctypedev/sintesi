@@ -8,6 +8,7 @@
  */
 
 import { DoctypeMapManager } from '../../../content/map-manager';
+import { ContentInjector } from '../../../content/content-injector';
 import { AstAnalyzer } from '@doctypedev/core';
 import { Logger } from '../utils/logger';
 import { FixResult, FixOptions } from '../types';
@@ -21,6 +22,8 @@ import {
   InvalidConfigError,
 } from '../services/config-loader';
 import { executeFixes } from '../orchestrators/fix-orchestrator';
+import { determineOutputFile } from '../orchestrators/init-orchestrator';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Execute the fix command
@@ -73,21 +76,6 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
 
   // Load the map
   const mapManager = new DoctypeMapManager(mapPath);
-  const entries = mapManager.getEntries();
-
-  if (entries.length === 0) {
-    logger.warn('No entries found in doctype-map.json');
-    return {
-      totalFixes: 0,
-      successfulFixes: 0,
-      failedFixes: 0,
-      fixes: [],
-      success: true,
-    };
-  }
-
-  logger.info(`Analyzing ${entries.length} documentation entries...`);
-  logger.newline();
 
   // Resolve the root directory for source code
   const codeRoot = config
@@ -96,13 +84,92 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
 
   // Detect drift using centralized logic
   const analyzer = new AstAnalyzer();
-  const { drifts: detectedDrifts, missing } = detectDrift(mapManager, analyzer, {
+  const { drifts: detectedDrifts, missing, untracked } = detectDrift(mapManager, analyzer, {
     logger,
     basePath: codeRoot,
+    discoverUntracked: true,
+    projectRoot: config ? config.projectRoot : undefined
   });
 
-  if (missing.length > 0) {
-    logger.warn(`Skipping ${missing.length} missing symbols/files (cannot fix automatically). Run 'check' command for details.`);
+  if (options.prune && missing.length > 0) {
+    logger.info(`Pruning ${missing.length} missing entries...`);
+    const injector = new ContentInjector();
+    let prunedCount = 0;
+
+    for (const m of missing) {
+      try {
+        const docFilePath = resolve(config?.baseDir || process.cwd(), m.entry.docRef.filePath);
+        let anchorRemoved = true;
+
+        // 1. Try to remove from markdown first
+        if (existsSync(docFilePath) && !options.dryRun) {
+          const result = injector.removeAnchor(docFilePath, m.entry.id, true);
+          anchorRemoved = result.success;
+
+          if (result.success) {
+            logger.debug(`Removed anchor for ${m.entry.codeRef.symbolName} from ${m.entry.docRef.filePath}`);
+          } else {
+            logger.warn(`Could not remove anchor for ${m.entry.codeRef.symbolName}: ${result.error}`);
+          }
+        }
+
+        // 2. Only remove from map if anchor was removed (or file didn't exist)
+        if (anchorRemoved) {
+          if (mapManager.removeEntry(m.entry.id)) {
+            prunedCount++;
+          }
+        }
+      } catch (error) {
+        logger.error(`Failed to prune ${m.entry.codeRef.symbolName}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+
+    if (!options.dryRun) {
+      mapManager.save();
+    }
+
+    logger.success(`Pruned ${prunedCount} entries from the map.`);
+  } else if (missing.length > 0) {
+    logger.warn(`Skipping ${missing.length} missing symbols/files (cannot fix automatically). Run 'fix --prune' to remove them.`);
+  }
+
+  // Process untracked symbols
+  if (untracked.length > 0) {
+    logger.info(`Found ${untracked.length} untracked symbols. Adding them to tracking...`);
+
+    for (const symbol of untracked) {
+      // Determine output file
+      const targetDocFile = determineOutputFile(
+        config.outputStrategy || 'mirror',
+        config.docsFolder,
+        symbol.filePath,
+        symbol.signature.symbolType
+      );
+
+      // Create new entry
+      const newEntry = {
+        id: uuidv4(),
+        codeRef: {
+          filePath: symbol.filePath,
+          symbolName: symbol.symbolName
+        },
+        codeSignatureHash: symbol.signature.hash!, // Hash is computed by analyzer
+        codeSignatureText: symbol.signature.signatureText,
+        docRef: {
+          filePath: targetDocFile
+        },
+        lastUpdated: Date.now()
+      };
+
+      // Add to drifts list to be processed (generated/injected)
+      detectedDrifts.push({
+        entry: newEntry,
+        currentSignature: symbol.signature,
+        currentHash: symbol.signature.hash!,
+        oldHash: '', // New entry
+        oldSignature: undefined
+      });
+    }
   }
 
   if (detectedDrifts.length === 0) {
@@ -116,7 +183,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
     };
   }
 
-  logger.info(`Found ${detectedDrifts.length} ${detectedDrifts.length === 1 ? 'entry' : 'entries'} with drift`);
+  logger.info(`Found ${detectedDrifts.length} ${detectedDrifts.length === 1 ? 'entry' : 'entries'} to update/generate`);
 
   if (options.dryRun) {
     logger.warn('Dry run mode - no files will be modified');

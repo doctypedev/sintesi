@@ -41,7 +41,7 @@ describe('CLI: check command', () => {
 
     // Create test doc file with anchor
     const testDoc = `# Test
-<!-- doctype:start id="test-id" code_ref="${testCodeFile}#testFunc" -->
+<!-- doctype:start id="test-id" code_ref="test.ts#testFunc" -->
 Test documentation
 <!-- doctype:end id="test-id" -->`;
     writeFileSync(testDocFile, testDoc);
@@ -57,12 +57,12 @@ Test documentation
       manager.addEntry({
         id: 'test-id',
         codeRef: {
-          filePath: testCodeFile,
+          filePath: 'test.ts',
           symbolName: 'testFunc',
         },
         codeSignatureHash: hash,
         docRef: {
-          filePath: testDocFile,
+          filePath: 'test.md',
         },
         lastUpdated: Date.now(),
       });

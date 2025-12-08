@@ -21,51 +21,30 @@ TODO: Add documentation for this symbol
 
 ### providerError
 
-<!-- doctype:start id="c60098d6-0a41-46b4-8f57-cc6109feca97" code_ref="packages/ai/ai-agent.ts#providerError" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="c60098d6-0a41-46b4-8f57-cc6109feca97" -->
 
 
 ### hasAttemptsLeft
 
-<!-- doctype:start id="fe76a300-d05d-4b3d-8bac-ce9eea7b2cc8" code_ref="packages/ai/ai-agent.ts#hasAttemptsLeft" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="fe76a300-d05d-4b3d-8bac-ce9eea7b2cc8" -->
 
 
 ### isRetryable
 
-<!-- doctype:start id="911b704b-c9c6-44f3-99a7-fcfac382123a" code_ref="packages/ai/ai-agent.ts#isRetryable" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="911b704b-c9c6-44f3-99a7-fcfac382123a" -->
 
 
 ### originalItem
 
-<!-- doctype:start id="63328b6d-6d5c-4764-ae08-100db2e911d5" code_ref="packages/ai/ai-agent.ts#originalItem" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="63328b6d-6d5c-4764-ae08-100db2e911d5" -->
 
 
 ### failure
 
-<!-- doctype:start id="093dd11c-0874-48d4-86d1-7bf29b5fa1f3" code_ref="packages/ai/ai-agent.ts#failure" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="093dd11c-0874-48d4-86d1-7bf29b5fa1f3" -->
 
 
 ### results
 
-<!-- doctype:start id="1890319c-9da0-4dd7-8c28-076c5608449c" code_ref="packages/ai/ai-agent.ts#results" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="1890319c-9da0-4dd7-8c28-076c5608449c" -->
 
 
 ### batchResult
 
-<!-- doctype:start id="e5631490-2f27-4c27-9059-2efb91c73c8e" code_ref="packages/ai/ai-agent.ts#batchResult" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="e5631490-2f27-4c27-9059-2efb91c73c8e" -->
 
 
 

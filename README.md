@@ -155,9 +155,9 @@ Authenticates a user with email and password credentials.
 - `Promise<string>`: JWT authentication token with 24-hour expiry
 
 **Example:**
-\`\`\`typescript
+```typescript
 const token = await login('user@example.com', 'securePassword123');
-\`\`\`
+```
 <!-- doctype:end id="auth-login" -->
 ```
 
@@ -206,6 +206,7 @@ $ doctype changeset
 ```
 
 ---
+
 
 ### `doctype init`
 
@@ -266,6 +267,11 @@ doctype check --verbose
 - `0` = Docs are in sync ✅
 - `1` = Drift detected ❌
 
+**What it does:**
+1. **Drift Detection:** Checks if tracked code signatures have changed since the last update.
+2. **Missing Symbols:** Detects symbols that have been renamed or removed from the codebase.
+3. **Untracked Symbols:** Scans your project for new exported symbols that are not yet documented/tracked.
+
 **Example output when drift detected:**
 ```
 ⚠ Documentation drift detected in 2 entries:
@@ -273,6 +279,12 @@ doctype check --verbose
   login - src/auth/login.ts
     Documentation: docs/auth.md:10
     Cause: Function signature changed
+
+⚠ Found 1 untracked symbol (not documented): 
+  
+  newHelperFunc in src/utils.ts
+
+ℹ Run `npx doctype fix` to update the documentation
 ```
 
 ### `doctype fix`
@@ -287,28 +299,31 @@ doctype fix --auto-commit
 - `--dry-run` - Preview changes without writing files
 - `--auto-commit` - Automatically commit changes to git
 - `--no-ai` - Skip AI generation (useful for testing CI/CD pipelines without consuming tokens - does not update documentation content)
+- `--prune` - Automatically remove missing symbols (deleted/renamed code) from the map and markdown
 - `--verbose` - Show detailed output
 
 **What it does:**
-1. Detects which documentation is outdated
-2. Sends old signature + new signature to GPT-4
-3. Receives updated, intelligent documentation
-4. Injects content into your Markdown files
-5. Updates `doctype-map.json` with new hashes
-6. (Optional) Auto-commits with message: `🤖 Doctype Bot: Auto-fix documentation for login`
+1. Detects outdated documentation (drift) and new untracked symbols.
+2. Sends old signature + new signature to GPT-4.
+3. Receives updated, intelligent documentation.
+4. Injects content into your Markdown files (updating existing anchors or creating new ones).
+5. Updates `doctype-map.json` with new hashes.
+6. (Optional) Prunes dead entries if `--prune` is used.
+7. (Optional) Auto-commits with message: `🤖 Doctype Bot: Auto-fix documentation for login`
 
 ## CI/CD Integration
 
 > **🚧 In Progress**
->
+> 
 > CI/CD integration workflows are currently being finalized. Full GitHub Actions, GitLab CI, and other platform integrations will be documented here soon.
->
+> 
 > Basic usage in CI:
 > ```bash
 > doctype check  # Fails with exit code 1 if drift detected
 > ```
 
 ---
+
 
 ## How It Works
 
@@ -348,7 +363,7 @@ GPT-4 returns:
 
 **Example prompt sent to GPT-4:**
 
-> *"The function signature changed from `login(email: string)` to `login(email: string, password: string)`. The previous documentation described it as 'Authenticates a user with email.' Update the documentation to reflect the new parameter while maintaining the same style and clarity."*
+> *"The function signature changed from `login(email: string)` to `login(email: string, password: string)`. The previous documentation described it as 'Authenticates a user with email.' Update the documentation to reflect the new parameter while maintaining the same style and clarity."
 
 **GPT-4's response** is injected between your anchor tags. Your docs update automatically.
 
@@ -432,14 +447,14 @@ Processes a payment transaction with the specified amount, currency, and payment
   - `receipt`: Receipt URL
 
 **Example:**
-\`\`\`typescript
+```typescript
 const transaction = await processPayment(
   99.99,
   'USD',
   { type: 'card', last4: '4242' }
 );
 console.log(transaction.id); // "txn_abc123"
-\`\`\`
+```
 
 **Errors:**
 - Throws `InvalidCurrencyError` if currency code is invalid

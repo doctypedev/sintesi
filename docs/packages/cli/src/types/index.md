@@ -1,5 +1,19 @@
 # API Reference
 
+### MissingSymbolDetail
+
+<!-- doctype:start id="49f0e557-1c6f-4ea2-b9fc-c8f44efcd7d4" code_ref="packages/cli/src/types/index.ts#MissingSymbolDetail" -->
+**MissingSymbolDetail** - Documentation needs generation
+
+Current signature:
+```typescript
+interface MissingSymbolDetail{id: string;  symbolName: string;  codeFilePath: string;  docFilePath: string;  reason: 'file_not_found' | 'symbol_not_found'; }
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="49f0e557-1c6f-4ea2-b9fc-c8f44efcd7d4" -->
+
+
 ### DoctypeConfig
 
 <!-- doctype:start id="f784f178-4d6d-478e-b4c7-284f00991679" code_ref="packages/cli/src/types/index.ts#DoctypeConfig" -->
@@ -59,7 +73,14 @@ TODO: Add documentation for this symbol
 ### FixOptions
 
 <!-- doctype:start id="7884a1b8-094e-44c5-97e5-d18517139c62" code_ref="packages/cli/src/types/index.ts#FixOptions" -->
-TODO: Add documentation for this symbol
+**FixOptions** - Documentation needs generation
+
+Current signature:
+```typescript
+interface FixOptions{map?: string;  verbose?: boolean;  dryRun?: boolean;  autoCommit?: boolean;  interactive?: boolean;  noAI?: boolean;  prune?: boolean; }
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
 <!-- doctype:end id="7884a1b8-094e-44c5-97e5-d18517139c62" -->
 
 
@@ -107,6 +128,7 @@ TODO: Add documentation for this symbol
 - `totalEntries` (`number`): The total number of entries processed in the check operation.
 - `driftedEntries` (`number`): The number of entries that have drifted from their expected state.
 - `missingEntries` (`number`): The count of entries that are missing from the expected dataset.
+- `untrackedEntries` (optional) (`number`): The number of entries that are present but not tracked in the expected dataset. Default: `undefined`
 - `drifts` (`DriftDetail[]`): An array of details about the drifts found during the check.
 - `missing` (`MissingSymbolDetail[]`): An array of details about the missing entries.
 - `success` (`boolean`): Indicates whether the check operation was successful or not.

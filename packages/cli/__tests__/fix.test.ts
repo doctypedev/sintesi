@@ -75,17 +75,20 @@ Old documentation
       manager.addEntry({
         id: 'test-id',
         codeRef: {
-          filePath: testCodeFile,
+          filePath: 'test.ts', // Relative path
           symbolName: 'testFunc',
         },
         codeSignatureHash: oldHash,
         docRef: {
-          filePath: testDocFile,
+          filePath: 'test.md', // Relative path
         },
         lastUpdated: Date.now(),
       });
       manager.save();
     }
+    
+    // Delete temp file to avoid untracked symbol detection
+    unlinkSync(tempOldFile);
 
     // Step 2: Create CURRENT code file with DIFFERENT signature (adds parameter = drift!)
     const currentCode = `export function testFunc(x: number, y: number): number {

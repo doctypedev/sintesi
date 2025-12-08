@@ -5,6 +5,46 @@ Auto-generated documentation via Doctype.
 
 ## API Reference
 
+### result
+
+
+
+### docFilePath
+
+
+
+### m
+
+
+
+### prunedCount
+
+
+
+### injector
+
+
+
+### newEntry
+
+
+
+### targetDocFile
+
+
+
+### symbol
+
+
+
+### analyzer
+
+
+
+### mapManager
+
+
+
 ### detectedDrifts
 
 <!-- doctype:start id="559df450-ff6c-40aa-aa0b-4bfc93f51ce8" code_ref="packages/cli/src/commands/fix.ts#detectedDrifts" -->
@@ -21,9 +61,6 @@ TODO: Add documentation for this symbol
 
 ### codeRoot
 
-<!-- doctype:start id="9df61279-3a02-4adf-86be-9b027697e81d" code_ref="packages/cli/src/commands/fix.ts#codeRoot" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="9df61279-3a02-4adf-86be-9b027697e81d" -->
 
 
 ### entries
@@ -42,23 +79,14 @@ TODO: Add documentation for this symbol
 
 ### mapPath
 
-<!-- doctype:start id="e188eabe-f552-4d47-9dc1-282facdcfa5b" code_ref="packages/cli/src/commands/fix.ts#mapPath" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="e188eabe-f552-4d47-9dc1-282facdcfa5b" -->
 
 
 ### config
 
-<!-- doctype:start id="1cbd8007-0ea2-41a7-a168-62b6ec683df3" code_ref="packages/cli/src/commands/fix.ts#config" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="1cbd8007-0ea2-41a7-a168-62b6ec683df3" -->
 
 
 ### logger
 
-<!-- doctype:start id="5ac6bbdd-1a3b-4733-ae25-6188dc80790a" code_ref="packages/cli/src/commands/fix.ts#logger" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="5ac6bbdd-1a3b-4733-ae25-6188dc80790a" -->
 
 
 

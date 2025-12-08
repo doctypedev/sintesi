@@ -12,6 +12,7 @@
 
 import { DoctypeMapManager } from '../../../content/map-manager';
 import { ContentInjector } from '../../../content/content-injector';
+import { MarkdownAnchorInserter } from '../../../content/markdown-anchor-inserter';
 import { extractAnchors, DoctypeAnchor } from '@doctypedev/core';
 import { Logger } from '../utils/logger';
 import { FixResult, FixOptions, FixDetail } from '../types';
@@ -109,6 +110,7 @@ export async function executeFixes(
 
   const fileMutex = new FileMutex();
   const injector = new ContentInjector();
+  const inserter = new MarkdownAnchorInserter();
   let successCount = 0;
   let failCount = 0;
 
@@ -186,19 +188,57 @@ export async function executeFixes(
         newContent = generatePlaceholderContent(entry.codeRef.symbolName, currentSignature.signatureText);
       }
 
-      // 2. Inject Content (Fast, Sequential per file via Mutex)
+      // 2. Inject/Insert Content (Fast, Sequential per file via Mutex)
       return await fileMutex.run(docFilePath, async () => {
         try {
+          // Ensure directory exists
+          const dir = dirname(docFilePath);
+          if (!existsSync(dir)) {
+            try {
+                const fs = await import('fs');
+                fs.mkdirSync(dir, { recursive: true });
+            } catch (e) {
+                // Ignore if already exists
+            }
+          }
+
+          // Check if anchor exists to decide between Inject (update) or Insert (create)
+          let anchorExists = false;
+          if (existsSync(docFilePath)) {
+             const content = readFileSync(docFilePath, 'utf-8');
+             const anchors = extractAnchors(docFilePath, content).anchors;
+             anchorExists = anchors.some((a: DoctypeAnchor) => a.id === entry.id);
+          }
+
           const writeToFile = !options.dryRun;
-          const result = injector.injectIntoFile(docFilePath, entry.id, newContent, writeToFile);
+          let result;
+
+          if (anchorExists) {
+             // Update existing anchor
+             result = injector.injectIntoFile(docFilePath, entry.id, newContent, writeToFile);
+          } else {
+             // Insert new anchor with content
+             const codeRefString = `${entry.codeRef.filePath}#${entry.codeRef.symbolName}`;
+             result = inserter.insertIntoFile(docFilePath, codeRefString, {
+                 createSection: true,
+                 placeholder: newContent,
+                 anchorId: entry.id
+             }, writeToFile);
+          }
 
           if (result.success) {
             if (!options.dryRun) {
               const newHash = currentSignature.hash!;
-              mapManager.updateEntry(entry.id, {
-                codeSignatureHash: newHash,
-                codeSignatureText: currentSignature.signatureText,
-              });
+              
+              // Check if entry exists, if not add it, else update it
+              if (mapManager.getEntryById(entry.id)) {
+                  mapManager.updateEntry(entry.id, {
+                    codeSignatureHash: newHash,
+                    codeSignatureText: currentSignature.signatureText,
+                  });
+              } else {
+                  mapManager.addEntry(entry);
+              }
 
               // Save map immediately to keep it in sync with the file system
               // This prevents inconsistent state if the process is interrupted (Ctrl+C)
@@ -343,8 +383,8 @@ export async function executeFixes(
 function generatePlaceholderContent(symbolName: string, signature: string): string {
   return `**${symbolName}** - Documentation needs generation\n\n` +
     `Current signature:\n` +
-    `\`\`\`typescript\n` +
+    '```typescript\n' +
     `${signature}\n` +
-    `\`\`\`\n\n` +
+    '```\n\n' +
     `*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*`;
 }

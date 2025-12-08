@@ -5,60 +5,114 @@ Auto-generated documentation via Doctype.
 
 ## API Reference
 
+### key
+
+
+
+### sig
+
+
+
+### relativePath
+
+
+
+### file
+
+
+
+### discoveryResult
+
+
+
+### absProjectRoot
+
+
+
+### tracked
+
+
+
+### untracked
+
+
+
+### missing
+
+
+
+### DriftResult
+
+<!-- doctype:start id="9518cb68-d0b8-497e-9f02-59c76fc8fa2e" code_ref="packages/cli/src/services/drift-detector.ts#DriftResult" -->
+**DriftResult** - Documentation needs generation
+
+Current signature:
+```typescript
+interface DriftResult{drifts: DriftInfo[];  missing: MissingSymbolInfo[];  untracked: UntrackedSymbolInfo[]; }
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="9518cb68-d0b8-497e-9f02-59c76fc8fa2e" -->
+
+
+### UntrackedSymbolInfo
+
+<!-- doctype:start id="a1fe33e9-904b-45a5-b02f-44b9cb6bdfa6" code_ref="packages/cli/src/services/drift-detector.ts#UntrackedSymbolInfo" -->
+**UntrackedSymbolInfo** - Documentation needs generation
+
+Current signature:
+```typescript
+interface UntrackedSymbolInfo{symbolName: string;  filePath: string;  signature: CodeSignature; }
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="a1fe33e9-904b-45a5-b02f-44b9cb6bdfa6" -->
+
+
+### MissingSymbolInfo
+
+<!-- doctype:start id="3da63fd2-8010-4847-98c5-a172cacdb99d" code_ref="packages/cli/src/services/drift-detector.ts#MissingSymbolInfo" -->
+**MissingSymbolInfo** - Documentation needs generation
+
+Current signature:
+```typescript
+interface MissingSymbolInfo{entry: DoctypeMapEntry;  reason: 'file_not_found' | 'symbol_not_found';  codeFilePath: string; }
+```
+
+*This content is a placeholder. Run 'doctype generate' with a valid AI API key to generate full documentation.*
+<!-- doctype:end id="3da63fd2-8010-4847-98c5-a172cacdb99d" -->
+
+
 ### oldSignature
 
-<!-- doctype:start id="09ed9209-987c-46d5-b7dd-c71ec5193406" code_ref="packages/cli/src/services/drift-detector.ts#oldSignature" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="09ed9209-987c-46d5-b7dd-c71ec5193406" -->
 
 
 ### currentHash
 
-<!-- doctype:start id="fe9e7d6a-b817-4f2a-b669-04de8f49fc74" code_ref="packages/cli/src/services/drift-detector.ts#currentHash" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="fe9e7d6a-b817-4f2a-b669-04de8f49fc74" -->
 
 
 ### currentSignature
 
-<!-- doctype:start id="e09ccf26-1acb-4bbf-92af-80b80489b8c4" code_ref="packages/cli/src/services/drift-detector.ts#currentSignature" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="e09ccf26-1acb-4bbf-92af-80b80489b8c4" -->
 
 
 ### signatures
 
-<!-- doctype:start id="e8fdee41-1e83-4b69-980f-f0c392f27d7c" code_ref="packages/cli/src/services/drift-detector.ts#signatures" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="e8fdee41-1e83-4b69-980f-f0c392f27d7c" -->
 
 
 ### codeFilePath
 
-<!-- doctype:start id="9a7b3476-6855-4aed-8180-680243d58436" code_ref="packages/cli/src/services/drift-detector.ts#codeFilePath" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="9a7b3476-6855-4aed-8180-680243d58436" -->
 
 
 ### entry
 
-<!-- doctype:start id="20c02e1c-28ca-4960-bc11-3e7df384d8fd" code_ref="packages/cli/src/services/drift-detector.ts#entry" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="20c02e1c-28ca-4960-bc11-3e7df384d8fd" -->
 
 
 ### drifts
 
-<!-- doctype:start id="d3a256f4-d166-4edd-bf38-5641a33dc66b" code_ref="packages/cli/src/services/drift-detector.ts#drifts" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="d3a256f4-d166-4edd-bf38-5641a33dc66b" -->
 
 
 ### entries
 
-<!-- doctype:start id="0de3a4dd-17b4-4113-a2cc-b7fa973aeb2c" code_ref="packages/cli/src/services/drift-detector.ts#entries" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="0de3a4dd-17b4-4113-a2cc-b7fa973aeb2c" -->
 
 
 ### detectDrift
@@ -86,7 +140,20 @@ const driftResults = detectDrift(mapManagerInstance, astAnalyzerInstance, { thre
 ### DriftDetectionOptions
 
 <!-- doctype:start id="632b7101-ac7e-4f6b-ac44-6ed8972791ae" code_ref="packages/cli/src/services/drift-detector.ts#DriftDetectionOptions" -->
-TODO: Add documentation for this symbol
+**Purpose:** This interface defines configuration options for drift detection, allowing users to customize the detection process based on specific requirements.
+
+**Parameters:**
+- `basePath` (optional) (`string`): The base directory for drift detection operations. Default: `undefined`
+- `logger` (optional) (`Logger`): An instance of a logging utility for tracking drift detection events. Default: `undefined`
+- `discoverUntracked` (optional) (`boolean`): A flag indicating whether to discover untracked files that may cause drift. Default: `false`
+- `projectRoot` (optional) (`string`): The root directory of the project for context in drift detection. Default: `undefined`
+
+**Returns:** `void` - This interface does not have a return type as it is used for configuration.
+
+**Usage Example:**
+```typescript
+const options: DriftDetectionOptions = { basePath: '/src', discoverUntracked: true };
+```
 <!-- doctype:end id="632b7101-ac7e-4f6b-ac44-6ed8972791ae" -->
 
 

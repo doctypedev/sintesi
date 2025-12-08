@@ -55,6 +55,93 @@ export class ContentInjector {
   }
 
   /**
+   * Remove an anchor and its content from a markdown file
+   * @param filePath Path to the markdown file
+   * @param anchorId ID of the anchor to remove
+   * @param writeToFile If true, writes changes to file
+   * @returns InjectionResult with success status
+   */
+  public removeAnchor(
+    filePath: string,
+    anchorId: string,
+    writeToFile: boolean = true
+  ): InjectionResult {
+    try {
+      const originalContent = readFileSync(filePath, 'utf-8');
+      const result = this.removeAnchorFromContent(originalContent, anchorId);
+
+      if (result.success && writeToFile) {
+        writeFileSync(filePath, result.content, 'utf-8');
+      }
+
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        content: '',
+        linesChanged: 0,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  /**
+   * Remove an anchor and its content from markdown string
+   * @param content Markdown content
+   * @param anchorId ID of the anchor to remove
+   * @returns InjectionResult with success status
+   */
+  public removeAnchorFromContent(content: string, anchorId: string): InjectionResult {
+    const lines = content.split('\n');
+    let startLine = -1;
+    let endLine = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const startMatch = line.match(/<!--\s*doctype:start\s+id="([^"]+)"/);
+      if (startMatch && startMatch[1] === anchorId) {
+        startLine = i;
+        continue;
+      }
+      if (startLine !== -1) {
+        const endMatch = line.match(/<!--\s*doctype:end\s+id="([^"]+)"/);
+        if (endMatch && endMatch[1] === anchorId) {
+          endLine = i;
+          break;
+        }
+      }
+    }
+
+    if (startLine === -1 || endLine === -1) {
+      return {
+        success: false,
+        content,
+        linesChanged: 0,
+        error: `Anchor with id="${anchorId}" not found`,
+      };
+    }
+
+    // Check if there is a title just before the anchor (e.g. ### SymbolName)
+    // We should remove it too if it exists.
+    // Usually it is startLine - 2 (blank line, then title) or -1.
+    // Heuristic: if line before is a header, remove it?
+    // Or just remove the anchor block for safety. 
+    // Removing the header is risky if multiple things share it (unlikely for symbols).
+    // Let's try to remove the header if it matches "### SymbolName" pattern?
+    // But we don't know the symbol name easily here.
+    // Let's stick to removing the anchor block and surrounding empty lines.
+
+    // Remove lines from startLine to endLine
+    lines.splice(startLine, endLine - startLine + 1);
+    
+    return {
+      success: true,
+      content: lines.join('\n'),
+      linesChanged: endLine - startLine + 1,
+    };
+  }
+
+  /**
    * Inject new content into markdown content string at the specified anchor
    * @param content Original markdown content
    * @param anchorId ID of the anchor where content should be injected
