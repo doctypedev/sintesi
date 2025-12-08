@@ -29,6 +29,8 @@ export interface CodeSignature {
   signatureText: string;
   /** Whether the symbol is exported */
   isExported: boolean;
+  /** SHA256 hash of the signature (computed by Rust analyzer) */
+  hash?: string;
 }
 /**
  * Types of symbols we track
@@ -50,7 +52,7 @@ export interface SignatureHash {
   hash: string;
   /** Original signature that was hashed */
   signature: CodeSignature;
-  /** Timestamp when hash was generated */
+  /** Timestamp when hash was generated (milliseconds since Unix epoch) */
   timestamp: number;
 }
 /**
@@ -90,10 +92,13 @@ export interface DoctypeMap {
   /** All tracked documentation anchors */
   entries: Array<DoctypeMapEntry>;
 }
-/** Simple hello world function to test the napi binding */
-export declare function helloWorld(): string;
-/** Get version information */
-export declare function getVersion(): string;
+/** Analysis result including errors (for NAPI) */
+export interface AnalysisResultJs {
+  /** All code signatures found */
+  signatures: Array<CodeSignature>;
+  /** Errors encountered during parsing */
+  errors: Array<string>;
+}
 /** NAPI-compatible result structure for file discovery */
 export interface FileDiscoveryResult {
   /** List of markdown file paths found */
@@ -143,20 +148,6 @@ export declare function discoverFiles(
   rootPath: string,
   options?: FileDiscoveryOptions | undefined | null,
 ): FileDiscoveryResult;
-/** AST Analyzer for TypeScript/JavaScript code */
-export declare class AstAnalyzer {
-  /** Create a new AST analyzer instance */
-  constructor();
-  /**
-   * Analyze a TypeScript/JavaScript file and return information
-   *
-   * This is a placeholder that returns a hello world message.
-   * In the future, this will parse the file and extract symbols.
-   */
-  analyzeFile(filePath: string): string;
-  /** Get a list of exported symbols from a file (placeholder) */
-  getSymbols(filePath: string): Array<string>;
-}
 /** NAPI-compatible doctype anchor structure */
 export interface DoctypeAnchor {
   /** Unique anchor ID */
@@ -269,3 +260,39 @@ export interface CodeRefParts {
   symbolName: string;
 }
 export declare function parseCodeRef(codeRef: string): CodeRefParts;
+/** Simple hello world function to test the napi binding */
+export declare function helloWorld(): string;
+/** Get version information */
+export declare function getVersion(): string;
+/** AST Analyzer for TypeScript/JavaScript code */
+export declare class AstAnalyzer {
+  /** Create a new AST analyzer instance */
+  constructor();
+  /**
+   * Analyze a TypeScript/JavaScript file and return code signatures
+   *
+   * This method reads the file, parses it using Oxc, and extracts all
+   * exported symbols with their signatures. Hashes are computed automatically.
+   *
+   * @param filePath - Absolute path to the TypeScript/JavaScript file
+   * @returns Array of code signatures found in the file (with hashes)
+   */
+  analyzeFile(filePath: string): Array<CodeSignature>;
+  /**
+   * Analyze TypeScript/JavaScript source code directly (without file)
+   *
+   * This method parses the provided code string using Oxc and extracts all
+   * exported symbols with their signatures. Hashes are computed automatically.
+   *
+   * @param code - TypeScript/JavaScript source code
+   * @returns Array of code signatures found in the code (with hashes)
+   */
+  analyzeCode(code: string): Array<CodeSignature>;
+  /**
+   * Get detailed analysis result including errors
+   *
+   * @param code - TypeScript/JavaScript source code
+   * @returns Detailed analysis result with symbols and errors (with hashes)
+   */
+  analyzeWithErrors(code: string): AnalysisResultJs;
+}

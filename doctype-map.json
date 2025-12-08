@@ -20,12 +20,12 @@
         "filePath": "packages/core/native-types.d.ts",
         "symbolName": "CodeSignature"
       },
-      "codeSignatureHash": "b5d449f4e4ed4f24bb3ec15975f230f2ce03b84772b5ff9c92a5c7c0d0b4dba6",
-      "codeSignatureText": "interface CodeSignature{symbolName: string;  symbolType: SymbolType;  signatureText: string;  isExported: boolean; }",
+      "codeSignatureHash": "a3d6058d123d76a3f31fcaa937ea6376c8fa67f5687b005a3d3356485433e7bd",
+      "codeSignatureText": "interface CodeSignature{symbolName: string;  symbolType: SymbolType;  signatureText: string;  isExported: boolean;  hash?: string; }",
       "docRef": {
         "filePath": "docs/packages/core/native-types.d.md"
       },
-      "lastUpdated": 1765209229028
+      "lastUpdated": 1765209575997
     },
     {
       "id": "f45a40de-94b1-4068-a4d3-57b3546a5a22",
@@ -163,12 +163,12 @@
         "filePath": "packages/core/native-types.d.ts",
         "symbolName": "AstAnalyzer"
       },
-      "codeSignatureHash": "3cfe8b117ea8a4fa90eaa6a1c160387bbb10a5c8cb48a3174de890df854ebb78",
-      "codeSignatureText": "class AstAnalyzer{constructor(); ;  analyzeFile(filePath: string): string; ;  getSymbols(filePath: string): Array<string>; }",
+      "codeSignatureHash": "85625a321a588a7857541aa0b84398b07cfa19b398e3818cc46c2ca3615bf011",
+      "codeSignatureText": "class AstAnalyzer{constructor(); ;  analyzeFile(filePath: string): Array<CodeSignature>; ;  analyzeCode(code: string): Array<CodeSignature>; ;  analyzeWithErrors(code: string): AnalysisResultJs; }",
       "docRef": {
         "filePath": "docs/packages/core/native-types.d.md"
       },
-      "lastUpdated": 1765209229028
+      "lastUpdated": 1765209588058
     },
     {
       "id": "9dad6b20-53f2-44c2-884f-222986689fa2",

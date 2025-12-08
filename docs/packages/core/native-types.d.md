@@ -50,7 +50,48 @@ TODO: Add documentation for this symbol
 ### AstAnalyzer
 
 <!-- doctype:start id="1db1d9a7-f693-446f-a1b7-10b32e6df4b2" code_ref="packages/core/native-types.d.ts#AstAnalyzer" -->
-TODO: Add documentation for this symbol
+**AstAnalyzer**
+
+The `AstAnalyzer` class provides methods to analyze files and code snippets, returning structured data about the code's syntax and semantics.
+
+**Constructor**  
+- `constructor()`: Initializes an instance of the `AstAnalyzer`.
+
+**Methods**  
+- `analyzeFile(filePath: string): Array<CodeSignature>`  
+  Analyzes a file specified by its path.  
+  - **Parameters**:  
+    - `filePath` (string): The path to the file to be analyzed.  
+  - **Returns**:  
+    - `Array<CodeSignature>`: An array of code signatures extracted from the analyzed file.
+
+- `analyzeCode(code: string): Array<CodeSignature>`  
+  Analyzes a string of code.  
+  - **Parameters**:  
+    - `code` (string): A string containing the code to be analyzed.  
+  - **Returns**:  
+    - `Array<CodeSignature>`: An array of code signatures extracted from the analyzed code.
+
+- `analyzeWithErrors(code: string): AnalysisResultJs`  
+  Analyzes a string of code and also detects any syntax or semantic errors.  
+  - **Parameters**:  
+    - `code` (string): A string containing the code to be analyzed along with error detection.  
+  - **Returns**:  
+    - `AnalysisResultJs`: An object containing the results of the analysis, including any errors found.
+
+**Usage Example**  
+```typescript
+const analyzer = new AstAnalyzer();
+
+// Analyzing a file
+const fileSignatures = analyzer.analyzeFile('path/to/file.ts');
+
+// Analyzing a code snippet directly
+const codeSignatures = analyzer.analyzeCode('const a = 5;');
+
+// Analyzing with error detection
+const analysisResult = analyzer.analyzeWithErrors('const b = ;');  // [Syntax Error]
+```
 <!-- doctype:end id="1db1d9a7-f693-446f-a1b7-10b32e6df4b2" -->
 
 
@@ -127,7 +168,44 @@ TODO: Add documentation for this symbol
 ### CodeSignature
 
 <!-- doctype:start id="f4a365a1-d9cb-4e08-b431-b7f22a38bf13" code_ref="packages/core/native-types.d.ts#CodeSignature" -->
-TODO: Add documentation for this symbol
+**CodeSignature Interface**
+
+The `CodeSignature` interface represents a signature for a code symbol, providing essential information about its identity and usage in the codebase.
+
+**Properties:**
+
+- **symbolName**: `string`  
+  The name of the symbol. This should be a valid identifier string representing the symbol within the code.
+
+- **symbolType**: `SymbolType`  
+  The type of the symbol, represented by the `SymbolType` enumeration, which defines various categories of symbols (e.g., function, class, variable).
+
+- **signatureText**: `string`  
+  A textual representation of the signature, useful for documentation and understanding the parameters and return types of functions or methods.
+
+- **isExported**: `boolean`  
+  Indicates whether the symbol is exported and accessible from other modules. A value of `true` means the symbol can be imported; `false` means it cannot.
+
+- **hash**?: `string`  
+  An optional property that represents a hash of the symbol, used for versioning or change detection purposes.
+
+**Return Type:**
+
+The `CodeSignature` interface does not have a return type as it is used to define the structure of an object rather than a function or method.
+
+**Usage Example:**
+
+```typescript
+const exampleSignature: CodeSignature = {
+    symbolName: "myFunction",
+    symbolType: SymbolType.Function,
+    signatureText: "function myFunction(param1: string, param2: number): void",
+    isExported: true,
+    hash: "abc123xyz"
+};
+``` 
+
+In this example, `exampleSignature` describes a function named `myFunction` that takes a string and a number as parameters and does not return a value. It is marked as exported, and a hash is provided for reference.
 <!-- doctype:end id="f4a365a1-d9cb-4e08-b431-b7f22a38bf13" -->
 
 
