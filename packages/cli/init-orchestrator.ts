@@ -166,15 +166,15 @@ export async function scanAndCreateAnchors(
   const tsFiles = discoveryResult.sourceFiles.filter((file: string) => {
     const relativeToRoot = path.relative(projectRoot, file);
     const relativeDocs = path.relative(projectRoot, docsFolder);
-    
+
     // Exclude files inside docs folder
     if (relativeToRoot.startsWith(relativeDocs)) {
-        return false;
+      return false;
     }
-    
+
     return true;
   });
-  
+
   result.totalFiles = tsFiles.length;
 
   if (tsFiles.length === 0) {
@@ -277,14 +277,17 @@ export async function scanAndCreateAnchors(
 
     const existingCodeRefs = anchorInserter.getExistingCodeRefs(docContent);
     const existingSet = new Set(existingCodeRefs);
+    const processedThisRun = new Set<string>();
     let hasChanges = false;
 
     for (const symbol of symbols) {
       const codeRef = `${symbol.filePath}#${symbol.symbolName}`;
 
-      if (existingSet.has(codeRef)) {
+      if (existingSet.has(codeRef) || processedThisRun.has(codeRef)) {
         continue;
       }
+
+      processedThisRun.add(codeRef);
 
       const content = 'TODO: Add documentation for this symbol';
       const normalizedContent = content.trim();
