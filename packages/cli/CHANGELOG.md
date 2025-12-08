@@ -1,5 +1,22 @@
 # @doctypedev/doctype
 
+## 0.6.0
+
+### Minor Changes
+
+- 3a53ff8: - **New**: `doctype check` now detects "untracked" symbols (exported code not yet in the map).
+  - **New**: Added `--prune` flag to `doctype fix` to remove dead documentation entries.
+  - **Fix**: Huge performance improvement in drift detection via AST caching.
+  - **Fix**: Filtered out local variables from being documented as public APIs.
+- 8f1f8bf: - Introduce interactive main menu for improved user experience
+  - Add new commands for initializing configuration and checking documentation drift
+  - Enhance CLI functionality with additional options for user actions
+
+### Patch Changes
+
+- Updated dependencies [8f1f8bf]
+  - @doctypedev/core@0.6.0
+
 ## 0.5.1
 
 ### Patch Changes
