@@ -10,22 +10,22 @@
  * - Auto-committing
  */
 
-import { DoctypeMapManager } from '../content/map-manager';
-import { ContentInjector } from '../content/content-injector';
+import { DoctypeMapManager } from '../../../content/map-manager';
+import { ContentInjector } from '../../../content/content-injector';
 import { extractAnchors, DoctypeAnchor } from '@doctypedev/core';
-import { Logger } from './logger';
-import { FixResult, FixOptions, FixDetail } from './types';
-import { DriftInfo } from './drift-detector';
-import { createAgentFromEnv, AIAgent, DocumentationRequest } from '../ai';
-import { PromptBuilder } from './prompts/document-prompt';
-import { GitHelper } from './git-helper';
+import { Logger } from '../utils/logger';
+import { FixResult, FixOptions, FixDetail } from '../types';
+import { DriftInfo } from '../services/drift-detector';
+import { createAgentFromEnv, AIAgent, DocumentationRequest } from '../../../ai';
+import { PromptBuilder } from '../prompts/document-prompt';
+import { GitHelper } from '../utils/git-helper';
 import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
-import { getMapPath } from './config-loader';
-import { DoctypeConfig } from './types';
-import { retry } from './retry';
+import { getMapPath } from '../services/config-loader';
+import { DoctypeConfig } from '../types';
+import { retry } from '../utils/retry';
 import { spinner } from '@clack/prompts';
-import { FileMutex } from './utils/mutex';
+import { FileMutex } from '../utils/mutex';
 
 /**
  * Helper function to limit concurrency

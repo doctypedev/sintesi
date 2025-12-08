@@ -5,9 +5,9 @@
  * by comparing current code signatures with saved hashes
  */
 
-import { DoctypeMapManager } from '../content';
+import { DoctypeMapManager } from '../../../content';
 import { CodeSignature, DoctypeMapEntry, AstAnalyzer } from '@doctypedev/core';
-import { Logger } from './logger';
+import { Logger } from '../utils/logger';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 
@@ -116,8 +116,7 @@ export function detectDrift(
       }
     } catch (error) {
       logger?.error(
-        `Error analyzing ${codeFilePath}#${entry.codeRef.symbolName}: ${
-          error instanceof Error ? error.message : String(error)
+        `Error analyzing ${codeFilePath}#${entry.codeRef.symbolName}: ${error instanceof Error ? error.message : String(error)
         }`
       );
     }

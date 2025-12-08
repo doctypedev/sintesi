@@ -17,8 +17,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as p from '@clack/prompts';
-import { InitOptions, InitResult, DoctypeConfig } from './types';
-import { scanAndCreateAnchors, OutputStrategy } from './init-orchestrator';
+import { InitOptions, InitResult, DoctypeConfig } from '../types';
+import { scanAndCreateAnchors, OutputStrategy } from '../orchestrators/init-orchestrator';
 
 /**
  * Execute the init command

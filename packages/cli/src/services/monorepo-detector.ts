@@ -7,7 +7,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { Logger } from './logger';
+import { Logger } from '../utils/logger';
 import { glob } from 'glob';
 
 /**
@@ -288,12 +288,12 @@ export class MonorepoDetector {
 
     const packages: PackageInfo[] = pkgJson?.name
       ? [{
-          name: pkgJson.name,
-          path: this.repoRoot,
-          relativePath: '.',
-          version: pkgJson.version || '0.0.0',
-          hasChanges: true,
-        }]
+        name: pkgJson.name,
+        path: this.repoRoot,
+        relativePath: '.',
+        version: pkgJson.version || '0.0.0',
+        hasChanges: true,
+      }]
       : [];
 
     return {

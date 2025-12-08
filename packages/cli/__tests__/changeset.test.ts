@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { changesetCommand } from '../changeset';
+import { changesetCommand } from '../src/commands/changeset';
 import { execSync } from 'child_process';
 import { mkdirSync, rmSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';

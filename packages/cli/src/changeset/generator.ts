@@ -2,10 +2,10 @@
  * Changeset Generator - Creates changeset files from analyzed changes
  */
 
-import { Logger } from './logger';
-import { ChangesetAnalysis } from './changeset-analyzer';
-import { VersionTypeDetector } from './changeset-version-detector';
-import { ChangesetPrompt } from './prompts/changeset-prompt';
+import { Logger } from '../utils/logger';
+import { ChangesetAnalysis } from './analyzer';
+import { VersionTypeDetector } from './version-detector';
+import { ChangesetPrompt } from '../prompts/changeset-prompt';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -173,7 +173,7 @@ export class ChangesetGenerator {
     analysis: ChangesetAnalysis,
     verbose: boolean
   ): Promise<ChangesetAIResponse> {
-    const { createAgentFromEnv } = await import('../ai/ai-agent');
+    const { createAgentFromEnv } = await import('../../../ai/ai-agent');
     const agent = createAgentFromEnv({ debug: verbose });
 
     // Build prompt for AI

@@ -4,7 +4,7 @@
 
 import { execSync } from 'child_process';
 import { ASTAnalyzer as RustASTAnalyzer, CodeSignature } from '@doctypedev/core';
-import { Logger } from './logger';
+import { Logger } from '../utils/logger';
 
 // Use Rust AST Analyzer type
 type ASTAnalyzer = InstanceType<typeof RustASTAnalyzer>;

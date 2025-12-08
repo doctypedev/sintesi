@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { checkCommand } from '../check';
+import { checkCommand } from '../src/commands/check';
 import { DoctypeMapManager } from '../../content/map-manager';
 import { AstAnalyzer } from '@doctypedev/core';
 import { writeFileSync, unlinkSync, existsSync, mkdirSync } from 'fs';

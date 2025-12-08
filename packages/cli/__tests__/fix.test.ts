@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { fixCommand } from '../fix';
+import { fixCommand } from '../src/commands/fix';
 import { DoctypeMapManager } from '../../content/map-manager';
 import { AstAnalyzer } from '@doctypedev/core';
 import { writeFileSync, unlinkSync, existsSync, mkdirSync, readFileSync } from 'fs';

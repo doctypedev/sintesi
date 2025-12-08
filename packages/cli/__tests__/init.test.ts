@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { initCommand } from '../init';
-import { determineOutputFile } from '../init-orchestrator';
+import { initCommand } from '../src/commands/init';
+import { determineOutputFile } from '../src/orchestrators/init-orchestrator';
 import { readFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
-import { DoctypeConfig } from '../types';
+import { DoctypeConfig } from '../src/types';
 import { SymbolType } from '@doctypedev/core';
 
 // Mock the AI module to avoid dependency issues

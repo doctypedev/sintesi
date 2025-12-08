@@ -4,11 +4,11 @@
  * Verifies that documentation is in sync with code by detecting drift
  */
 
-import { DoctypeMapManager } from '../content/map-manager';
+import { DoctypeMapManager } from '../../../content/map-manager';
 import { AstAnalyzer } from '@doctypedev/core';
-import { Logger } from './logger';
-import { CheckResult, CheckOptions, DriftDetail } from './types';
-import { detectDrift } from './drift-detector';
+import { Logger } from '../utils/logger';
+import { CheckResult, CheckOptions, DriftDetail } from '../types';
+import { detectDrift } from '../services/drift-detector';
 import { existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import {
@@ -16,7 +16,7 @@ import {
   getMapPath,
   ConfigNotFoundError,
   InvalidConfigError,
-} from './config-loader';
+} from '../services/config-loader';
 
 /**
  * Execute the check command
@@ -84,7 +84,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
   logger.newline();
 
   // Resolve the root directory for source code
-  const codeRoot = config 
+  const codeRoot = config
     ? resolve(config.baseDir || process.cwd(), config.projectRoot)
     : dirname(mapPath);
 

@@ -5,7 +5,7 @@
  */
 
 import * as clack from '@clack/prompts';
-import { MonorepoInfo } from './monorepo-detector';
+import { MonorepoInfo } from '../services/monorepo-detector';
 import { Logger } from './logger';
 
 /**

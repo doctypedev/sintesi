@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PackageSelector } from '../package-selector';
-import { Logger } from '../logger';
+import { PackageSelector } from '../src/utils/package-selector';
+import { Logger } from '../src/utils/logger';
 import * as clack from '@clack/prompts';
 
 // Mock @clack/prompts

@@ -7,11 +7,11 @@
  * AI-powered documentation generation (OpenAI, Gemini)
  */
 
-import { DoctypeMapManager } from '../content/map-manager';
+import { DoctypeMapManager } from '../../../content/map-manager';
 import { AstAnalyzer } from '@doctypedev/core';
-import { Logger } from './logger';
-import { FixResult, FixOptions } from './types';
-import { detectDrift } from './drift-detector';
+import { Logger } from '../utils/logger';
+import { FixResult, FixOptions } from '../types';
+import { detectDrift } from '../services/drift-detector';
 import { existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import {
@@ -19,8 +19,8 @@ import {
   getMapPath,
   ConfigNotFoundError,
   InvalidConfigError,
-} from './config-loader';
-import { executeFixes } from './fix-orchestrator';
+} from '../services/config-loader';
+import { executeFixes } from '../orchestrators/fix-orchestrator';
 
 /**
  * Execute the fix command
@@ -90,7 +90,7 @@ export async function fixCommand(options: FixOptions): Promise<FixResult> {
   logger.newline();
 
   // Resolve the root directory for source code
-  const codeRoot = config 
+  const codeRoot = config
     ? resolve(config.baseDir || process.cwd(), config.projectRoot)
     : dirname(mapPath);
 

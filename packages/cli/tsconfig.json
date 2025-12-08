@@ -3,16 +3,24 @@
   "compilerOptions": {
     "outDir": "./dist",
     "tsBuildInfoFile": "./node_modules/.tsbuildinfo",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "*": ["node_modules/*"]
+      "*": [
+        "node_modules/*"
+      ]
     }
   },
-  "include": [".", "../ai", "../content"],
+  "include": [
+    "src",
+    "../ai",
+    "../content"
+  ],
   "exclude": [
     "node_modules",
     "dist",

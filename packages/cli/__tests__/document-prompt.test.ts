@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PromptBuilder } from '../prompts/document-prompt';
+import { PromptBuilder } from '../src/prompts/document-prompt';
 
 describe('PromptBuilder', () => {
     it('should build structured single prompt', () => {

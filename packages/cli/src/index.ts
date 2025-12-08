@@ -18,11 +18,11 @@ import 'dotenv/config';
 
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { checkCommand } from './check';
-import { fixCommand } from './fix';
-import { generateCommand } from './generate';
-import { initCommand } from './init';
-import { changesetCommand } from './changeset';
+import { checkCommand } from './commands/check';
+import { fixCommand } from './commands/fix';
+import { generateCommand } from './commands/generate';
+import { initCommand } from './commands/init';
+import { changesetCommand } from './commands/changeset';
 import { CheckOptions, FixOptions, GenerateOptions, InitOptions, ChangesetOptions } from './types';
 
 // Parse command line arguments

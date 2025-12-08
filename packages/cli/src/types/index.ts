@@ -2,7 +2,7 @@
  * CLI-specific type definitions
  */
 
-import type { OutputStrategy } from './init-orchestrator';
+import type { OutputStrategy } from '../orchestrators/init-orchestrator';
 
 /**
  * Result of a drift check operation
@@ -135,12 +135,12 @@ export interface InitOptions {
 /**
  * Options for the generate command (extends FixOptions)
  */
-export interface GenerateOptions extends FixOptions {}
+export interface GenerateOptions extends FixOptions { }
 
 /**
  * Result of a generate operation (extends FixResult)
  */
-export interface GenerateResult extends FixResult {}
+export interface GenerateResult extends FixResult { }
 
 /**
  * Options for the changeset command

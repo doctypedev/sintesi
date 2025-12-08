@@ -2,12 +2,12 @@
  * Changeset command - Generate changesets from code changes using AI
  */
 
-import { Logger } from './logger';
-import { ChangesetOptions, ChangesetResult } from './types';
-import { ChangesetAnalyzer } from './changeset-analyzer';
-import { ChangesetGenerator } from './changeset-generator';
-import { MonorepoDetector } from './monorepo-detector';
-import { PackageSelector } from './package-selector';
+import { Logger } from '../utils/logger';
+import { ChangesetOptions, ChangesetResult } from '../types';
+import { ChangesetAnalyzer } from '../changeset/analyzer';
+import { ChangesetGenerator } from '../changeset/generator';
+import { MonorepoDetector } from '../services/monorepo-detector';
+import { PackageSelector } from '../utils/package-selector';
 import * as path from 'path';
 
 /**

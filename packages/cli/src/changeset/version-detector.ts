@@ -5,8 +5,8 @@
  * without AI - using deterministic rules based on AST analysis
  */
 
-import { ChangesetAnalysis, SymbolChange } from './changeset-analyzer';
-import { Logger } from './logger';
+import { ChangesetAnalysis, SymbolChange } from './analyzer';
+import { Logger } from '../utils/logger';
 
 export type VersionType = 'major' | 'minor' | 'patch';
 

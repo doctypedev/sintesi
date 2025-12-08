@@ -7,7 +7,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { DoctypeConfig } from './types';
+import { DoctypeConfig } from '../types';
 
 /**
  * Error thrown when doctype.config.json is not found
@@ -16,7 +16,7 @@ export class ConfigNotFoundError extends Error {
   constructor(configPath: string) {
     super(
       `Configuration file not found: ${configPath}\n\n` +
-        `Run 'npx doctype init' to initialize your project configuration.`
+      `Run 'npx doctype init' to initialize your project configuration.`
     );
     this.name = 'ConfigNotFoundError';
   }

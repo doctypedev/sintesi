@@ -9,10 +9,10 @@
     "url": "git+https://github.com/doctypedev/doctype.git"
   },
   "description": "The Self-Maintaining Documentation System - Automatically update documentation when code changes",
-  "main": "dist/cli/index.js",
-  "types": "dist/cli/index.d.ts",
+  "main": "dist/cli/src/index.js",
+  "types": "dist/cli/src/index.d.ts",
   "bin": {
-    "doctype": "dist/cli/index.js"
+    "doctype": "dist/cli/src/index.js"
   },
   "files": [
     "dist/**/*",
@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "postbuild": "chmod +x dist/cli/index.js",
+    "postbuild": "chmod +x dist/cli/src/index.js",
     "dev": "tsc --watch -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",

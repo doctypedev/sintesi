@@ -2,7 +2,7 @@
  * Changeset Prompt Generator
  */
 
-import { ChangesetAnalysis } from '../changeset-analyzer';
+import { ChangesetAnalysis } from '../changeset/analyzer';
 
 /**
  * Builder for changeset analysis prompts

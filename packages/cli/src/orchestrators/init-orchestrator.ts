@@ -13,8 +13,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { AstAnalyzer, SymbolType, discoverFiles } from '@doctypedev/core';
-import { DoctypeMapManager } from '../content/map-manager';
-import { MarkdownAnchorInserter } from '../content/markdown-anchor-inserter';
+import { DoctypeMapManager } from '../../../content/map-manager';
+import { MarkdownAnchorInserter } from '../../../content/markdown-anchor-inserter';
 import type { DoctypeMapEntry, SymbolTypeValue, CodeSignature } from '@doctypedev/core';
 
 /**
