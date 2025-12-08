@@ -1,5 +1,24 @@
 # @doctypedev/doctype
 
+## 0.5.0
+
+### Minor Changes
+
+- ec3282d: Prevent duplicate code reference processing within a single run
+- c1eebb3: - Enhance scanAndCreateAnchors function to handle existing markdown anchors more effectively
+  - Improve error handling and reporting for anchor creation
+- c4cbf88: - Add support for Linux and Windows native binaries
+- c17c494: Enhance scanAndCreateAnchors function to handle existing markdown anchors more effectively
+- 944c25f: Add retry mechanism for AI generation and improve errors logging
+- 22c019d: Introduced doctype generate command, implemented concurrent AI processing for faster performance, and simplified the initialization workflow.
+- a1499d2: Implement progressive saving with thread-safe file writing
+- 6ca2448: Implement changeset command for generating changesets from code changes using AI.
+
+### Patch Changes
+
+- Updated dependencies [c4cbf88]
+  - @doctypedev/core@0.5.0
+
 ## 0.4.5
 
 ### Patch Changes

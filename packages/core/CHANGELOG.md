@@ -1,5 +1,11 @@
 # @doctypedev/core
 
+## 0.5.0
+
+### Minor Changes
+
+- c4cbf88: - Add support for Linux and Windows native binaries
+
 ## 0.4.5
 
 ## 0.4.4
