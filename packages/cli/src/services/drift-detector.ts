@@ -187,6 +187,21 @@ export function detectDrift(
         continue;
       }
 
+      // START WORKAROUND: Verify it is truly exported (filter out locals that AST analyzer caught)
+      const content = getContent(codeFilePath);
+      if (!verifyExported(content, entry.codeRef.symbolName)) {
+        logger?.warn(
+          `Symbol ${Logger.symbol(entry.codeRef.symbolName)} is not exported in ${Logger.path(codeFilePath)} (removing)`
+        );
+        missing.push({
+          entry,
+          reason: 'symbol_not_found', // Treat as not found to trigger prune
+          codeFilePath
+        });
+        continue;
+      }
+      // END WORKAROUND
+
       // Get current hash from signature (computed by Rust analyzer)
       const currentHash = currentSignature.hash!;
       if (!currentHash) {

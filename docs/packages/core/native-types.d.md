@@ -174,9 +174,6 @@ TODO: Add documentation for this symbol
 
 ### SymbolType
 
-<!-- doctype:start id="f45a40de-94b1-4068-a4d3-57b3546a5a22" code_ref="packages/core/native-types.d.ts#SymbolType" -->
-TODO: Add documentation for this symbol
-<!-- doctype:end id="f45a40de-94b1-4068-a4d3-57b3546a5a22" -->
 
 
 ### CodeSignature
