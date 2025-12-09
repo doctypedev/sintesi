@@ -1,5 +1,13 @@
 # @doctypedev/core
 
+## 0.6.0
+
+### Minor Changes
+
+- 8f1f8bf: - Introduce interactive main menu for improved user experience
+  - Add new commands for initializing configuration and checking documentation drift
+  - Enhance CLI functionality with additional options for user actions
+
 ## 0.5.1
 
 ## 0.5.0
