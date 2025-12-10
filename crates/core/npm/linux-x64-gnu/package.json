@@ -1,6 +1,6 @@
 {
     "name": "@doctypedev/core-linux-x64-gnu",
-    "version": "0.5.0",
+    "version": "0.7.0",
     "description": "Doctype native core for Linux x64 (glibc)",
     "main": "index.js",
     "repository": {

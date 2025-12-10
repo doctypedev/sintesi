@@ -1,6 +1,6 @@
 {
     "name": "@doctypedev/core-win32-x64-msvc",
-    "version": "0.5.0",
+    "version": "0.7.0",
     "description": "Doctype native core for Windows x64 (MSVC)",
     "main": "index.js",
     "repository": {

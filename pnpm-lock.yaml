@@ -153,14 +153,14 @@ importers:
         version: 5.9.3
     optionalDependencies:
       '@doctypedev/core-darwin-arm64':
-        specifier: 0.5.0
-        version: 0.5.0
+        specifier: 0.7.0
+        version: 0.7.0
       '@doctypedev/core-linux-x64-gnu':
-        specifier: 0.5.0
-        version: 0.5.0
+        specifier: 0.7.0
+        version: 0.7.0
       '@doctypedev/core-win32-x64-msvc':
-        specifier: 0.5.0
-        version: 0.5.0
+        specifier: 0.7.0
+        version: 0.7.0
 
 packages:
 
@@ -392,17 +392,17 @@ packages:
       search-insights:
         optional: true
 
-  '@doctypedev/core-darwin-arm64@0.5.0':
+  '@doctypedev/core-darwin-arm64@0.7.0':
     resolution: {integrity: sha512-JTtyLHBbLf6L8HzUzSuT5qH4OeUEABfrBco1Y4jyry21sPxh2luJgVD8h917Ulsr5pbRuvI4+hruh189bhmhQA==}
     cpu: [arm64]
     os: [darwin]
 
-  '@doctypedev/core-linux-x64-gnu@0.5.0':
+  '@doctypedev/core-linux-x64-gnu@0.7.0':
     resolution: {integrity: sha512-UPwbRVcY0bCKFNRENR7jE92cKLWcNt09SEdIEWG+pSbuzTQp1whZaZ5C3PDinXbh3wTj/Zf12lVpcVVwYX2/jw==}
     cpu: [x64]
     os: [linux]
 
-  '@doctypedev/core-win32-x64-msvc@0.5.0':
+  '@doctypedev/core-win32-x64-msvc@0.7.0':
     resolution: {integrity: sha512-bSYAy4oY7pjafsuh4zkc+O8Shzxkx4aR+nlutC4my+5LU6PigMvmVsxec+3rH/mGmpgVmlhfFshWIAa+B8Ci3w==}
     cpu: [x64]
     os: [win32]
@@ -2713,13 +2713,13 @@ snapshots:
     transitivePeerDependencies:
       - '@algolia/client-search'
 
-  '@doctypedev/core-darwin-arm64@0.5.0':
+  '@doctypedev/core-darwin-arm64@0.7.0':
     optional: true
 
-  '@doctypedev/core-linux-x64-gnu@0.5.0':
+  '@doctypedev/core-linux-x64-gnu@0.7.0':
     optional: true
 
-  '@doctypedev/core-win32-x64-msvc@0.5.0':
+  '@doctypedev/core-win32-x64-msvc@0.7.0':
     optional: true
 
   '@esbuild/aix-ppc64@0.21.5':
