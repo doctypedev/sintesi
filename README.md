@@ -24,11 +24,11 @@ Doctype automatically detects when your code changes and updates your documentat
 
 ### What Makes It Different
 
-- ✅ **Truly Automatic** - Detects drift using cryptographic hashing, not guesswork
-- ✅ **AI-Powered** - Uses OpenAI GPT-4 to write better docs than most humans
-- ✅ **CI/CD Native** - Fails your build if docs are out of sync (no more "I forgot")
-- ✅ **Zero Config** - Drop in anchors, run one command, done
-- ✅ **Git-Friendly** - Auto-commits with standardized messages, plays nice with your workflow
+- ✅ **Truly Automatic** - Detects drift using cryptographic hashing, not guesswork.
+- ✅ **AI-Powered** - Uses OpenAI GPT-4 to write better docs than most humans.
+- ✅ **CI/CD Native** - Fails your build if docs are out of sync (no more "I forgot").
+- ✅ **Zero Config** - Drop in anchors, run one command, done.
+- ✅ **Git-Friendly** - Auto-commits with standardized messages, plays nice with your workflow.
 
 ---
 
@@ -54,7 +54,7 @@ You'll be presented with a menu to:
 - **Fix** outdated documentation
 - **Generate** new content
 - **Create Changesets**
-- **Readme** - Generate a README file based on your project structure
+- **Generate README** - Create a README file based on your project structure
 
 ### 3. Or Use Individual Commands
 
@@ -209,8 +209,6 @@ $ doctype changeset
 ℹ AI determined version type: minor
 ✔ Generated changeset: .changeset/calm-eagles-listen.md
 ```
-
----
 
 ### `doctype init`
 
