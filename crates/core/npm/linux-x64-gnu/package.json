@@ -23,7 +23,7 @@
         "x64"
     ],
     "keywords": [
-        "doctype",
+        "sintesi",
         "ast",
         "native",
         "rust",
@@ -34,6 +34,6 @@
     },
     "files": [
         "index.js",
-        "doctype-core.linux-x64-gnu.node"
+        "sintesi-core.linux-x64-gnu.node"
     ]
 }

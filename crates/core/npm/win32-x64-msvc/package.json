@@ -27,6 +27,6 @@
     },
     "files": [
         "index.js",
-        "doctype-core.win32-x64-msvc.node"
+        "sintesi-core.win32-x64-msvc.node"
     ]
 }

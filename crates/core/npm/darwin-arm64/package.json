@@ -23,6 +23,6 @@
   },
   "files": [
     "index.js",
-    "doctype-core.darwin-arm64.node"
+    "sintesi-core.darwin-arm64.node"
   ]
 }
