@@ -1,5 +1,5 @@
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SmartChecker } from '../src/services/smart-checker';
 import { Logger } from '../src/utils/logger';
 import { GitHelper } from '../src/utils/git-helper';
@@ -8,13 +8,13 @@ import * as path from 'path';
 
 // Mock dependencies
 vi.mock('../src/utils/git-helper');
-vi.mock('../../../ai', () => ({
+vi.mock('../../ai', () => ({
     createAgentFromEnv: vi.fn(),
 }));
 vi.mock('fs');
 vi.mock('path');
 
-import { createAgentFromEnv } from '../../../ai';
+import { createAgentFromEnv } from '../../ai';
 
 describe('SmartChecker', () => {
     let logger: Logger;
@@ -47,6 +47,7 @@ describe('SmartChecker', () => {
         // Mock GitHelper to return empty diff
         const mockGitHelper = {
             getDiff: vi.fn().mockResolvedValue(''),
+            getChangedFiles: vi.fn().mockReturnValue([]),
         };
         (GitHelper as any).mockImplementation(() => mockGitHelper);
 
@@ -64,7 +65,8 @@ describe('SmartChecker', () => {
 
         // Mock GitHelper
         const mockGitHelper = {
-            getDiff: vi.fn().mockResolvedValue('diff content'),
+            getDiff: vi.fn().mockResolvedValue('+export class NewFeature {}'),
+            getChangedFiles: vi.fn().mockReturnValue(['src/code.ts']),
         };
         (GitHelper as any).mockImplementation(() => mockGitHelper);
 

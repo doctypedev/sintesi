@@ -1,8 +1,9 @@
+import { existsSync, readFileSync } from 'fs';
+import { resolve } from 'path';
+import { execSync } from 'child_process';
 import { Logger } from '../utils/logger';
 import { GitHelper } from '../utils/git-helper';
 import { createAgentFromEnv } from '../../../ai';
-import { existsSync, readFileSync } from 'fs';
-import { resolve } from 'path';
 
 export interface SmartCheckResult {
     hasDrift: boolean;
@@ -132,7 +133,6 @@ export class SmartChecker {
                     } else {
                         // Fallback to last commit if base comparison yields nothing (e.g. equal) or fails
                         // This ensures we always check something if possible
-                        const { execSync } = require('child_process');
                         // CRITICAL: We need the PATCH (-p) not just stat, otherwise regex heuristics fail
                         const lastCommit = execSync('git show HEAD -p -n 1', { encoding: 'utf-8', cwd: this.projectRoot });
                         if (lastCommit) {
