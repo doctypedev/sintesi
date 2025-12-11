@@ -5,7 +5,7 @@
 # Sintesi
 
 [![npm version](https://badge.fury.io/js/@sintesi%2Fsintesi.svg)](https://www.npmjs.com/package/@sintesi/sintesi)
-[![CI Build](https://github.com/alessiopelliccione/sintesi/actions/workflows/ci.yml/badge.svg)](https://github.com/alessiopelliccione/sintesi/actions/workflows/ci.yml)
+[![CI Build](https://github.com/doctypedev/sintesi/actions/workflows/ci.yml/badge.svg)](https://github.com/alessiopelliccione/sintesi/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
