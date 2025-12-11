@@ -6,9 +6,9 @@ describe('Markdown Extraction (Rust-powered)', () => {
   describe('extractAnchors', () => {
     it('should parse a single anchor correctly', () => {
       const content = `# Test
-<!-- doctype:start id="test-id" code_ref="src/test.ts#testFunc" -->
+<!-- sintesi:start id="test-id" code_ref="src/test.ts#testFunc" -->
 Some content here
-<!-- doctype:end id="test-id" -->
+<!-- sintesi:end id="test-id" -->
 More text`;
 
       const result = extractAnchors('test.md', content);
@@ -27,13 +27,13 @@ More text`;
 
     it('should parse multiple anchors correctly', () => {
       const content = `# Test
-<!-- doctype:start id="anchor1" code_ref="src/a.ts#funcA" -->
+<!-- sintesi:start id="anchor1" code_ref="src/a.ts#funcA" -->
 Content A
-<!-- doctype:end id="anchor1" -->
+<!-- sintesi:end id="anchor1" -->
 
-<!-- doctype:start id="anchor2" code_ref="src/b.ts#funcB" -->
+<!-- sintesi:start id="anchor2" code_ref="src/b.ts#funcB" -->
 Content B
-<!-- doctype:end id="anchor2" -->`;
+<!-- sintesi:end id="anchor2" -->`;
 
       const result = extractAnchors('test.md', content);
 
@@ -44,11 +44,11 @@ Content B
     });
 
     it('should handle multi-line content', () => {
-      const content = `<!-- doctype:start id="multi" code_ref="src/test.ts#test" -->
+      const content = `<!-- sintesi:start id="multi" code_ref="src/test.ts#test" -->
 Line 1
 Line 2
 Line 3
-<!-- doctype:end id="multi" -->`;
+<!-- sintesi:end id="multi" -->`;
 
       const result = extractAnchors('test.md', content);
 
@@ -56,7 +56,7 @@ Line 3
     });
 
     it('should collect error for unclosed anchor', () => {
-      const content = `<!-- doctype:start id="unclosed" code_ref="src/test.ts#test" -->
+      const content = `<!-- sintesi:start id="unclosed" code_ref="src/test.ts#test" -->
 Some content`;
 
       const result = extractAnchors('test.md', content);
@@ -67,7 +67,7 @@ Some content`;
 
     it('should collect error for end without start', () => {
       const content = `Some content
-<!-- doctype:end id="orphan" -->`;
+<!-- sintesi:end id="orphan" -->`;
 
       const result = extractAnchors('test.md', content);
 
@@ -76,8 +76,8 @@ Some content`;
     });
 
     it('should handle empty content between anchors', () => {
-      const content = `<!-- doctype:start id="empty" code_ref="src/test.ts#test" -->
-<!-- doctype:end id="empty" -->`;
+      const content = `<!-- sintesi:start id="empty" code_ref="src/test.ts#test" -->
+<!-- sintesi:end id="empty" -->`;
 
       const result = extractAnchors('test.md', content);
 
@@ -85,10 +85,10 @@ Some content`;
     });
 
     it('should preserve whitespace in content', () => {
-      const content = `<!-- doctype:start id="ws" code_ref="src/test.ts#test" -->
+      const content = `<!-- sintesi:start id="ws" code_ref="src/test.ts#test" -->
   Indented content
     More indentation
-<!-- doctype:end id="ws" -->`;
+<!-- sintesi:end id="ws" -->`;
 
       const result = extractAnchors('test.md', content);
 
@@ -99,9 +99,9 @@ Some content`;
 
   describe('validateMarkdownAnchors', () => {
     it('should return no errors for valid content', () => {
-      const content = `<!-- doctype:start id="valid" code_ref="src/test.ts#test" -->
+      const content = `<!-- sintesi:start id="valid" code_ref="src/test.ts#test" -->
 Content
-<!-- doctype:end id="valid" -->`;
+<!-- sintesi:end id="valid" -->`;
 
       const errors = validateMarkdownAnchors(content);
 
@@ -109,12 +109,12 @@ Content
     });
 
     it('should detect duplicate IDs', () => {
-      const content = `<!-- doctype:start id="dup" code_ref="src/a.ts#a" -->
+      const content = `<!-- sintesi:start id="dup" code_ref="src/a.ts#a" -->
 A
-<!-- doctype:end id="dup" -->
-<!-- doctype:start id="dup" code_ref="src/b.ts#b" -->
+<!-- sintesi:end id="dup" -->
+<!-- sintesi:start id="dup" code_ref="src/b.ts#b" -->
 B
-<!-- doctype:end id="dup" -->`;
+<!-- sintesi:end id="dup" -->`;
 
       const errors = validateMarkdownAnchors(content);
 
@@ -123,9 +123,9 @@ B
     });
 
     it('should detect invalid code_ref format', () => {
-      const content = `<!-- doctype:start id="invalid" code_ref="invalid-format" -->
+      const content = `<!-- sintesi:start id="invalid" code_ref="invalid-format" -->
 Content
-<!-- doctype:end id="invalid" -->`;
+<!-- sintesi:end id="invalid" -->`;
 
       const errors = validateMarkdownAnchors(content);
 
@@ -134,7 +134,7 @@ Content
     });
 
     it('should detect unclosed anchors', () => {
-      const content = `<!-- doctype:start id="unclosed" code_ref="src/test.ts#test" -->
+      const content = `<!-- sintesi:start id="unclosed" code_ref="src/test.ts#test" -->
 Content`;
 
       const errors = validateMarkdownAnchors(content);
@@ -144,7 +144,7 @@ Content`;
     });
 
     it('should detect orphaned end anchors', () => {
-      const content = `<!-- doctype:end id="orphan" -->`;
+      const content = `<!-- sintesi:end id="orphan" -->`;
 
       const errors = validateMarkdownAnchors(content);
 

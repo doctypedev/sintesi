@@ -98,13 +98,13 @@ export class ContentInjector {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      const startMatch = line.match(/<!--\s*doctype:start\s+id="([^"]+)"/);
+      const startMatch = line.match(/<!--\s*sintesi:start\s+id="([^"]+)"/);
       if (startMatch && startMatch[1] === anchorId) {
         startLine = i;
         continue;
       }
       if (startLine !== -1) {
-        const endMatch = line.match(/<!--\s*doctype:end\s+id="([^"]+)"/);
+        const endMatch = line.match(/<!--\s*sintesi:end\s+id="([^"]+)"/);
         if (endMatch && endMatch[1] === anchorId) {
           endLine = i;
           break;
@@ -158,7 +158,7 @@ export class ContentInjector {
       const line = lines[i];
 
       // Look for start anchor
-      const startMatch = line.match(/<!--\s*doctype:start\s+id="([^"]+)"/);
+      const startMatch = line.match(/<!--\s*sintesi:start\s+id="([^"]+)"/);
       if (startMatch && startMatch[1] === anchorId) {
         startLine = i;
         continue;
@@ -166,7 +166,7 @@ export class ContentInjector {
 
       // Look for end anchor (only if we found the start)
       if (startLine !== -1) {
-        const endMatch = line.match(/<!--\s*doctype:end\s+id="([^"]+)"/);
+        const endMatch = line.match(/<!--\s*sintesi:end\s+id="([^"]+)"/);
         if (endMatch && endMatch[1] === anchorId) {
           endLine = i;
           break;
@@ -300,14 +300,14 @@ export class ContentInjector {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
-      const startMatch = line.match(/<!--\s*doctype:start\s+id="([^"]+)"/);
+      const startMatch = line.match(/<!--\s*sintesi:start\s+id="([^"]+)"/);
       if (startMatch && startMatch[1] === anchorId) {
         startLine = i;
         continue;
       }
 
       if (startLine !== -1) {
-        const endMatch = line.match(/<!--\s*doctype:end\s+id="([^"]+)"/);
+        const endMatch = line.match(/<!--\s*sintesi:end\s+id="([^"]+)"/);
         if (endMatch && endMatch[1] === anchorId) {
           endLine = i;
           break;
@@ -337,7 +337,7 @@ export class ContentInjector {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
-      const startMatch = line.match(/<!--\s*doctype:start\s+id="([^"]+)"/);
+      const startMatch = line.match(/<!--\s*sintesi:start\s+id="([^"]+)"/);
       if (startMatch && startMatch[1] === anchorId) {
         if (startLine !== -1) {
           errors.push(`Duplicate start anchor for id="${anchorId}"`);
@@ -345,7 +345,7 @@ export class ContentInjector {
         startLine = i;
       }
 
-      const endMatch = line.match(/<!--\s*doctype:end\s+id="([^"]+)"/);
+      const endMatch = line.match(/<!--\s*sintesi:end\s+id="([^"]+)"/);
       if (endMatch && endMatch[1] === anchorId) {
         if (endLine !== -1) {
           errors.push(`Duplicate end anchor for id="${anchorId}"`);

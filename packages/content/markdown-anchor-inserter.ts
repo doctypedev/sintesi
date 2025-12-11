@@ -149,9 +149,9 @@ export class MarkdownAnchorInserter {
       '',
       `### ${symbolName}`,
       '',
-      `<!-- doctype:start id="${anchorId}" code_ref="${codeRef}" -->`,
+      `<!-- sintesi:start id="${anchorId}" code_ref="${codeRef}" -->`,
       `${placeholder}`,
-      `<!-- doctype:end id="${anchorId}" -->`,
+      `<!-- sintesi:end id="${anchorId}" -->`,
       '',
     ];
 
@@ -229,7 +229,7 @@ export class MarkdownAnchorInserter {
    * @returns True if anchor exists, false otherwise
    */
   public hasAnchor(content: string, codeRef: string): boolean {
-    const pattern = new RegExp(`<!--\\s*doctype:start\\s+id="[^"]+"\\s+code_ref="${this.escapeRegex(codeRef)}"\\s*-->`);
+    const pattern = new RegExp(`<!--\\s*sintesi:start\\s+id="[^"]+"\\s+code_ref="${this.escapeRegex(codeRef)}"\\s*-->`);
     return pattern.test(content);
   }
 
@@ -248,7 +248,7 @@ export class MarkdownAnchorInserter {
    * @returns Array of anchor objects
    */
   public getExistingAnchors(content: string): Array<{ id: string; codeRef: string }> {
-    const pattern = /<!--\s*doctype:start\s+id="([^"]+)"\s+code_ref="([^"]+)"\s*-->/g;
+    const pattern = /<!--\s*sintesi:start\s+id="([^"]+)"\s+code_ref="([^"]+)"\s*-->/g;
     const matches = content.matchAll(pattern);
     return Array.from(matches, (m) => ({ id: m[1], codeRef: m[2] }));
   }

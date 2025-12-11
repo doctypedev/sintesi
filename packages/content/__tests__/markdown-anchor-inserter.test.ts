@@ -20,7 +20,7 @@ describe('MarkdownAnchorInserter', () => {
       expect(result.success).toBe(true);
       expect(result.content).toContain('### bar');
       expect(result.content).toContain('code_ref="src/foo.ts#bar"');
-      expect(result.content).toContain('<!-- doctype:start');
+      expect(result.content).toContain('<!-- sintesi:start');
     });
 
     it('should create section if missing and createSection is true', () => {
@@ -51,12 +51,12 @@ describe('MarkdownAnchorInserter', () => {
 
   describe('hasAnchor', () => {
     it('should return true for existing anchor', () => {
-      const content = `<!-- doctype:start id="123" code_ref="src/foo.ts#bar" -->`;
+      const content = `<!-- sintesi:start id="123" code_ref="src/foo.ts#bar" -->`;
       expect(inserter.hasAnchor(content, 'src/foo.ts#bar')).toBe(true);
     });
 
     it('should return false for missing anchor', () => {
-      const content = `<!-- doctype:start id="123" code_ref="src/foo.ts#bar" -->`;
+      const content = `<!-- sintesi:start id="123" code_ref="src/foo.ts#bar" -->`;
       expect(inserter.hasAnchor(content, 'src/baz.ts#qux')).toBe(false);
     });
   });
@@ -64,8 +64,8 @@ describe('MarkdownAnchorInserter', () => {
   describe('getExistingCodeRefs', () => {
     it('should return all code refs', () => {
       const content = `
-<!-- doctype:start id="1" code_ref="src/a.ts#A" -->
-<!-- doctype:start id="2" code_ref="src/b.ts#B" -->
+<!-- sintesi:start id="1" code_ref="src/a.ts#A" -->
+<!-- sintesi:start id="2" code_ref="src/b.ts#B" -->
         `;
       const refs = inserter.getExistingCodeRefs(content);
       expect(refs).toContain('src/a.ts#A');
