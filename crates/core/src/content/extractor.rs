@@ -93,7 +93,7 @@ impl MarkdownExtractor {
                     // Validation: Check code_ref format
                     if !code_ref.contains('#') {
                         errors.push(format!(
-                            "Invalid code_ref format at line {}: expected \"file_path#symbol_name\", got \"{}"",
+                            "Invalid code_ref format at line {}: expected \"file_path#symbol_name\", got \"{}\"",
                             line_num + 1,
                             code_ref
                         ));
@@ -202,7 +202,7 @@ impl MarkdownExtractor {
                     // Validate code_ref format
                     if !code_ref.contains('#') {
                         errors.push(format!(
-                            "Invalid code_ref format at line {}: expected \"file_path#symbol_name\", got \"{}"",
+                            "Invalid code_ref format at line {}: expected \"file_path#symbol_name\", got \"{}\"",
                             line_num + 1,
                             code_ref
                         ));
