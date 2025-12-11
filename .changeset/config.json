@@ -10,5 +10,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@sintesi/core-native"]
+  "ignore": ["@sintesi/core-native", "sintesi-monorepo-root"]
 }
