@@ -227,7 +227,7 @@ impl Iterator for FileCollector {
 ///
 /// # Example
 /// ```
-/// use doctype_core::content::discovery::{discover_files, DiscoveryConfig};
+/// use sintesi_core::content::discovery::{discover_files, DiscoveryConfig};
 ///
 /// let config = DiscoveryConfig::new()
 ///     .respect_gitignore(true)

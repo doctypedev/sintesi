@@ -44,7 +44,7 @@ pub struct FileDiscoveryOptions {
 ///
 /// # Example (Node.js)
 /// ```javascript
-/// const { discoverFiles } = require('@doctypedev/core');
+/// const { discoverFiles } = require('@sintesi/core');
 ///
 /// const result = discoverFiles('./src', {
 ///   respectGitignore: true,
@@ -107,10 +107,10 @@ pub fn discover_files(
 // Markdown Extraction NAPI Bindings
 // ============================================================================
 
-/// NAPI-compatible doctype anchor structure
+/// NAPI-compatible Sintesi anchor structure
 #[napi(object)]
 #[derive(Debug, Clone)]
-pub struct DoctypeAnchor {
+pub struct SintesiAnchor {
     /// Unique anchor ID
     pub id: String,
     /// Code reference (e.g., "src/auth.ts#login")
@@ -129,14 +129,14 @@ pub struct DoctypeAnchor {
 #[napi(object)]
 pub struct ExtractionResult {
     /// Map of anchor ID to anchor data (as a flat array for NAPI compatibility)
-    pub anchors: Vec<DoctypeAnchor>,
+    pub anchors: Vec<SintesiAnchor>,
     /// Number of anchors found
     pub anchor_count: u32,
     /// Errors encountered during extraction
     pub errors: Vec<String>,
 }
 
-/// Extract doctype anchors from markdown content
+/// Extract Sintesi anchors from markdown content
 ///
 /// # Arguments
 /// * `file_path` - Path to the markdown file (for reference)
@@ -147,7 +147,7 @@ pub struct ExtractionResult {
 ///
 /// # Example (Node.js)
 /// ```javascript
-/// const { extractAnchors } = require('@doctypedev/core');
+/// const { extractAnchors } = require('@sintesi/core');
 ///
 /// const content = fs.readFileSync('docs/api.md', 'utf-8');
 /// const result = extractAnchors('docs/api.md', content);
@@ -170,10 +170,10 @@ pub fn extract_anchors(file_path: String, content: String) -> ExtractionResult {
     let result = extractor.extract_from_file(&file_path, &content);
 
     // Convert HashMap to Vec for NAPI
-    let anchors: Vec<DoctypeAnchor> = result
+    let anchors: Vec<SintesiAnchor> = result
         .anchors
         .into_iter()
-        .map(|(_, anchor)| DoctypeAnchor {
+        .map(|(_, anchor)| SintesiAnchor {
             id: anchor.id,
             code_ref: anchor.code_ref,
             file_path: anchor.file_path.to_string_lossy().to_string(),
@@ -190,7 +190,7 @@ pub fn extract_anchors(file_path: String, content: String) -> ExtractionResult {
     }
 }
 
-/// Validate markdown content for doctype anchors
+/// Validate markdown content for Sintesi anchors
 ///
 /// This performs validation without extracting content, making it faster
 /// for checking if markdown is valid.
@@ -203,7 +203,7 @@ pub fn extract_anchors(file_path: String, content: String) -> ExtractionResult {
 ///
 /// # Example (Node.js)
 /// ```javascript
-/// const { validateMarkdownAnchors } = require('@doctypedev/core');
+/// const { validateMarkdownAnchors } = require('@sintesi/core');
 ///
 /// const content = fs.readFileSync('docs/api.md', 'utf-8');
 /// const errors = validateMarkdownAnchors(content);
@@ -234,7 +234,7 @@ pub fn validate_markdown_anchors(content: String) -> Vec<String> {
 ///
 /// # Example (Node.js)
 /// ```javascript
-/// const { parseCodeRef } = require('@doctypedev/core');
+/// const { parseCodeRef } = require('@sintesi/core');
 ///
 /// const { filePath, symbolName } = parseCodeRef('src/auth.ts#login');
 /// console.log('File:', filePath);    // "src/auth.ts"

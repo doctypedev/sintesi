@@ -16,7 +16,7 @@ pub mod discovery;
 pub mod extractor;
 
 // Re-export types
-pub use types::{AnchorMap, DoctypeAnchor, ExtractionResult};
+pub use types::{AnchorMap, SintesiAnchor, ExtractionResult};
 
 // Re-export discovery
 pub use discovery::{

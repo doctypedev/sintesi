@@ -12,7 +12,7 @@
 //! ### 1. Types (`types`)
 //! Core type definitions used across all modules. Includes:
 //! - `CodeRef`, `CodeSignature`, `SignatureHash`
-//! - `DocRef`, `DoctypeMapEntry`, `DoctypeMap`
+//! - `DocRef`, `SintesiMapEntry`, `SintesiMap`
 //! - `SymbolType` enum
 //!
 //! ### 2. AST & Drift Detection (`ast`)
@@ -67,7 +67,7 @@ mod napi;
 
 // Types
 pub use types::{
-    CodeRef, CodeSignature, DocRef, DoctypeMap, DoctypeMapEntry, SignatureHash, SymbolType,
+    CodeRef, CodeSignature, DocRef, SintesiMap, SintesiMapEntry, SignatureHash, SymbolType,
 };
 
 // AST & Drift Detection
@@ -78,7 +78,7 @@ pub use ast::{
 // Content & Mapping
 pub use content::{
     discover_files, extract_anchors, AnchorMap, DiscoveredFile, DiscoveryConfig, DiscoveryResult,
-    DiscoveryStats, DoctypeAnchor, ExtractionResult, FileCollector, MarkdownExtractor,
+    DiscoveryStats, SintesiAnchor, ExtractionResult, FileCollector, MarkdownExtractor,
 };
 
 // Gen AI

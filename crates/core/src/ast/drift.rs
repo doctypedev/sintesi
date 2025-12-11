@@ -4,7 +4,7 @@
 //! to detect when documentation has drifted out of sync with the code.
 
 use std::collections::HashMap;
-use crate::types::{CodeSignature, DoctypeMapEntry};
+use crate::types::{CodeSignature, SintesiMapEntry};
 use crate::ast::hasher::SignatureHasher;
 
 /// Status of drift detection for a symbol
@@ -62,15 +62,15 @@ impl DriftResult {
 /// Drift detector for comparing signatures with saved hashes
 pub struct DriftDetector {
     /// Map of symbol IDs to their saved entries
-    saved_map: HashMap<String, DoctypeMapEntry>,
+    saved_map: HashMap<String, SintesiMapEntry>,
 }
 
 impl DriftDetector {
     /// Create a new drift detector
     ///
     /// # Arguments
-    /// * `entries` - The saved doctype map entries to compare against
-    pub fn new(entries: Vec<DoctypeMapEntry>) -> Self {
+    /// * `entries` - The saved sintesi map entries to compare against
+    pub fn new(entries: Vec<SintesiMapEntry>) -> Self {
         let mut saved_map = HashMap::new();
         for entry in entries {
             let key = format!("{}#{}", entry.code_ref.file_path, entry.code_ref.symbol_name);
@@ -168,8 +168,8 @@ mod tests {
         file_path: &str,
         symbol_name: &str,
         hash: &str,
-    ) -> DoctypeMapEntry {
-        DoctypeMapEntry {
+    ) -> SintesiMapEntry {
+        SintesiMapEntry {
             id: "test-id".to_string(),
             code_ref: CodeRef {
                 file_path: file_path.to_string(),
@@ -179,10 +179,7 @@ mod tests {
             code_signature_text: Some("test signature".to_string()),
             doc_ref: DocRef {
                 file_path: "test.md".to_string(),
-                start_line: 1,
-                end_line: 10,
             },
-            original_markdown_content: "test content".to_string(),
             last_updated: 0.0,
         }
     }
