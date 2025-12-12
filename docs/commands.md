@@ -26,7 +26,7 @@ npm run init
 
 ### 2. `check`
 
-The `check` command performs a series of validation checks on the project. This includes verifying configurations, ensuring dependencies are correctly installed, and checking for any potential issues in the codebase.
+The `check` command verifies that documentation is in sync with code by detecting drift.
 
 #### Usage
 ```bash
@@ -41,12 +41,13 @@ npm run check
 #### Options
 - `--verbose`: Provides detailed output of the checks performed.
 - `--smart`: Enables high-level drift detection without requiring a map file.
+- `--map <path>`: Specifies the path to the map file (overrides the config).
 
 ---
 
 ### 3. `fix`
 
-The `fix` command is used to automatically correct issues identified in the project. This can include fixing linting errors, updating dependencies, and resolving configuration problems.
+The `fix` command is used to automatically correct issues identified in the project documentation.
 
 #### Usage
 ```bash
@@ -54,19 +55,18 @@ npm run fix
 ```
 
 #### Description
-- Automatically applies fixes for linting errors.
-- Updates outdated dependencies to their latest versions.
-- Corrects configuration issues where possible.
+- Fixes documentation drift by updating Markdown files with AI-generated content.
+- Prunes missing entries from the documentation if specified.
 
 #### Options
 - `--dry-run`: Simulates the fixes without applying them, allowing users to review changes beforehand.
-- `--all`: Applies fixes across all packages in the monorepo.
+- `--prune`: Removes missing entries from the documentation.
 
 ---
 
 ### 4. `generate`
 
-The `generate` command creates new files or structures based on predefined templates or configurations.
+The `generate` command creates documentation content using AI.
 
 #### Usage
 ```bash
@@ -74,35 +74,16 @@ npm run generate
 ```
 
 #### Description
-- Generates new components, modules, or files as specified by the user.
-- Utilizes templates to ensure consistency across generated items.
+- Generates documentation content based on the current codebase using AI models.
+- This command is effectively a semantic alias for the `fix` command but focused on content generation.
 
 #### Options
-- `--type <type>`: Specifies the type of item to generate (e.g., component, service).
-- `--name <name>`: Sets the name for the generated item.
+- `--map <path>`: Specifies the path to the map file (overrides the config).
+- `--verbose`: Provides detailed output during the generation process.
 
 ---
 
-### 5. `changeset`
-
-The `changeset` command manages versioning and changelogs for the project.
-
-#### Usage
-```bash
-npm run changeset
-```
-
-#### Description
-- Creates a new changeset for tracking changes in the project.
-- Generates a changelog based on the changesets created.
-
-#### Options
-- `--message <message>`: Adds a custom message to the changeset.
-- `--bump <bump>`: Specifies the version bump type (patch, minor, major).
-
----
-
-### 6. `documentation`
+### 5. `documentation`
 
 The `documentation` command automates the generation of project documentation based on the current codebase.
 
@@ -116,12 +97,12 @@ npm run documentation
 - Ensures that documentation is up-to-date with the latest changes in the codebase.
 
 #### Options
-- `--output <path>`: Specifies the output directory for the generated documentation.
-- `--format <format>`: Sets the format of the documentation (e.g., markdown, HTML).
+- `--output-dir <path>`: Specifies the output directory for the generated documentation.
+- `--verbose`: Provides detailed output during the documentation process.
 
 ---
 
-### 7. `readme`
+### 6. `readme`
 
 The `readme` command generates or updates the README file for the project.
 

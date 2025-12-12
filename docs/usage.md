@@ -119,6 +119,61 @@ npx sintesi init --docs ./documentation
 npx sintesi init --map ./custom-map.json
 ```
 
+### 4. Generate Documentation Content
+
+Generates documentation content using AI.
+
+```bash
+npx sintesi generate [options]
+```
+
+#### Options
+
+- `--map <path>`: Path to sintesi-map.json (overrides config)
+- `--verbose`: Enable detailed output (default: `false`)
+- `--dry-run`: Preview changes without writing files (default: `false`)
+- `--auto-commit`: Automatically commit changes with git (default: `false`)
+- `--interactive`: Prompt before each generation (future feature, default: `false`)
+- `--no-ai`: Disable AI-generated content (use placeholder instead) (default: `false`)
+
+#### Example
+
+```bash
+# Generate documentation content with AI
+npx sintesi generate
+
+# Preview changes without writing files
+npx sintesi generate --dry-run
+
+# Generate and automatically commit changes
+npx sintesi generate --auto-commit
+
+# Generate without AI (use placeholder content)
+npx sintesi generate --no-ai
+
+# Generate with verbose output
+npx sintesi generate --verbose
+```
+
+### 5. Generate Changesets
+
+Generates changesets from code changes using AI.
+
+```bash
+npx sintesi changeset [options]
+```
+
+#### Options
+
+- `--verbose`: Enable detailed output (default: `false`)
+
+#### Example
+
+```bash
+# Generate changesets with verbose output
+npx sintesi changeset --verbose
+```
+
 ## Library Usage
 
 The project also exposes library functionalities that can be used programmatically. Below is a brief overview of the key exports.

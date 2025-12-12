@@ -16,21 +16,25 @@ Before configuring the CLI tool, ensure that you have the following:
 
 ## Configuration Overview
 
-The CLI tool can be configured to operate in different environments, such as development, testing, and production. The configuration is primarily managed through the `package.json` file located at the root of the `sintesi-monorepo-root` project.
+The CLI tool can be configured through the `sintesi.config.json` file located at the root of the `sintesi-monorepo-root` project. Below is the structure of the configuration file:
 
-### Key Scripts
+```json
+{
+  "projectName": "sintesi",
+  "projectRoot": ".",
+  "docsFolder": "./docs",
+  "mapFile": "sintesi-map.json",
+  "outputStrategy": "mirror"
+}
+```
 
-The following scripts are available in the `package.json` file:
+### Configuration Fields
 
-- **test**: Runs tests across all packages.
-- **build**: Builds all packages in the monorepo.
-- **clean**: Cleans build artifacts across packages.
-- **lint**: Lints the codebase.
-- **release**: Handles versioning and publishing of packages.
-- **docs:dev**: Serves the documentation in development mode.
-- **docs:preview**: Previews the documentation build.
-- **docs:build**: Builds the documentation for production.
-- **generate:sidebar**: Generates the sidebar for documentation.
+- **projectName**: The name of the project (string).
+- **projectRoot**: The root directory of the project (string).
+- **docsFolder**: The folder where documentation files are stored (string).
+- **mapFile**: The name of the map file used by the CLI (string).
+- **outputStrategy**: The strategy for outputting results (string, e.g., "mirror").
 
 ## Environment Configuration
 
@@ -108,6 +112,16 @@ The following commands are available in the `packages/cli/src/commands` director
 - **check**: Performs checks on the codebase.
 - **readme**: Generates or updates the README file.
 - **documentation**: Automates the generation of documentation.
+
+### Usage Examples
+
+To use the CLI tool with the configuration file, ensure that `sintesi.config.json` is properly set up. For example, you can run:
+
+```bash
+npx sintesi documentation --output-dir docs --verbose
+```
+
+This command will generate documentation based on the configuration settings.
 
 ## Conclusion
 

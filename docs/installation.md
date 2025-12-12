@@ -6,7 +6,7 @@ This document provides step-by-step instructions on how to install and set up th
 
 Before you begin, ensure you have the following installed on your system:
 
-- **Node.js**: Version 14 or later. You can download it from [Node.js official website](https://nodejs.org/).
+- **Node.js**: Version 20 or later. You can download it from [Node.js official website](https://nodejs.org/).
 - **pnpm**: Ensure `pnpm` is installed globally. You can install it using npm:
 
   ```bash
@@ -90,13 +90,25 @@ After the installation is complete, you can run various scripts defined in the `
 To automate the generation of project documentation, you can run:
 
 ```bash
-pnpm run documentation
+sintesi generate
 ```
 
-To generate the documentation sidebar, you can run:
+To check for documentation drift, use:
 
 ```bash
-pnpm run generate:sidebar
+sintesi check
+```
+
+To fix outdated documentation, run:
+
+```bash
+sintesi fix
+```
+
+To generate a README file based on your project structure, execute:
+
+```bash
+sintesi readme
 ```
 
 To build the documentation site, use:
@@ -109,6 +121,20 @@ For a preview of the documentation, run:
 
 ```bash
 pnpm run docs:preview
+```
+
+## Environment Configuration
+
+Before using Sintesi, you need to configure your environment variables. Create a `.env` file by copying the example provided:
+
+```bash
+cp .env.example .env
+```
+
+Fill in your actual values, especially the `OPENAI_API_KEY`:
+
+```
+OPENAI_API_KEY=sk-your-openai-api-key-here
 ```
 
 ## Conclusion
