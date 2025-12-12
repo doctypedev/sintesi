@@ -10,6 +10,7 @@ import { resolve, join, dirname, relative } from 'path';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import { spinner } from '@clack/prompts';
 import { ChangeAnalysisService } from '../services/analysis-service';
+import { SmartChecker } from '../services/smart-checker';
 import { pMap } from '../utils/concurrency';
 import { createAIAgentsFromEnv, AIAgents, AIAgentRoleConfig } from '../../../ai';
 
@@ -128,6 +129,18 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   logger.header('📚 Sintesi Documentation - Intelligent Doc Generation');
 
   const cwd = process.cwd();
+  
+  // 0. Smart Check (Optimization)
+  // Determine if we should skip generation based on heuristics
+  logger.info('Performing smart check (Code Changes)...');
+  const smartChecker = new SmartChecker(logger, cwd);
+  const hasChanges = await smartChecker.hasRelevantCodeChanges();
+
+  if (!hasChanges) {
+    logger.success('No relevant code changes detected (heuristic check). Documentation is likely up to date.');
+    return;
+  }
+
   const outputDir = resolve(cwd, options.outputDir || 'docs');
   
   // Ensure output directory exists

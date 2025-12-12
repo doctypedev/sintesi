@@ -11,6 +11,7 @@ import { resolve } from 'path';
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import { spinner } from '@clack/prompts';
 import { ChangeAnalysisService } from '../services/analysis-service';
+import { SmartChecker } from '../services/smart-checker';
 
 export interface ReadmeOptions {
   output?: string;
@@ -23,6 +24,18 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   logger.header('✨ Sintesi Readme - Project Context Generation');
 
   const cwd = process.cwd();
+
+  // 0. Smart Check (Optimization)
+  // Determine if we should skip generation based on heuristics
+  logger.info('Performing smart check (Code Changes)...');
+  const smartChecker = new SmartChecker(logger, cwd);
+  const hasChanges = await smartChecker.hasRelevantCodeChanges();
+
+  if (!hasChanges && !options.force) {
+    logger.success('No relevant code changes detected (heuristic check). README is likely up to date.');
+    return;
+  }
+
   const outputPath = resolve(cwd, options.output || 'README.md');
   let existingContent = '';
   let isUpdate = false;
