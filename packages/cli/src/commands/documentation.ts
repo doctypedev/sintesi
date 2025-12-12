@@ -31,10 +31,10 @@ interface DocPlan {
  */
 function getAllFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
   if (!existsSync(dirPath)) return arrayOfFiles;
-  
+
   const files = readdirSync(dirPath);
 
-  files.forEach(function(file) {
+  files.forEach(function (file) {
     if (file === 'node_modules' || file === '.git' || file === 'dist' || file === '.sintesi' || file === '.idea' || file === '.vscode') {
       return;
     }
@@ -54,7 +54,7 @@ function getAllFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
  * Implements "Usage by Testing" by also reading associated test files.
  */
 function readRelevantContext(
-  item: DocPlan, 
+  item: DocPlan,
   contextFiles: { path: string }[]
 ): string {
   const MAX_CONTEXT_CHARS = 25000;
@@ -95,7 +95,7 @@ function readRelevantContext(
   // Read content
   for (const filePath of targetFiles) {
     if (chars >= MAX_CONTEXT_CHARS) break;
-    
+
     try {
       const fileContent = readFileSync(filePath, 'utf-8');
       content += `\n\n--- FILE: ${filePath} ---\n${fileContent.substring(0, 5000)}`;
@@ -129,7 +129,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   logger.header('📚 Sintesi Documentation - Intelligent Doc Generation');
 
   const cwd = process.cwd();
-  
+
   // 0. Smart Check (Optimization)
   // Determine if we should skip generation based on heuristics
   logger.info('Performing smart check (Code Changes)...');
@@ -142,7 +142,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   }
 
   const outputDir = resolve(cwd, options.outputDir || 'docs');
-  
+
   // Ensure output directory exists
   if (!existsSync(outputDir)) {
     mkdirSync(outputDir, { recursive: true });
@@ -166,7 +166,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
       { debug: options.verbose },
       { planner: plannerConfig, writer: writerConfig }
     );
-    
+
     const plannerConnected = await aiAgents.planner.validateConnection();
     const writerConnected = await aiAgents.writer.validateConnection();
 
@@ -191,7 +191,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   try {
     // Structural Context
     context = getProjectContext(cwd);
-    
+
     // Recent Changes Context
     const analysisService = new ChangeAnalysisService(logger);
     const analysis = await analysisService.analyze({
@@ -215,7 +215,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
 
   // 3. PHASE 1: The Architect (Planning)
   s.start('Planning documentation structure...');
-  
+
   const priorityPatterns = [
     'commands/', 'cli/', 'bin/',
     'pages/', 'app/', 'routes/', 'router/', 'components/', 'features/', 'store/', 'services/', 'hooks/', 'context/',
@@ -223,15 +223,15 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     'lib/', 'src/index', 'main'
   ];
 
-  const interestingFiles = context.files.filter(f => 
+  const interestingFiles = context.files.filter(f =>
     priorityPatterns.some(p => f.path.toLowerCase().includes(p)) || !f.path.includes('/')
   );
-  
+
   const fileSummary = interestingFiles
-    .map(function (f) { 
-        const importInfo = f.importedBy.length > 0 ? ` (imported by ${f.importedBy.length} files)` : '';
-        return '- ' + f.path + importInfo; 
-    }) 
+    .map(function (f) {
+      const importInfo = f.importedBy.length > 0 ? ` (imported by ${f.importedBy.length} files)` : '';
+      return '- ' + f.path + importInfo;
+    })
     .join('\n');
 
   let specificContext = '';
@@ -241,7 +241,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     specificContext += `\n## Detected CLI Commands:\n${commandFiles.map(f => `- ${f.path}`).join('\n')}\n`;
   }
   // 2. Web Routes Detection
-  const routeFiles = context.files.filter(f => 
+  const routeFiles = context.files.filter(f =>
     f.path.includes('routes') || f.path.includes('routing') || f.path.match(/app\/.*page\.(tsx|vue|js)/)
   );
   if (routeFiles.length > 0) {
@@ -260,8 +260,8 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     // Ignore error if docs folder doesn't exist or is empty
   }
 
-  const existingDocsSummary = existingDocsList.length > 0 
-    ? existingDocsList.join('\n') 
+  const existingDocsSummary = existingDocsList.length > 0
+    ? existingDocsList.join('\n')
     : 'No existing documentation found.';
 
   const planPrompt = `
@@ -309,7 +309,7 @@ Return ONLY a valid JSON array.
   try {
     let response = await aiAgents.planner.generateText(planPrompt, {
       maxTokens: 2000,
-      temperature: 0.2
+      temperature: 0.1
     });
     response = response.replace(/```json/g, '').replace(/```/g, '').trim();
     plan = JSON.parse(response);
@@ -328,7 +328,7 @@ Return ONLY a valid JSON array.
     const fullPath = join(outputDir, item.path);
     const isUpdate = existsSync(fullPath);
     let existingContent = '';
-    
+
     if (isUpdate) {
       existingContent = readFileSync(fullPath, 'utf-8');
     }
@@ -363,7 +363,10 @@ ${gitDiff || 'None'}
 ${isUpdate ? `## Existing Content (UPDATE THIS)
 ${existingContent}
 
-User Instruction: Update this content to reflect recent changes/source code, fixing obsolete info.` : 'User Instruction: Write this file from scratch. Be comprehensive and professional.'}
+User Instruction: Update this content to reflect recent changes/source code.
+IMPORTANT:
+1. **PRESERVE STYLE**: Keep the same tone, language, and formatting as the existing content.
+2. **MINIMAL DIFF**: Do NOT rephrase existing sentences unless they are factually incorrect. ONLY add new info or remove obsolete info.` : 'User Instruction: Write this file from scratch. Be comprehensive and professional.'}
 
 ## Rules
 - Return ONLY the Markdown content.
@@ -373,7 +376,7 @@ User Instruction: Update this content to reflect recent changes/source code, fix
     try {
       let content = await aiAgents.writer.generateText(genPrompt, {
         maxTokens: 4000,
-        temperature: 0.4
+        temperature: 0.1
       });
 
       content = content.trim();
