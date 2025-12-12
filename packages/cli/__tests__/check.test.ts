@@ -1,206 +1,102 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
 import { checkCommand } from '../src/commands/check';
-import { SintesiMapManager } from '../../content/map-manager';
-import { AstAnalyzer } from '@sintesi/core';
-import { writeFileSync, unlinkSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { SmartChecker } from '../src/services/smart-checker';
+import { Logger } from '../src/utils/logger'; // Import Logger to mock it
+import * as fs from 'fs';
+
+// Mock dependencies
+vi.mock('../src/services/smart-checker');
+vi.mock('fs');
+vi.mock('../src/utils/logger'); // Auto-mock first
 
 describe('CLI: check command', () => {
-  let originalCwd: string;
-  let testDir: string;
-  let testMapPath: string;
-  let testCodeFile: string;
-  let testDocFile: string;
+  let mockSmartCheckerInstance: any;
 
   beforeEach(() => {
-    originalCwd = process.cwd();
-    testDir = join(originalCwd, 'test-cli');
-    testMapPath = join(testDir, 'sintesi-map.json');
-    testCodeFile = join(testDir, 'test.ts');
-    testDocFile = join(testDir, 'test.md');
-    // Create test directory
-    if (!existsSync(testDir)) {
-      mkdirSync(testDir, { recursive: true });
-    }
+    vi.resetAllMocks();
 
-    // Create sintesi config file
-    const configPath = join(testDir, 'sintesi.config.json');
-    const config = {
-      projectName: 'test-project',
-      projectRoot: testDir,
-      docsFolder: 'docs',
-      mapFile: 'sintesi-map.json',
+    // Mock fs functions
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.mkdirSync).mockReturnValue(undefined);
+    vi.mocked(fs.writeFileSync).mockReturnValue(undefined);
+
+    // Setup Logger mock implementation
+    // We mock the constructor to return an object with spy methods
+    (Logger as unknown as Mock).mockImplementation(() => ({
+      header: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn(),
+      success: vi.fn(),
+      newline: vi.fn(),
+      divider: vi.fn(),
+      log: vi.fn(),
+      getVerbose: vi.fn(),
+    }));
+
+    // Setup SmartChecker mock
+    mockSmartCheckerInstance = {
+      checkReadme: vi.fn(),
     };
-    writeFileSync(configPath, JSON.stringify(config, null, 2));
-
-    // Create test code file
-    const testCode = `export function testFunc(x: number): number {
-  return x * 2;
-}`;
-    writeFileSync(testCodeFile, testCode);
-
-    // Create test doc file with anchor
-    const testDoc = `# Test
-<!-- sintesi:start id="test-id" code_ref="test.ts#testFunc" -->
-Test documentation
-<!-- sintesi:end id="test-id" -->`;
-    writeFileSync(testDocFile, testDoc);
-
-    // Create test map with correct hash
-    const analyzer = new AstAnalyzer();
-    const signatures = analyzer.analyzeFile(testCodeFile);
-    const signature = signatures.find((s) => s.symbolName === 'testFunc');
-
-    if (signature && signature.hash) {
-      const hash = signature.hash;
-      const manager = new SintesiMapManager(testMapPath);
-      manager.addEntry({
-        id: 'test-id',
-        codeRef: {
-          filePath: 'test.ts',
-          symbolName: 'testFunc',
-        },
-        codeSignatureHash: hash,
-        docRef: {
-          filePath: 'test.md',
-        },
-        lastUpdated: Date.now(),
-      });
-      manager.save();
-    }
-
-    // Change to test directory
-    process.chdir(testDir);
+    vi.mocked(SmartChecker).mockImplementation(() => mockSmartCheckerInstance);
   });
 
   afterEach(() => {
-    // Restore original directory
-    process.chdir(originalCwd);
-
-    // Cleanup test files
-    const configPath = join(testDir, 'sintesi.config.json');
-    if (existsSync(testCodeFile)) unlinkSync(testCodeFile);
-    if (existsSync(testDocFile)) unlinkSync(testDocFile);
-    if (existsSync(testMapPath)) unlinkSync(testMapPath);
-    if (existsSync(configPath)) unlinkSync(configPath);
-    if (existsSync(testDir)) {
-      try {
-        unlinkSync(testDir);
-      } catch {
-        // Directory might not be empty, that's ok
-      }
-    }
+    vi.clearAllMocks();
   });
 
-  it('should detect no drift when code is unchanged', async () => {
+  it('should pass success=true when SmartChecker detects no drift', async () => {
+    // Setup mock return
+    mockSmartCheckerInstance.checkReadme.mockResolvedValue({
+      hasDrift: false
+    });
+
     const result = await checkCommand({
-      map: testMapPath,
       verbose: false,
+      smart: true,
+      base: 'main'
     });
 
     expect(result.success).toBe(true);
-    expect(result.totalEntries).toBe(1);
     expect(result.driftedEntries).toBe(0);
-    expect(result.drifts).toHaveLength(0);
+    expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith({ baseBranch: 'main' });
   });
 
-  it('should detect drift when code signature changes', async () => {
-    // Modify the code to change signature
-    const modifiedCode = `export function testFunc(x: number, y: number): number {
-  return x * y;
-}`;
-    writeFileSync(testCodeFile, modifiedCode);
+  it('should pass success=false when SmartChecker detects drift', async () => {
+    // Setup mock return
+    mockSmartCheckerInstance.checkReadme.mockResolvedValue({
+      hasDrift: true,
+      reason: 'Missing docs',
+      suggestion: 'Update docs'
+    });
 
     const result = await checkCommand({
-      map: testMapPath,
       verbose: false,
+      smart: true,
+      base: 'main'
     });
 
     expect(result.success).toBe(false);
-    expect(result.totalEntries).toBe(1);
     expect(result.driftedEntries).toBe(1);
-    expect(result.drifts).toHaveLength(1);
-    expect(result.drifts[0].symbolName).toBe('testFunc');
+    expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith({ baseBranch: 'main' });
+    
+    // Should verify it tries to write context file
+    expect(fs.writeFileSync).toHaveBeenCalled();
   });
 
-  it('should handle missing map file gracefully', async () => {
-    const result = await checkCommand({
-      map: './nonexistent-map.json',
-      verbose: false,
+  it('should default to smart check even if not explicitly enabled (as it is the only check)', async () => {
+    // Setup mock return
+    mockSmartCheckerInstance.checkReadme.mockResolvedValue({
+      hasDrift: false
     });
 
-    expect(result.success).toBe(false);
-    expect(result.totalEntries).toBe(0);
-  });
-
-  it('should handle empty map file', async () => {
-    // Create empty map
-    const emptyManager = new SintesiMapManager(testMapPath);
-    emptyManager.clear();
-    emptyManager.save();
-
     const result = await checkCommand({
-      map: testMapPath,
       verbose: false,
+      // smart option omitted, but command should run it
     });
 
     expect(result.success).toBe(true);
-    expect(result.totalEntries).toBe(0);
-    expect(result.driftedEntries).toBe(0);
-  });
-
-  it('should handle missing code file gracefully', async () => {
-    // Delete code file
-    unlinkSync(testCodeFile);
-
-    const result = await checkCommand({
-      map: testMapPath,
-      verbose: false,
-    });
-
-    // Should detect missing file
-    expect(result.success).toBe(false);
-    expect(result.driftedEntries).toBe(0);
-    expect(result.missingEntries).toBe(1);
-    expect(result.missing[0].reason).toBe('file_not_found');
-  });
-
-  it('should detect missing symbol (rename) in existing file', async () => {
-    // Rename function in code (simulating a rename)
-    const modifiedCode = `export function renamedFunc(x: number): number {
-  return x * 2;
-}`;
-    writeFileSync(testCodeFile, modifiedCode);
-
-    const result = await checkCommand({
-      map: testMapPath,
-      verbose: false,
-    });
-
-    expect(result.success).toBe(false);
-    expect(result.missingEntries).toBe(1);
-    expect(result.missing[0].reason).toBe('symbol_not_found');
-    expect(result.missing[0].symbolName).toBe('testFunc');
-  });
-
-  it('should provide detailed drift information in verbose mode', async () => {
-    // Modify the code
-    const modifiedCode = `export function testFunc(x: string): string {
-  return x.toUpperCase();
-}`;
-    writeFileSync(testCodeFile, modifiedCode);
-
-    const result = await checkCommand({
-      map: testMapPath,
-      verbose: true,
-    });
-
-    expect(result.drifts[0]).toHaveProperty('id');
-    expect(result.drifts[0]).toHaveProperty('symbolName');
-    expect(result.drifts[0]).toHaveProperty('codeFilePath');
-    expect(result.drifts[0]).toHaveProperty('docFilePath');
-    expect(result.drifts[0]).toHaveProperty('oldHash');
-    expect(result.drifts[0]).toHaveProperty('newHash');
-    expect(result.drifts[0]).toHaveProperty('newSignature');
+    expect(SmartChecker).toHaveBeenCalled(); // Should still instantiate SmartChecker
   });
 });

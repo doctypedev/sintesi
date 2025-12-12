@@ -28,7 +28,7 @@ interface DocPlan {
 /**
  * Safely list all files, ignoring node_modules, .git, and build artifacts.
  */
-function getAllFiles(dirPath: string, arrayOfFiles: string[] = []) {
+function getAllFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
   if (!existsSync(dirPath)) return arrayOfFiles;
   
   const files = readdirSync(dirPath);
@@ -138,7 +138,6 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   // 1. Initialize AI Agents
   let aiAgents: AIAgents;
   try {
-    // Role-based models can be configured via sintesi.config.json or ENV vars
     // Default planner: gpt-4o (OpenAI) / gemini-1.5-flash (Gemini)
     // Default writer: gpt-4o-mini (OpenAI) / gemini-1.5-flash-001 (Gemini)
     const plannerConfig: AIAgentRoleConfig = {

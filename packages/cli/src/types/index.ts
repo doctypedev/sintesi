@@ -2,8 +2,6 @@
  * CLI-specific type definitions
  */
 
-import type { OutputStrategy } from '../orchestrators/init-orchestrator';
-
 /**
  * Result of a drift check operation
  */
@@ -64,65 +62,10 @@ export interface MissingSymbolDetail {
   reason: 'file_not_found' | 'symbol_not_found';
 }
 
-
-/**
- * Result of a fix operation
- */
-export interface FixResult {
-  /** Total number of fixes attempted */
-  totalFixes: number;
-  /** Number of successful fixes */
-  successfulFixes: number;
-  /** Number of failed fixes */
-  failedFixes: number;
-  /** Details of each fix attempt */
-  fixes: FixDetail[];
-  /** Overall success status */
-  success: boolean;
-  /** Configuration error (e.g., map file not found) - should always exit with error */
-  configError?: string;
-}
-
-/**
- * Details about a specific fix attempt
- */
-export interface FixDetail {
-  /** Anchor ID */
-  id: string;
-  /** Symbol name */
-  symbolName: string;
-  /** Code file path */
-  codeFilePath: string;
-  /** Documentation file path */
-  docFilePath: string;
-  /** Whether the fix was successful */
-  success: boolean;
-  /** Error message if failed */
-  error?: string;
-  /** New content that was injected (if successful) */
-  newContent?: string;
-}
-
-/**
- * CLI configuration options
- */
-export interface CLIConfig {
-  /** Path to sintesi-map.json */
-  mapPath: string;
-  /** Root directory of the project */
-  projectRoot: string;
-  /** Verbose logging */
-  verbose: boolean;
-  /** Dry run mode (no file writes) */
-  dryRun: boolean;
-}
-
 /**
  * Options for the check command
  */
 export interface CheckOptions {
-  /** Path to sintesi-map.json */
-  map?: string;
   /** Verbose output */
   verbose?: boolean;
   /** Exit with error code if drift detected */
@@ -131,44 +74,6 @@ export interface CheckOptions {
   smart?: boolean;
   base?: string;
 }
-
-/**
- * Options for the fix command
- */
-export interface FixOptions {
-  /** Path to sintesi-map.json */
-  map?: string;
-  /** Verbose output */
-  verbose?: boolean;
-  /** Dry run (preview changes without writing) */
-  dryRun?: boolean;
-  /** Auto-commit changes with git */
-  autoCommit?: boolean;
-  /** Interactive mode (prompt before each fix) */
-  interactive?: boolean;
-  /** Disable AI-generated content (use placeholder instead) */
-  noAI?: boolean;
-  /** Remove missing entries from the map */
-  prune?: boolean;
-}
-
-/**
- * Options for the init command
- */
-export interface InitOptions {
-  /** Verbose output */
-  verbose?: boolean;
-}
-
-/**
- * Options for the generate command (extends FixOptions)
- */
-export interface GenerateOptions extends FixOptions { }
-
-/**
- * Result of a generate operation (extends FixResult)
- */
-export interface GenerateResult extends FixResult { }
 
 /**
  * Options for the changeset command
@@ -212,36 +117,4 @@ export interface ChangesetResult {
   error?: string;
 }
 
-/**
- * Result of an init operation
- */
-export interface InitResult {
-  /** Whether the initialization was successful */
-  success: boolean;
-  /** Path to the created config file */
-  configPath?: string;
-  /** Error message if failed */
-  error?: string;
-}
-
 export type AIProvider = 'openai' | 'gemini' | 'anthropic' | 'mistral';
-
-/**
- * Sintesi configuration file structure
- */
-export interface SintesiConfig {
-  /** Project name */
-  projectName: string;
-  /** Project root directory */
-  projectRoot: string;
-  /** Documentation folder path */
-  docsFolder: string;
-  /** Map file name/path */
-  mapFile: string;
-  /** Strategy for generating documentation files */
-  outputStrategy?: OutputStrategy;
-  /** Directory where the config file was found (internal use) */
-  baseDir?: string;
-  /** AI provider to use for generation */
-  aiProvider?: AIProvider;
-}

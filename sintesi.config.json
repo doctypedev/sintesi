@@ -1,7 +1,0 @@
-{
-  "projectName": "sintesi",
-  "projectRoot": ".",
-  "docsFolder": "./docs",
-  "mapFile": "sintesi-map.json",
-  "outputStrategy": "mirror"
-}
