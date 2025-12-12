@@ -201,6 +201,17 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     context = analysis.context;
     gitDiff = analysis.gitDiff;
     s.stop('Analyzed ' + context.files.length + ' files');
+
+    // Impact Analysis (Semantic Check)
+    if (gitDiff) {
+      const { ImpactAnalyzer } = await import('../services/impact-analyzer');
+      const impactAnalyzer = new ImpactAnalyzer(logger);
+      // For docs, we treat 'site' mode as potentially force-like or needing structural updates, 
+      // but for now let's apply the same logic. If semantic check fails, we skip.
+      const shouldProceed = await impactAnalyzer.checkWithLogging(gitDiff, 'documentation', aiAgents, options.site);
+
+      if (!shouldProceed) return;
+    }
   } catch (error) {
     s.stop('Analysis failed');
     logger.error('Failed to analyze project: ' + error);

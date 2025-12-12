@@ -59,6 +59,15 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
 
   if (gitDiff) {
     logger.info('Detected recent code changes, including in context.');
+
+    // Impact Analysis (Semantic Check)
+    if (aiAgents) {
+      const { ImpactAnalyzer } = await import('../services/impact-analyzer');
+      const impactAnalyzer = new ImpactAnalyzer(logger);
+      const shouldProceed = await impactAnalyzer.checkWithLogging(gitDiff, 'readme', aiAgents, options.force);
+
+      if (!shouldProceed) return;
+    }
   }
 
   if (existsSync(outputPath)) {
