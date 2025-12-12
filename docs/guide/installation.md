@@ -21,7 +21,7 @@ Before installing the CLI tool, ensure that you have the following prerequisites
 1. **Clone the Repository**:
    First, clone the `sintesi-monorepo-root` repository to your local machine. Open your terminal and run:
    ```bash
-   git clone https://github.com/your-username/sintesi-monorepo-root.git
+   git clone https://github.com/doctypedev/sintesi.git
    cd sintesi-monorepo-root
    ```
 
