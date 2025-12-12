@@ -125,8 +125,8 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   // Format context for AI
   const fileSummary = context.files
     .map(function (f) {
-        const importInfo = f.importedBy.length > 0 ? ` (imported by ${f.importedBy.length} files)` : '';
-        return '- ' + f.path + importInfo;
+      const importInfo = f.importedBy.length > 0 ? ` (imported by ${f.importedBy.length} files)` : '';
+      return '- ' + f.path + importInfo;
     })
     .join('\n');
 
@@ -158,14 +158,14 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     instructions += "\n```\n\n";
 
     instructions += "## Instructions for UPDATE\n";
-    instructions += "1. **LANGUAGE CONSISTENCY**: STRICTLY write in the same language as the 'Current README Content'. If it is Italian, write in Italian. Do not switch languages.\n";
-    instructions += "2. Analyze the 'Current README Content' and compare it with the detected project structure, package.json, and **Recent Code Changes**.\n";
-    instructions += "3. **Detect New Features**: Look closely at the Git Diff and File Structure. If new files were added to 'commands', 'routes', or 'scripts', implies new functionality.\n";
-    instructions += "4. **Update Usage Section**: IF you detect new CLI commands (e.g. in `src/commands/`), scripts, or API endpoints, YOU MUST document them in the Usage section.\n";
+    instructions += "1. **STRICTLY PRESERVE STYLE**: You MUST write in the EXACT same language, tone, and style as the 'Current README Content'.\n";
+    instructions += "2. **MINIMAL CHANGES**: Only update sections that are factually incorrect or missing based on the **Recent Code Changes**.\n";
+    instructions += "3. **NO REWRITING**: Do NOT rephrase existing sentences just to 'improve' them. If it's not broken, don't fix it. This is critical to avoid unnecessary git diffs.\n";
+    instructions += "4. **Detect New Features**: Look closely at the Git Diff and File Structure. If new files were added to 'commands', 'routes', or 'scripts', implies new functionality.\n";
+    instructions += "5. **Update Usage Section**: IF you detect new CLI commands (e.g. in `src/commands/`), scripts, or API endpoints, YOU MUST document them in the Usage section.\n";
     instructions += "   - *Example*: If you see `src/commands/readme.ts`, ensure `readme` command is listed.\n";
-    instructions += "5. **Keep manual details**: Preserve specific configuration details, project philosophy, or manual instructions that cannot be inferred from code.\n";
-    instructions += "6. **Update obsolete parts**: Remove commands or features that were deleted.\n";
-    instructions += "7. **Improve clarity**: Rephrase sections to be more professional and concise if needed.\n";
+    instructions += "6. **Keep manual details**: Preserve specific configuration details, project philosophy, or manual instructions that cannot be inferred from code.\n";
+    instructions += "7. **Delete Obsolete**: Remove commands or features that were deleted, but do not touch valid ones.\n";
   } else {
     instructions += "\n## Instructions for NEW CREATION\n";
     instructions += "1. Analyze the file structure, package.json, and **Recent Code Changes**.\n";
@@ -192,7 +192,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   try {
     let readmeContent = await aiAgents.writer.generateText(prompt, {
       maxTokens: 4000,
-      temperature: 0.5
+      temperature: 0.1
     });
 
     // Cleanup: Remove markdown code blocks if present
