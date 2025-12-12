@@ -138,7 +138,7 @@ Return a JSON object:
             if (!chunk.trim()) continue;
 
             // Check the first line for filename
-            const firstLine = chunk.split('\\n')[0];
+            const firstLine = chunk.split('\n')[0];
 
             // Filter patterns
             if (
@@ -155,6 +155,6 @@ Return a JSON object:
             keptChunks.push('diff --git ' + chunk);
         }
 
-        return keptChunks.join('\\n');
+        return keptChunks.join('\n');
     }
 }
