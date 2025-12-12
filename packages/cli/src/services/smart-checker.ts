@@ -98,6 +98,32 @@ export class SmartChecker {
     }
 
     /**
+     * Checks if there are relevant code changes that might affect documentation
+     * using the deterministic heuristics (no AI cost).
+     */
+    async hasRelevantCodeChanges(options?: { baseBranch?: string }): Promise<boolean> {
+        const baseBranch = options?.baseBranch || 'origin/main';
+        try {
+            const context = await this.analysisService.analyze({
+                baseBranch,
+                projectRoot: this.projectRoot,
+                fallbackToLastCommit: true,
+                includeSymbols: false,
+                stagedOnly: false
+            });
+
+            if (!context.gitDiff) {
+                return false;
+            }
+
+            return this.shouldAnalyzeWithAI(context.changedFiles, context.gitDiff);
+        } catch (error) {
+            this.logger.warn('Failed to check for relevant changes: ' + error);
+            return true; // Default to true on error to be safe
+        }
+    }
+
+    /**
      * Check if the README needs to be updated based on recent code changes
      */
     async checkReadme(options?: { baseBranch?: string }): Promise<SmartCheckResult> {
