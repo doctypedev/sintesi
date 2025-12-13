@@ -51,7 +51,7 @@ sintesi readme
 
 #### Options
 - `--output <path>`: Specifies the output path for the README file (default is `README.md`).
-- `--force`: Forces an update even if no relevant code changes are detected.
+- `--force`: Forces a regeneration of README, bypassing existing checks.
 - `--verbose`: Provides detailed output during the generation process.
 
 #### Usage Examples
