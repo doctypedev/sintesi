@@ -3,6 +3,7 @@ import { resolve } from 'path';
 import { Logger } from '../utils/logger';
 import { createAIAgentsFromEnv, AIAgents } from '../../../ai'; // Updated import
 import { ChangeAnalysisService } from './analysis-service';
+import { filterGitDiff } from '../utils/diff-utils';
 
 export interface SmartCheckResult {
     hasDrift: boolean;
@@ -166,18 +167,8 @@ export class SmartChecker {
             }
 
             // FILTER: Remove README.md changes from the diff to prevent self-triggering
-            // We split by "diff --git" and remove chunks that belong to README.md
-            const chunks = gitDiff.split('diff --git ');
-            const relevantChunks: string[] = [];
-
-            for (const chunk of chunks) {
-                if (!chunk.trim()) continue;
-                const firstLine = chunk.split('\n')[0];
-                if (firstLine.toLowerCase().includes('readme.md')) continue;
-                relevantChunks.push('diff --git ' + chunk);
-            }
-
-            gitDiff = relevantChunks.join('\n');
+            // Using shared utility for consistent logic
+            gitDiff = filterGitDiff(gitDiff, ['README.md']);
 
             if (!gitDiff.trim()) {
                 this.logger.debug('No code changes detected (after filtering README changes).');
