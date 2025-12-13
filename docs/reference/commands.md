@@ -107,10 +107,11 @@ sintesi documentation
 #### Options
 - `--output-dir <path>`: Specifies the output directory for the generated documentation (default is `docs`).
 - `--verbose`: Provides detailed output during the documentation process.
+- `--force`: Forces a regeneration of documentation, bypassing existing checks.
 
 #### Usage Examples
 ```bash
-sintesi documentation -- --output-dir docs --verbose
+sintesi documentation -- --output-dir docs --verbose --force
 ```
 
 ---
