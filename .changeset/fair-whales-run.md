@@ -1,5 +1,5 @@
 ---
-"@sintesi/sintesi": patch
+"@sintesi/sintesi": minor
 ---
 
 - Integrate AI-based drift detection and impact analysis in both check and documentation commands
