@@ -1,16 +1,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
 import { checkCommand } from '../src/commands/check';
 import { SmartChecker } from '../src/services/smart-checker';
+import { GenerationContextService } from '../src/services/generation-context';
+import { ImpactAnalyzer } from '../src/services/impact-analyzer';
 import { Logger } from '../src/utils/logger'; // Import Logger to mock it
 import * as fs from 'fs';
 
 // Mock dependencies
 vi.mock('../src/services/smart-checker');
+vi.mock('../src/services/generation-context');
+vi.mock('../src/services/impact-analyzer');
 vi.mock('fs');
 vi.mock('../src/utils/logger'); // Auto-mock first
 
 describe('CLI: check command', () => {
   let mockSmartCheckerInstance: any;
+  let mockContextServiceInstance: any;
+  let mockImpactAnalyzerInstance: any;
 
   beforeEach(() => {
     vi.resetAllMocks();
@@ -21,7 +27,6 @@ describe('CLI: check command', () => {
     vi.mocked(fs.writeFileSync).mockReturnValue(undefined);
 
     // Setup Logger mock implementation
-    // We mock the constructor to return an object with spy methods
     (Logger as unknown as Mock).mockImplementation(() => ({
       header: vi.fn(),
       info: vi.fn(),
@@ -40,6 +45,19 @@ describe('CLI: check command', () => {
       checkReadme: vi.fn(),
     };
     vi.mocked(SmartChecker).mockImplementation(() => mockSmartCheckerInstance);
+
+    // Setup GenerationContextService mock
+    mockContextServiceInstance = {
+      getAIAgents: vi.fn().mockResolvedValue({}), // Truthy agents
+      analyzeProject: vi.fn().mockResolvedValue({ gitDiff: 'some changes' }), // Truthy diff
+    };
+    vi.mocked(GenerationContextService).mockImplementation(() => mockContextServiceInstance);
+
+    // Setup ImpactAnalyzer mock
+    mockImpactAnalyzerInstance = {
+      checkWithLogging: vi.fn().mockResolvedValue({ shouldProceed: false, reason: '' }),
+    };
+    vi.mocked(ImpactAnalyzer).mockImplementation(() => mockImpactAnalyzerInstance);
   });
 
   afterEach(() => {
