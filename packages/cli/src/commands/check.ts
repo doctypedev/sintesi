@@ -7,6 +7,8 @@
 import { Logger } from '../utils/logger';
 import { CheckResult, CheckOptions } from '../types';
 import { SmartChecker } from '../services/smart-checker';
+import { GenerationContextService } from '../services/generation-context';
+import { ImpactAnalyzer } from '../services/impact-analyzer';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { resolve, join } from 'path';
 
@@ -18,27 +20,44 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
 
   logger.header('🔍 Sintesi Check - Drift Detection');
 
-  // Smart Check (High-level drift detection)
-  // This is now the only check we perform as map-based checking has been removed.
-  
   // Resolve the root directory for source code
-  // We assume current working directory is the project root
   const codeRoot = process.cwd();
   
-  logger.info('Performing smart check (README vs Code)...');
-  logger.newline();
+  // Initialize Services
+  const contextService = new GenerationContextService(logger, codeRoot);
+  const aiAgents = await contextService.getAIAgents(options.verbose || false);
   
+  if (!aiAgents) {
+    logger.error('Failed to initialize AI agents. Cannot perform smart check.');
+    return {
+      totalEntries: 0, driftedEntries: 0, missingEntries: 0, untrackedEntries: 0,
+      drifts: [], missing: [], success: false, configError: 'Failed to initialize AI agents'
+    };
+  }
+
+  // Analyze Project (Get Git Diff)
+  logger.info('Analyzing project changes...');
+  const { gitDiff } = await contextService.analyzeProject();
+  
+  if (!gitDiff) {
+    logger.success('No recent code changes detected. Documentation is likely in sync.');
+    return {
+      totalEntries: 0, driftedEntries: 0, missingEntries: 0, untrackedEntries: 0,
+      drifts: [], missing: [], success: true
+    };
+  }
+
+  // 1. README Check (SmartChecker)
+  logger.info('Performing smart check (README vs Code)...');
   const smartChecker = new SmartChecker(logger, codeRoot);
   const smartResult = await smartChecker.checkReadme({ baseBranch: options.base });
 
-  let smartDriftDetected = false;
-
+  let readmeDriftDetected = false;
   if (smartResult.hasDrift) {
-    logger.warn('⚠️ High-level drift detected: README might be outdated');
+    logger.warn('⚠️ Drift detected: README might be outdated');
     if (smartResult.reason) logger.log(`  Reason: ${smartResult.reason}`);
     if (smartResult.suggestion) logger.log(`  Suggestion: ${smartResult.suggestion}`);
-    logger.newline();
-
+    
     // Save context for other commands (like readme) to consume
     try {
       const sintesiDir = resolve(process.cwd(), '.sintesi');
@@ -55,23 +74,63 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     } catch (e) {
       logger.debug(`Failed to save smart context: ${e}`);
     }
-
-    smartDriftDetected = true;
+    readmeDriftDetected = true;
   } else {
-    logger.success('README appears to be in sync with recent changes');
+    logger.success('README appears to be in sync.');
   }
   
+  logger.newline();
+
+  // 2. Documentation Site Check (ImpactAnalyzer)
+  logger.info('Performing impact analysis (Documentation Site vs Code)...');
+  const impactAnalyzer = new ImpactAnalyzer(logger);
+  // We use 'checkWithLogging' which returns shouldProceed=true if update is needed
+  // So updateNeeded = shouldProceed
+  const docImpact = await impactAnalyzer.checkWithLogging(gitDiff, 'documentation', aiAgents, false);
+  const docDriftDetected = docImpact.shouldProceed;
+
+  if (docDriftDetected) {
+     logger.warn('⚠️ Drift detected: Documentation site likely needs updates based on recent changes.');
+  } else {
+     logger.success('Documentation site appears to be in sync.');
+  }
+
+  // Save State for subsequent pipeline steps
+  try {
+    const sintesiDir = resolve(process.cwd(), '.sintesi');
+    if (!existsSync(sintesiDir)) mkdirSync(sintesiDir, { recursive: true });
+    
+    const statePath = join(sintesiDir, 'state.json');
+    writeFileSync(statePath, JSON.stringify({
+      timestamp: Date.now(),
+      readme: {
+        hasDrift: readmeDriftDetected,
+        reason: smartResult.reason,
+        suggestion: smartResult.suggestion
+      },
+      documentation: {
+        hasDrift: docDriftDetected,
+        reason: docImpact.reason
+      }
+    }, null, 2));
+    logger.debug(`Saved pipeline state to ${statePath}`);
+  } catch (e) {
+    logger.debug(`Failed to save pipeline state: ${e}`);
+  }
+
   logger.divider();
+
+  const anyDrift = readmeDriftDetected || docDriftDetected;
 
   // Return a simplified result since we don't have detailed entry tracking anymore
   const result: CheckResult = {
     totalEntries: 0,
-    driftedEntries: smartDriftDetected ? 1 : 0,
+    driftedEntries: anyDrift ? 1 : 0,
     missingEntries: 0,
     untrackedEntries: 0,
     drifts: [],
     missing: [],
-    success: !smartDriftDetected,
+    success: !anyDrift,
   };
 
   return result;

@@ -7,10 +7,11 @@
 import { Logger } from '../utils/logger';
 import { ProjectContext } from '@sintesi/core';
 import { resolve } from 'path';
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { spinner } from '@clack/prompts';
 import { GenerationContextService } from '../services/generation-context';
 import { ReviewService } from '../services/review-service';
+import { SmartChecker } from '../services/smart-checker';
 
 export interface ReadmeOptions {
   output?: string;
@@ -26,9 +27,58 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   const contextService = new GenerationContextService(logger, cwd);
   const reviewService = new ReviewService(logger);
 
-  // 0. Smart Check
-  const hasChanges = await contextService.performSmartCheck(options.force);
-  if (!hasChanges) return;
+  let smartSuggestion = '';
+
+  // 0. Smart Check & State Verification
+  // We check if a previous 'check' command has already analyzed the project.
+  // If not, we perform a standalone smart check (AI-powered) to avoid unnecessary generation.
+  if (!options.force) {
+    let stateFound = false;
+    
+    // Strategy A: Check Pipeline State (.sintesi/state.json)
+    try {
+      const statePath = resolve(cwd, '.sintesi/state.json');
+      if (existsSync(statePath)) {
+        const state = JSON.parse(readFileSync(statePath, 'utf-8'));
+        
+        // Timeout Logic: 20 mins locally, unlimited in CI
+        // We trust the state file in CI because artifacts are usually fresh within the workflow
+        const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+        const stateTimeout = isCI ? Infinity : 20 * 60 * 1000;
+        
+        if (Date.now() - state.timestamp < stateTimeout) {
+          stateFound = true;
+          if (state.readme && state.readme.hasDrift === false) {
+             logger.success('✅ Skipping README generation (validated as sync by check command).');
+             return;
+          } else if (state.readme && state.readme.suggestion) {
+             smartSuggestion = state.readme.suggestion;
+             logger.info('💡 Using suggestion from pipeline check: ' + smartSuggestion);
+          }
+        }
+      }
+    } catch (e) {
+      logger.debug('Failed to read state file: ' + e);
+    }
+
+    // Strategy B: Standalone Smart Check (if no valid state found)
+    if (!stateFound) {
+       logger.info('Performing standalone smart check...');
+       const smartChecker = new SmartChecker(logger, cwd);
+       // We use the smart checker (AI) to be consistent with the 'check' command logic
+       const result = await smartChecker.checkReadme();
+       
+       if (!result.hasDrift) {
+         logger.success('✅ No relevant changes detected (AI Smart Check). README is up to date.');
+         return;
+       }
+       
+       if (result.suggestion) {
+         smartSuggestion = result.suggestion;
+         logger.info('💡 Drift detected. Suggestion: ' + smartSuggestion);
+       }
+    }
+  }
 
   const outputPath = resolve(cwd, options.output || 'README.md');
   let existingContent = '';
@@ -79,22 +129,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     }
   }
 
-  // 2.5 Check for Smart Context (from check --smart)
-  let smartSuggestion = '';
-  try {
-    const smartContextPath = resolve(cwd, '.sintesi/smart-context.json');
-    if (existsSync(smartContextPath)) {
-      const content = JSON.parse(readFileSync(smartContextPath, 'utf-8'));
-      if (content.suggestion) {
-        smartSuggestion = content.suggestion;
-        logger.info('💡 Using suggestion from strict check: ' + smartSuggestion);
-      }
-      // Clean up
-      unlinkSync(smartContextPath);
-    }
-  } catch (e: any) { // Catch as any
-    logger.debug('Failed to load smart context: ' + e);
-  }
+
 
   // 3. Prepare Prompt
   s.start(isUpdate ? 'Updating README...' : 'Generating README...');

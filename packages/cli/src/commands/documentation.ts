@@ -173,8 +173,36 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   const contextService = new GenerationContextService(logger, cwd);
   const reviewService = new ReviewService(logger);
 
+  let forceSmartCheck = false;
+
+  // 0. Pipeline Optimization: Check State File
+  try {
+    const statePath = resolve(cwd, '.sintesi/state.json');
+    if (existsSync(statePath)) {
+      const state = JSON.parse(readFileSync(statePath, 'utf-8'));
+      
+      // Timeout Logic: 20 mins locally, unlimited in CI
+      const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+      const stateTimeout = isCI ? Infinity : 20 * 60 * 1000;
+
+      if (Date.now() - state.timestamp < stateTimeout) {
+        if (state.documentation) {
+          if (state.documentation.hasDrift === false) {
+            logger.success('✅ Skipping Documentation generation (validated as sync by check command).');
+            return;
+          } else {
+            logger.info('ℹ️  Pipeline check indicated drift. Proceeding with generation.');
+            forceSmartCheck = true;
+          }
+        }
+      }
+    }
+  } catch (e) {
+    logger.debug('Failed to read state file: ' + e);
+  }
+
   // 0. Smart Check
-  const hasChanges = await contextService.performSmartCheck();
+  const hasChanges = await contextService.performSmartCheck(forceSmartCheck);
   if (!hasChanges) return;
 
   const outputDir = resolve(cwd, options.outputDir || 'docs');
