@@ -46,6 +46,13 @@ Traditional docs rot. Sintesi keeps them fresh.
     ```
     The `check` command performs dual drift detection for both the README and the documentation site. You can use the `--no-strict` flag to allow non-blocking CI usage.
 
+4. **Force Overwrite**
+    If you need to regenerate documentation or README files and want to bypass existing content checks, you can use the `--force` flag:
+    ```bash
+    sintesi documentation --force
+    ```
+    This will ignore existing files and regenerate them from scratch.
+
 ## 🧠 How it works
 
 Sintesi is not just a generator; it is a full **documentation lifecycle manager**.

@@ -51,7 +51,7 @@ sintesi readme
 
 #### Options
 - `--output <path>`: Specifies the output path for the README file (default is `README.md`).
-- `--force`: Forces an update even if no relevant code changes are detected.
+- `--force`: Forces a regeneration of README, bypassing existing checks.
 - `--verbose`: Provides detailed output during the generation process.
 
 #### Usage Examples
@@ -107,10 +107,11 @@ sintesi documentation
 #### Options
 - `--output-dir <path>`: Specifies the output directory for the generated documentation (default is `docs`).
 - `--verbose`: Provides detailed output during the documentation process.
+- `--force`: Forces a regeneration of documentation, bypassing existing checks.
 
 #### Usage Examples
 ```bash
-sintesi documentation -- --output-dir docs --verbose
+sintesi documentation -- --output-dir docs --verbose --force
 ```
 
 ---
