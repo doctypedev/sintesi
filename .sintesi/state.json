@@ -1,0 +1,12 @@
+{
+  "timestamp": 1765643323114,
+  "readme": {
+    "hasDrift": true,
+    "reason": "The check command now performs an additional impact analysis (comparing the documentation site with the code changes) and supports a new '--no-strict' flag for CI pipelines. These enhancements affect how drift is detected and how the command behaves, but the README still only mentions a basic usage of 'sintesi check'.",
+    "suggestion": "Update the README to briefly note that 'sintesi check' now performs dual drift detection (README and documentation site) and supports the '--no-strict' flag (for non-blocking CI usage), so users understand the improved behavior and how to integrate it in their workflows."
+  },
+  "documentation": {
+    "hasDrift": true,
+    "reason": "New features have been added, including AI-based drift detection and impact analysis, which are visible to the end-user. These enhancements affect the check and documentation commands, and the README generation process has been improved with smart context and pipeline state validation."
+  }
+}
