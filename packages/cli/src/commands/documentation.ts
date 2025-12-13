@@ -17,6 +17,7 @@ import { ReviewService } from '../services/review-service';
 export interface DocumentationOptions {
   outputDir?: string;
   verbose?: boolean;
+  force?: boolean;
 }
 
 interface DocPlan {
@@ -176,34 +177,42 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   let forceSmartCheck = false;
 
   // 0. Pipeline Optimization: Check State File
-  try {
-    const statePath = resolve(cwd, '.sintesi/state.json');
-    if (existsSync(statePath)) {
-      const state = JSON.parse(readFileSync(statePath, 'utf-8'));
-      
-      // Timeout Logic: 20 mins locally, unlimited in CI
-      const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
-      const stateTimeout = isCI ? Infinity : 20 * 60 * 1000;
+  if (options.force) {
+    logger.info('Force flag detected: skipping state checks and treating as greenfield generation.');
+    forceSmartCheck = true;
+  } else {
+    try {
+      const statePath = resolve(cwd, '.sintesi/state.json');
+      if (existsSync(statePath)) {
+        const state = JSON.parse(readFileSync(statePath, 'utf-8'));
+        
+        // Timeout Logic: 20 mins locally, unlimited in CI
+        const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+        const stateTimeout = isCI ? Infinity : 20 * 60 * 1000;
 
-      if (Date.now() - state.timestamp < stateTimeout) {
-        if (state.documentation) {
-          if (state.documentation.hasDrift === false) {
-            logger.success('✅ Skipping Documentation generation (validated as sync by check command).');
-            return;
-          } else {
-            logger.info('ℹ️  Pipeline check indicated drift. Proceeding with generation.');
-            forceSmartCheck = true;
+        if (Date.now() - state.timestamp < stateTimeout) {
+          if (state.documentation) {
+            if (state.documentation.hasDrift === false) {
+              logger.success('✅ Skipping Documentation generation (validated as sync by check command).');
+              return;
+            } else {
+              logger.info('ℹ️  Pipeline check indicated drift. Proceeding with generation.');
+              forceSmartCheck = true;
+            }
           }
         }
       }
+    } catch (e) {
+      logger.debug('Failed to read state file: ' + e);
     }
-  } catch (e) {
-    logger.debug('Failed to read state file: ' + e);
   }
 
   // 0. Smart Check
-  const hasChanges = await contextService.performSmartCheck(forceSmartCheck);
-  if (!hasChanges) return;
+  // If force is active, we skip the smart check entirely and proceed
+  if (!options.force) {
+    const hasChanges = await contextService.performSmartCheck(forceSmartCheck);
+    if (!hasChanges) return;
+  }
 
   const outputDir = resolve(cwd, options.outputDir || 'docs');
 
@@ -230,7 +239,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     s.stop('Analyzed ' + context.files.length + ' files');
 
     // Impact Analysis (Semantic Check)
-    if (gitDiff) {
+    if (gitDiff && !options.force) {
       const { ImpactAnalyzer } = await import('../services/impact-analyzer');
       const impactAnalyzer = new ImpactAnalyzer(logger);
       // For docs, we treat 'site' mode as potentially force-like or needing structural updates, 
@@ -317,6 +326,8 @@ export async function documentationCommand(options: DocumentationOptions): Promi
 
   let existingDocsList: string[] = [];
   try {
+    // Always list existing files so the planner is aware of them (avoiding "zombie files")
+    // Even in FORCE mode, knowing what exists helps the planner decide whether to rename or replace.
     const allFiles = getAllFiles(outputDir);
     existingDocsList = allFiles.map(f => relative(outputDir, f));
   } catch (e) {
@@ -329,14 +340,15 @@ export async function documentationCommand(options: DocumentationOptions): Promi
 
   /*
    * STRATEGY SELECTION
-   * If we found existing docs, we switch to "Improvement Mode" rather than "Greenfield Mode".
+   * If we found existing docs AND we are not forcing, we switch to "Improvement Mode".
+   * If force is active, we stay in "Greenfield Mode" (aggressive) but the planner still sees the file list.
    */
   const hasExistingDocs = existingDocsList.length > 0;
 
   // Base instructions for the planner
   let strategyInstructions = '';
 
-  if (hasExistingDocs) {
+  if (hasExistingDocs && !options.force) {
     strategyInstructions = `
 ### Strategy: IMPROVEMENT MODE (Existing Docs Detected)
 - **RESPECT EXISTING STRUCTURE**: The user has an existing documentation structure. Do NOT propose completely new filenames unless the current ones are insufficient.
@@ -440,7 +452,8 @@ Return ONLY a valid JSON array.
     let currentContent = '';
 
     // Check if the target file already exists OR if there's an originalPath to migrate from
-    if (existsSync(fullPath)) {
+    // IF force is active, we ignore the EXISTING file content at fullPath to force a rewrite
+    if (existsSync(fullPath) && !options.force) {
       currentContent = readFileSync(fullPath, 'utf-8');
     } else if (item.originalPath) {
       const originalFullPath = join(outputDir, item.originalPath);
@@ -448,6 +461,10 @@ Return ONLY a valid JSON array.
         currentContent = readFileSync(originalFullPath, 'utf-8');
         logger.debug(`Migrating content from ${item.originalPath} to ${item.path}`);
       }
+    }
+    
+    if (options.force && existsSync(fullPath)) {
+        logger.debug(`Force mode: Ignoring existing content for ${item.path}`);
     }
 
     logger.info(`> Processing ${item.path}...`);

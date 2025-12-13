@@ -119,7 +119,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     }
   }
 
-  if (existsSync(outputPath)) {
+  if (existsSync(outputPath) && !options.force) {
     try {
       existingContent = readFileSync(outputPath, 'utf-8');
       isUpdate = true;
@@ -127,6 +127,11 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     } catch (e: any) { // Catch as any
       logger.warn('Could not read existing ' + (options.output || 'README.md') + ': ' + e);
     }
+  } else if (options.force) {
+    logger.info('Force flag detected: ignoring existing README and regenerating from scratch.');
+    // Explicitly ensure we are in "Create New" mode
+    existingContent = '';
+    isUpdate = false;
   }
 
 
