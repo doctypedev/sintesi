@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, basename } from 'path';
 import { Logger } from '../utils/logger';
 import { createAIAgentsFromEnv, AIAgents } from '../../../ai'; // Updated import
 import { getSmartCheckReadmePrompt } from '../prompts/analysis';
@@ -129,8 +129,8 @@ export class SmartChecker {
     /**
      * Check if the README needs to be updated based on recent code changes
      */
-    async checkReadme(options?: { baseBranch?: string }): Promise<SmartCheckResult> {
-        const readmePath = resolve(this.projectRoot, 'README.md');
+    async checkReadme(options?: { baseBranch?: string, readmePath?: string }): Promise<SmartCheckResult> {
+        const readmePath = options?.readmePath || resolve(this.projectRoot, 'README.md');
         const baseBranch = options?.baseBranch || 'origin/main';
 
         if (!existsSync(readmePath)) {
@@ -160,7 +160,7 @@ export class SmartChecker {
 
             // FILTER: Remove README.md changes from the diff to prevent self-triggering
             // Using shared utility for consistent logic
-            gitDiff = filterGitDiff(gitDiff, ['README.md']);
+            gitDiff = filterGitDiff(gitDiff, ['README.md', basename(readmePath)]);
 
             if (!gitDiff.trim()) {
                 this.logger.debug('No code changes detected (after filtering README changes).');

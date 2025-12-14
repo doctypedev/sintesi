@@ -134,6 +134,16 @@ yargs(hideBin(process.argv))
           type: 'boolean',
           description: 'Check only documentation drift',
           default: false,
+        })
+        .option('output', {
+          alias: 'o',
+          type: 'string',
+          description: 'Output file path for README check',
+        })
+        .option('output-dir', {
+          alias: 'd',
+          type: 'string',
+          description: 'Output directory for documentation check',
         });
     },
     async (argv) => {
@@ -144,6 +154,8 @@ yargs(hideBin(process.argv))
         base: argv.base as string,
         readme: argv.readme as boolean,
         documentation: argv.documentation as boolean,
+        output: argv.output as string,
+        outputDir: argv['output-dir'] as string,
       };
 
       const result = await checkCommand(options);
