@@ -89,7 +89,8 @@ export class ReadmeBuilder {
 
             // Review
             if (aiAgents.reviewer) {
-                readmeContent = await this.reviewService.reviewAndRefine(readmeContent, outputPath, 'Project README', aiAgents);
+                // We use sharedContextPrompt as the source of truth for the reviewer
+                readmeContent = await this.reviewService.reviewAndRefine(readmeContent, outputPath, 'Project README', sharedContextPrompt, aiAgents);
             }
 
             s.stop(isUpdate ? 'Update complete' : 'Generation complete');

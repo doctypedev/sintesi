@@ -82,7 +82,17 @@ export class DocumentationBuilder {
 
                 // Reviewer
                 if (aiAgents.reviewer) {
-                    content = await this.reviewService.reviewAndRefine(content, item.path, item.description, aiAgents);
+                    const reviewerContext = `
+                    --- Package.json ---
+                    ${packageJsonSummary}
+
+                    --- Recent Changes ---
+                    ${gitDiff}
+
+                    --- Source Code Analysis ---
+                    ${detailedSourceContext || 'No specific source files matched.'}
+                    `;
+                    content = await this.reviewService.reviewAndRefine(content, item.path, item.description, reviewerContext, aiAgents);
                 }
 
                 mkdirSync(dirname(fullPath), { recursive: true });
