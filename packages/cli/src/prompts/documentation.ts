@@ -8,7 +8,8 @@ export const DOC_PLANNING_PROMPT = (
   outputDir: string,
   existingDocsSummary: string,
   strategyInstructions: string,
-  existingDocsList: string[]
+  existingDocsList: string[],
+  recentChanges: string
 ) => `
 You are an expert Product Manager and Technical Writer.
 Your goal is to design a documentation structure for the End User / Developer who uses this software.
@@ -20,6 +21,9 @@ ${packageJsonSummary}
 File Structure (Filtered for relevance):
 ${fileSummary}
 ${specificContext}
+
+## Recent Changes / Logic (Git Diff)
+${recentChanges}
 
 ## Existing Documentation (in ${outputDir}/)
 ${existingDocsSummary}

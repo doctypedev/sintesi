@@ -127,7 +127,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   }
 
   // 3. PHASE 1: The Architect (Planning)
-  const plan = await planner.createPlan(context, outputDir, aiAgents, contextService, options.force);
+  const plan = await planner.createPlan(context, outputDir, aiAgents, contextService, gitDiff, options.force);
   if (plan.length === 0) return;
 
   // 4. PHASE 2: The Builder (Generation)

@@ -8,11 +8,15 @@ import { ChangeAnalysisService } from './analysis-service';
 import { createAIAgentsFromEnv, AIAgents, AIAgentRoleConfig } from '../../../ai';
 import { getContextPrompt } from '../prompts/analysis';
 
-export interface CliConfig {
+export interface ProjectConfig {
     binName?: string;
     packageName?: string;
     relevantCommands?: string[];
+    entryPoint?: string;
+    appType?: 'cli' | 'web' | 'library' | 'backend' | 'unknown';
 }
+
+
 
 export interface TechStack {
     frameworks: string[];
@@ -115,14 +119,15 @@ export class GenerationContextService {
     }
 
     /**
-     * Detects CLI configuration (binary name, package name, confirmed commands).
+     * Detects Project configuration (binary name, package name, entry point, app type).
      */
-    detectCliConfig(context: ProjectContext): CliConfig {
+    detectProjectConfig(context: ProjectContext): ProjectConfig {
         let binName = '';
         let packageName = context.packageJson?.name || '';
         let relevantCommands: string[] = [];
+        let appType: ProjectConfig['appType'] = 'unknown';
 
-        // 1. Detect Commands
+        // 1. Detect Commands (CLI specific)
         const commandFiles = context.files.filter(f => {
             const relativePath = relative(this.cwd, f.path);
             return (
@@ -133,7 +138,6 @@ export class GenerationContextService {
         });
 
         // Extract command names from file paths (e.g. src/commands/foo.ts -> foo)
-        // Filter out common non-command files
         relevantCommands = commandFiles
             // eslint-disable-next-line
             .filter(f => f.path.match(/[\/\\]commands[\/\\][a-zA-Z0-9-]+\.ts$/))
@@ -143,10 +147,29 @@ export class GenerationContextService {
             })
             .filter(name => !['index', 'main', 'types', 'cli'].includes(name));
 
+        if (relevantCommands.length > 0) {
+            appType = 'cli';
+        }
 
         // 2. Detect Monorepo / Binary Name
         const pkg = context.packageJson as any;
         const isMonorepo = pkg?.private === true || !!pkg?.workspaces;
+
+        // --- NEW: Detect AppType from Dependencies (Reduce fragility) ---
+        if (pkg && (pkg.dependencies || pkg.devDependencies)) {
+            const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+            const depNames = Object.keys(allDeps);
+
+            if (depNames.some(d => d.includes('react') || d.includes('vue') || d.includes('nuxt') || d.includes('next'))) {
+                appType = 'web';
+            } else if (depNames.some(d => d.includes('@angular/core') || d.includes('svelte'))) {
+                appType = 'web';
+            } else if (depNames.some(d => d.includes('nestjs') || d.includes('fastify') || d.includes('express'))) {
+                appType = 'backend';
+            } else if (depNames.some(d => d.includes('yargs') || d.includes('commander') || d.includes('cac') || d.includes('oclif'))) {
+                appType = 'cli';
+            }
+        }
 
         if (isMonorepo) {
             const subPackageFiles = context.files.filter(f => f.path.endsWith('package.json') && f.path !== 'package.json');
@@ -163,6 +186,7 @@ export class GenerationContextService {
                             } else if (typeof pkgContent.bin === 'object') {
                                 binName = Object.keys(pkgContent.bin)[0];
                             }
+                            appType = 'cli';
                         }
                     }
                 } catch (e) { /* ignore */ }
@@ -170,18 +194,103 @@ export class GenerationContextService {
         }
 
         // Fallback if no binary found in monorepo, or it's a single repo
-        if (!binName) {
-            if (pkg?.bin) {
-                if (typeof pkg.bin === 'string') {
-                    const pkgName = pkg.name || '';
-                    binName = pkgName.startsWith('@') ? pkgName.split('/')[1] : pkgName;
-                } else if (typeof pkg.bin === 'object') {
-                    binName = Object.keys(pkg.bin)[0];
+        // Only mark as CLI if we have a bin AND appType wasn't forcefully set to web/backend (mixed projects?)
+        // Actually, bin implies CLI access, but it could be a dev tool for a webapp. 
+        // Let's stick to CLI if bin is present, UNLESS strong web signal exists?
+        // Usage decision: If bin exists, it HAS a CLI component. 
+        if (!binName && pkg?.bin) {
+            if (typeof pkg.bin === 'string') {
+                const pkgName = pkg.name || '';
+                binName = pkgName.startsWith('@') ? pkgName.split('/')[1] : pkgName;
+            } else if (typeof pkg.bin === 'object') {
+                binName = Object.keys(pkg.bin)[0];
+            }
+            if (appType === 'unknown') appType = 'cli';
+        }
+
+        // 3. Detect Entry Point (Generic)
+        let entryPoint: string | undefined;
+
+        // Candidate patterns in priority order
+        const entryCandidates = [
+            // CLI
+            'src/index.ts', 'src/cli.ts', 'src/main.ts',
+            // Top Level
+            'index.ts', 'cli.ts', 'main.ts',
+            // Web / Frameworks
+            'src/App.tsx', 'src/App.js',
+            'src/app/page.tsx', 'src/app/page.js', // Next.js App Router
+            'pages/index.tsx', 'pages/index.js',   // Next.js Pages Router
+            'src/main.tsx', // Vite + React/Vue
+            'src/main.ts'   // Angular / NestJS
+        ];
+
+        for (const candidate of entryCandidates) {
+            const candidatePath = resolve(this.cwd, candidate);
+            if (existsSync(candidatePath)) {
+                // Heuristic: If we already know the appType (e.g. from dependencies), we might just accept the first existing candidate 
+                // that matches the expected pattern, WITHOUT reading content.
+                // However, for CLI vs Library disambiguation, reading might still be useful.
+
+                // If AppType is definitively known (e.g. 'web' or 'backend' from deps), and this file looks like an entry point, just take it.
+                if ((appType === 'web' || appType === 'backend') && !entryPoint) {
+                    entryPoint = candidatePath;
+                    break;
                 }
+
+                // If AppType is 'cli' (from deps), we still want to confirm if it's the *correct* entry point (e.g. not just index.ts but cli.ts),
+                // or if we have multiple candidates. But sticking to first match is usually fine for 90% cases.
+                // Let's optimize: Read only if we really need to disambiguate or if appType is unknown.
+
+                try {
+                    // Only read if we don't have an AppType OR if we want to confirm CLI specific traits (rare case if deps already said CLI)
+                    if (appType === 'unknown' || appType === 'cli') {
+                        const content = readFileSync(candidatePath, 'utf-8');
+
+                        // Refine AppType if unknown
+                        if (appType === 'unknown') {
+                            if (content.includes('yargs') || content.includes('commander') || content.includes('cac')) {
+                                appType = 'cli';
+                                entryPoint = candidatePath;
+                                break;
+                            }
+                            if (content.includes('react') || content.includes('vue') || content.includes('@angular')) {
+                                appType = 'web';
+                                entryPoint = candidatePath;
+                                break;
+                            }
+                            if (content.includes('express') || content.includes('fastify') || content.includes('nestjs')) {
+                                appType = 'backend';
+                                entryPoint = candidatePath;
+                                break;
+                            }
+                        } else if (appType === 'cli') {
+                            // If we already think it's CLI, just confirming valid entry point
+                            if (content.includes('yargs') || content.includes('commander') || content.includes('cac') || candidatePath.endsWith('cli.ts')) {
+                                entryPoint = candidatePath;
+                                break;
+                            }
+                        }
+                    }
+
+                    // If we found a file but didn't break yet (e.g. appType was known but we want to be sure?), 
+                    // actually if appType was known we handled it above.
+                    // Fallback storage
+                    if (!entryPoint) {
+                        entryPoint = candidatePath;
+                    }
+
+                } catch (e) { /* ignore */ }
             }
         }
 
-        return { binName, packageName, relevantCommands };
+        // Final fallback for libraries
+        if (appType === 'unknown' && !entryPoint && pkg.main) {
+            entryPoint = resolve(this.cwd, pkg.main);
+            appType = 'library';
+        }
+
+        return { binName, packageName, relevantCommands, entryPoint, appType };
     }
 
     /**
@@ -241,8 +350,8 @@ export class GenerationContextService {
     /**
      * Generates a shared context prompt string including package info, CLI details, and git diff.
      */
-    generateContextPrompt(context: ProjectContext, gitDiff: string, cliConfig: CliConfig, techStack?: TechStack): string {
-        return getContextPrompt(context, gitDiff, cliConfig, techStack);
+    generateContextPrompt(context: ProjectContext, gitDiff: string, projectConfig: ProjectConfig, techStack?: TechStack): string {
+        return getContextPrompt(context, gitDiff, projectConfig, techStack);
     }
 
     /**
