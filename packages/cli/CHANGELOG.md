@@ -1,5 +1,12 @@
 # @sintesi/sintesi
 
+## 0.17.5
+
+### Patch Changes
+
+- 9f4f199: Enhance review service accuracy by providing source context for hallucination detection.
+  - @sintesi/core@0.17.5
+
 ## 0.17.4
 
 ### Patch Changes
