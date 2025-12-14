@@ -33,8 +33,8 @@ sintesi check
 #### Usage Examples
 ```bash
 sintesi check -- --verbose --base main
-sintesi check -- --readme --no-strict --verbose
-sintesi check -- --documentation --no-strict --verbose
+sintesi check -- --readme --verbose
+sintesi check -- --documentation --verbose
 ```
 
 ---
@@ -91,6 +91,7 @@ sintesi changeset
 #### Usage Examples
 ```bash
 sintesi changeset -- --base main --staged-only
+sintesi changeset -- --interactive --verbose
 ```
 
 ---
