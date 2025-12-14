@@ -1,5 +1,12 @@
 # @sintesi/sintesi
 
+## 0.17.4
+
+### Patch Changes
+
+- 9bcd10e: Short-circuit impact analysis when filtered diff is empty to avoid unnecessary AI calls.
+  - @sintesi/core@0.17.4
+
 ## 0.17.3
 
 ### Patch Changes
