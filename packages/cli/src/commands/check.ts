@@ -30,11 +30,11 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
 
   // Resolve the root directory for source code
   const codeRoot = process.cwd();
-  
+
   // Initialize Services
   const contextService = new GenerationContextService(logger, codeRoot);
   const aiAgents = await contextService.getAIAgents(options.verbose || false);
-  
+
   if (!aiAgents) {
     logger.error('Failed to initialize AI agents. Cannot perform smart check.');
     return {
@@ -52,13 +52,13 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
   let docsExist = true;
 
   if (shouldCheckReadme) {
-      const readmePath = resolve(codeRoot, 'README.md');
-      readmeExists = existsSync(readmePath);
+    const readmePath = resolve(codeRoot, 'README.md');
+    readmeExists = existsSync(readmePath);
   }
 
   if (shouldCheckDocs) {
-      const docsDir = resolve(codeRoot, 'docs'); // Default docs dir
-      docsExist = existsSync(docsDir) && readdirSync(docsDir).length > 0;
+    const docsDir = resolve(codeRoot, 'docs'); // Default docs dir
+    docsExist = existsSync(docsDir) && readdirSync(docsDir).length > 0;
   }
 
   // If no changes AND everything relevant exists, we are good.
@@ -72,7 +72,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
       drifts: [], missing: [], success: true
     };
   }
-  
+
   if (shouldCheckReadme && !readmeExists) logger.info('README.md is missing.');
   if (shouldCheckDocs && !docsExist) logger.info('Documentation directory is missing or empty.');
 
@@ -82,95 +82,100 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
   let readmeSuggestion: string | undefined;
 
   if (shouldCheckReadme) {
-      if (!readmeExists) {
-          readmeDriftDetected = true;
-          readmeReason = "README file is missing.";
-          readmeSuggestion = "Generate a new README.";
-          logger.warn('⚠️ Drift detected: README is missing');
-      } else if (gitDiff) {
-          // Only run smart checker if we have diffs and the file exists
-          logger.info('Performing smart check (README vs Code)...');
-          const smartChecker = new SmartChecker(logger, codeRoot);
-          const smartResult = await smartChecker.checkReadme({ baseBranch: options.base });
+    if (!readmeExists) {
+      readmeDriftDetected = true;
+      readmeReason = "README file is missing.";
+      readmeSuggestion = "Generate a new README.";
+      logger.warn('⚠️ Drift detected: README is missing');
+    } else if (gitDiff) {
+      // Only run smart checker if we have diffs and the file exists
+      logger.info('Performing smart check (README vs Code)...');
+      const smartChecker = new SmartChecker(logger, codeRoot);
+      const smartResult = await smartChecker.checkReadme({ baseBranch: options.base });
 
-          if (smartResult.hasDrift) {
-            logger.warn('⚠️ Drift detected: README might be outdated');
-            if (smartResult.reason) logger.log(`  Reason: ${smartResult.reason}`);
-            if (smartResult.suggestion) logger.log(`  Suggestion: ${smartResult.suggestion}`);
-            
-            readmeDriftDetected = true;
-            readmeReason = smartResult.reason;
-            readmeSuggestion = smartResult.suggestion;
-          } else {
-            logger.success('README appears to be in sync.');
-          }
+      if (smartResult.hasDrift) {
+        logger.warn('⚠️ Drift detected: README might be outdated');
+        if (smartResult.reason) logger.log(`  Reason: ${smartResult.reason}`);
+        if (smartResult.suggestion) logger.log(`  Suggestion: ${smartResult.suggestion}`);
+
+        readmeDriftDetected = true;
+        readmeReason = smartResult.reason;
+        readmeSuggestion = smartResult.suggestion;
+      } else {
+        logger.success('README appears to be in sync.');
       }
+    }
   }
-  
+
   logger.newline();
-  
+
   // 2. Documentation Check
   let docDriftDetected = false;
   let docReason: string | undefined;
 
   if (shouldCheckDocs) {
-      if (!docsExist) {
-          docDriftDetected = true;
-          docReason = "Documentation directory is missing or empty.";
-          logger.warn('⚠️ Drift detected: Documentation is missing');
-      } else if (gitDiff) {
-          logger.info('Performing impact analysis (Documentation Site vs Code)...');
-          const impactAnalyzer = new ImpactAnalyzer(logger);
-          // We use 'checkWithLogging' which returns shouldProceed=true if update is needed
-          const docImpact = await impactAnalyzer.checkWithLogging(gitDiff, 'documentation', aiAgents, false);
-          docDriftDetected = docImpact.shouldProceed;
-          docReason = docImpact.reason;
-        
-          if (docDriftDetected) {
-             logger.warn('⚠️ Drift detected: Documentation site likely needs updates based on recent changes.');
-          }
-           else {
-             logger.success('Documentation site appears to be in sync.');
-          }
+    if (!docsExist) {
+      docDriftDetected = true;
+      docReason = "Documentation directory is missing or empty.";
+      logger.warn('⚠️ Drift detected: Documentation is missing');
+    } else if (gitDiff) {
+      logger.info('Performing impact analysis (Documentation Site vs Code)...');
+      const impactAnalyzer = new ImpactAnalyzer(logger);
+      // We use 'checkWithLogging' which returns shouldProceed=true if update is needed
+      const docImpact = await impactAnalyzer.checkWithLogging({
+        gitDiff,
+        docType: 'documentation',
+        aiAgents,
+        force: false
+      });
+      docDriftDetected = docImpact.shouldProceed;
+      docReason = docImpact.reason;
+
+      if (docDriftDetected) {
+        logger.warn('⚠️ Drift detected: Documentation site likely needs updates based on recent changes.');
       }
+      else {
+        logger.success('Documentation site appears to be in sync.');
+      }
+    }
   }
-  
+
   // Save State for subsequent pipeline steps
   try {
     const sintesiDir = resolve(process.cwd(), '.sintesi');
-          if (!existsSync(sintesiDir)) mkdirSync(sintesiDir, { recursive: true });
-          
-          const sintesiGitignorePath = join(sintesiDir, '.gitignore');
-          if (!existsSync(sintesiGitignorePath)) {
-            writeFileSync(sintesiGitignorePath, '*');
-            logger.debug(`Created .gitignore in ${sintesiDir}`);
-          }    
+    if (!existsSync(sintesiDir)) mkdirSync(sintesiDir, { recursive: true });
+
+    const sintesiGitignorePath = join(sintesiDir, '.gitignore');
+    if (!existsSync(sintesiGitignorePath)) {
+      writeFileSync(sintesiGitignorePath, '*');
+      logger.debug(`Created .gitignore in ${sintesiDir}`);
+    }
 
     // Save README state if checked
     if (shouldCheckReadme) {
-        const statePath = join(sintesiDir, 'readme.state.json');
-        writeFileSync(statePath, JSON.stringify({
-          timestamp: Date.now(),
-          readme: {
-            hasDrift: readmeDriftDetected,
-            reason: readmeReason,
-            suggestion: readmeSuggestion
-          }
-        }, null, 2));
-        logger.debug(`Saved README state to ${statePath}`);
+      const statePath = join(sintesiDir, 'readme.state.json');
+      writeFileSync(statePath, JSON.stringify({
+        timestamp: Date.now(),
+        readme: {
+          hasDrift: readmeDriftDetected,
+          reason: readmeReason,
+          suggestion: readmeSuggestion
+        }
+      }, null, 2));
+      logger.debug(`Saved README state to ${statePath}`);
     }
 
     // Save Docs state if checked
     if (shouldCheckDocs) {
-        const statePath = join(sintesiDir, 'documentation.state.json');
-        writeFileSync(statePath, JSON.stringify({
-          timestamp: Date.now(),
-          documentation: {
-            hasDrift: docDriftDetected,
-            reason: docReason
-          }
-        }, null, 2));
-        logger.debug(`Saved Documentation state to ${statePath}`);
+      const statePath = join(sintesiDir, 'documentation.state.json');
+      writeFileSync(statePath, JSON.stringify({
+        timestamp: Date.now(),
+        documentation: {
+          hasDrift: docDriftDetected,
+          reason: docReason
+        }
+      }, null, 2));
+      logger.debug(`Saved Documentation state to ${statePath}`);
     }
 
   } catch (e) {

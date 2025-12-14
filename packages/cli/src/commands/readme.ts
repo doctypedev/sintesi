@@ -34,26 +34,26 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   // If not, we perform a standalone smart check (AI-powered) to avoid unnecessary generation.
   if (!options.force) {
     let stateFound = false;
-    
+
     // Strategy A: Check Pipeline State (.sintesi/readme.state.json)
     try {
       const statePath = resolve(cwd, '.sintesi/readme.state.json');
       if (existsSync(statePath)) {
         const state = JSON.parse(readFileSync(statePath, 'utf-8'));
-        
+
         // Timeout Logic: 20 mins locally, unlimited in CI
         // We trust the state file in CI because artifacts are usually fresh within the workflow
         const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
         const stateTimeout = isCI ? Infinity : 20 * 60 * 1000;
-        
+
         if (Date.now() - state.timestamp < stateTimeout) {
           stateFound = true;
           if (state.readme && state.readme.hasDrift === false) {
-             logger.success('✅ Skipping README generation (validated as sync by check command).');
-             return;
+            logger.success('✅ Skipping README generation (validated as sync by check command).');
+            return;
           } else if (state.readme && state.readme.suggestion) {
-             smartSuggestion = state.readme.suggestion;
-             logger.info('💡 Using suggestion from pipeline check: ' + smartSuggestion);
+            smartSuggestion = state.readme.suggestion;
+            logger.info('💡 Using suggestion from pipeline check: ' + smartSuggestion);
           }
         }
       }
@@ -63,25 +63,25 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
 
     // Strategy B: Standalone Smart Check (if no valid state found)
     if (!stateFound) {
-       const readmeTarget = resolve(cwd, options.output || 'README.md');
-       if (!existsSync(readmeTarget)) {
-          logger.info('README file not found. Skipping smart check and forcing generation.');
-       } else {
-          logger.info('Performing standalone smart check...');
-          const smartChecker = new SmartChecker(logger, cwd);
-          // We use the smart checker (AI) to be consistent with the 'check' command logic
-          const result = await smartChecker.checkReadme();
-          
-          if (!result.hasDrift) {
-            logger.success('✅ No relevant changes detected (AI Smart Check). README is up to date.');
-            return;
-          }
-          
-          if (result.suggestion) {
-            smartSuggestion = result.suggestion;
-            logger.info('💡 Drift detected. Suggestion: ' + smartSuggestion);
-          }
-       }
+      const readmeTarget = resolve(cwd, options.output || 'README.md');
+      if (!existsSync(readmeTarget)) {
+        logger.info('README file not found. Skipping smart check and forcing generation.');
+      } else {
+        logger.info('Performing standalone smart check...');
+        const smartChecker = new SmartChecker(logger, cwd);
+        // We use the smart checker (AI) to be consistent with the 'check' command logic
+        const result = await smartChecker.checkReadme();
+
+        if (!result.hasDrift) {
+          logger.success('✅ No relevant changes detected (AI Smart Check). README is up to date.');
+          return;
+        }
+
+        if (result.suggestion) {
+          smartSuggestion = result.suggestion;
+          logger.info('💡 Drift detected. Suggestion: ' + smartSuggestion);
+        }
+      }
     }
   }
 
@@ -116,10 +116,18 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
     logger.info('Detected recent code changes, including in context.');
 
     // Impact Analysis (Semantic Check)
+    // Impact Analysis (Semantic Check)
     if (aiAgents) {
       const { ImpactAnalyzer } = await import('../services/impact-analyzer');
       const impactAnalyzer = new ImpactAnalyzer(logger);
-      const impactResult = await impactAnalyzer.checkWithLogging(gitDiff, 'readme', aiAgents, options.force);
+      const impactResult = await impactAnalyzer.checkWithLogging({
+        gitDiff,
+        docType: 'readme',
+        aiAgents,
+        force: options.force,
+        targetExists: existsSync(outputPath)
+      });
+
       if (!impactResult.shouldProceed) return;
     }
   }

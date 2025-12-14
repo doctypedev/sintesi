@@ -10,13 +10,22 @@ export class ImpactAnalyzer {
      * Helper to centralize the check & logging logic.
      * Returns TRUE if we should proceed with generation (update needed), FALSE if we should skip.
      */
-    async checkWithLogging(
+    async checkWithLogging(options: {
         gitDiff: string,
         docType: 'readme' | 'documentation',
         aiAgents: AIAgents,
-        force: boolean = false
-    ): Promise<{ shouldProceed: boolean; reason?: string }> {
-        if (!gitDiff) return { shouldProceed: true, reason: 'No git diff provided (or forced).' }; // No diff info? Assume we proceed or let downstream handle it.
+        force?: boolean,
+        targetExists?: boolean
+    }): Promise<{ shouldProceed: boolean; reason?: string }> {
+        const { gitDiff, docType, aiAgents, force = false, targetExists = true } = options;
+
+        if (!gitDiff) return { shouldProceed: true, reason: 'No git diff provided (or forced).' };
+
+        // 1. Existence Check: If the target file/folder is missing, we MUST generate.
+        if (targetExists === false) {
+            this.logger.info(`${docType === 'readme' ? 'README' : 'Documentation'} missing: Skipping semantic impact analysis to ensure generation.`);
+            return { shouldProceed: true, reason: 'Target missing' };
+        }
 
         const impact = await this.shouldUpdateDocs(gitDiff, docType, aiAgents);
 

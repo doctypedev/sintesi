@@ -185,7 +185,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
       const statePath = resolve(cwd, '.sintesi/documentation.state.json');
       if (existsSync(statePath)) {
         const state = JSON.parse(readFileSync(statePath, 'utf-8'));
-        
+
         // Timeout Logic: 20 mins locally, unlimited in CI
         const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
         const stateTimeout = isCI ? Infinity : 20 * 60 * 1000;
@@ -214,10 +214,10 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     const docsExist = existsSync(checkDir) && readdirSync(checkDir).length > 0;
 
     if (!docsExist) {
-       logger.info('Documentation directory missing or empty. Skipping smart check and forcing generation.');
+      logger.info('Documentation directory missing or empty. Skipping smart check and forcing generation.');
     } else {
-       const hasChanges = await contextService.performSmartCheck(forceSmartCheck);
-       if (!hasChanges) return;
+      const hasChanges = await contextService.performSmartCheck(forceSmartCheck);
+      if (!hasChanges) return;
     }
   }
 
@@ -249,9 +249,17 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     if (gitDiff && !options.force) {
       const { ImpactAnalyzer } = await import('../services/impact-analyzer');
       const impactAnalyzer = new ImpactAnalyzer(logger);
+      const docsDirNotEmpty = existsSync(outputDir) && readdirSync(outputDir).length > 0;
+
       // For docs, we treat 'site' mode as potentially force-like or needing structural updates, 
       // but for now let's apply the same logic. If semantic check fails, we skip.
-      const impactResult = await impactAnalyzer.checkWithLogging(gitDiff, 'documentation', aiAgents, true);
+      const impactResult = await impactAnalyzer.checkWithLogging({
+        gitDiff,
+        docType: 'documentation',
+        aiAgents,
+        force: true, // Keeping 'true' to preserve existing behavior (aggressive update for docs site)
+        targetExists: docsDirNotEmpty
+      });
 
       if (!impactResult.shouldProceed) return;
 
@@ -469,9 +477,9 @@ Return ONLY a valid JSON array.
         logger.debug(`Migrating content from ${item.originalPath} to ${item.path}`);
       }
     }
-    
+
     if (options.force && existsSync(fullPath)) {
-        logger.debug(`Force mode: Ignoring existing content for ${item.path}`);
+      logger.debug(`Force mode: Ignoring existing content for ${item.path}`);
     }
 
     logger.info(`> Processing ${item.path}...`);
