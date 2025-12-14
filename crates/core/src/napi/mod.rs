@@ -7,4 +7,6 @@ pub mod ast;
 pub mod content;
 pub mod context;
 pub mod crawler;
+pub mod git;
+pub mod graph; // [NEW]
 pub mod utils;

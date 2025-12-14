@@ -10,6 +10,16 @@ import { createAIAgentsFromEnv } from '../../ai'; // Import here to get a refere
 vi.mock('../src/services/analysis-service');
 vi.mock('fs');
 vi.mock('path');
+vi.mock('@sintesi/core', () => ({
+    ASTAnalyzer: class { },
+    GitBinding: class {
+        static checkMeaningfulChanges(diff: string) {
+            // Simple mock logic: returns true if diff contains "meaningful" or "export"
+            if (diff.includes('meaningful') || diff.includes('export') || diff.includes('dependencies')) return true;
+            return false;
+        }
+    }
+}));
 
 // Global mock for '../../ai' - just mock the function, implementation will be in beforeEach
 vi.mock('../../ai', () => ({

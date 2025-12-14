@@ -43,6 +43,7 @@
 
 /// Core type definitions
 pub mod types;
+pub mod error;
 
 /// AST analysis and drift detection
 pub mod ast;
@@ -54,6 +55,7 @@ pub mod content;
 pub mod crawler;
 pub mod graph;
 pub mod context;
+pub mod git; // [NEW] Git module
 
 /// Gen AI agent for documentation generation
 pub mod genai;

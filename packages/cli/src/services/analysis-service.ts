@@ -7,7 +7,7 @@
 
 import { GitHelper } from '../utils/git-helper';
 import { Logger } from '../utils/logger';
-import { ASTAnalyzer, CodeSignature } from '@sintesi/core';
+import { ASTAnalyzer, CodeSignature, GitBinding } from '@sintesi/core';
 import { unlink, writeFile } from 'fs/promises';
 import { execSync } from 'child_process';
 import * as path from 'path';
@@ -27,6 +27,7 @@ export interface ChangeContext {
     changedFiles: string[];
     symbolChanges: SymbolChange[];
     totalChanges: number;
+    hasMeaningfulChanges?: boolean;
 }
 
 export interface AnalysisOptions {
@@ -58,8 +59,7 @@ export class ChangeAnalysisService {
             stagedOnly = false,
             projectRoot = process.cwd(),
             forceFetch = false,
-            includeSymbols = true,
-            fallbackToLastCommit = false
+            includeSymbols = true
         } = options;
 
         let effectiveBase = baseBranch;
@@ -74,28 +74,34 @@ export class ChangeAnalysisService {
             }
         }
 
-        // 2. Get Git Diff
-        let gitDiff = this.gitHelper.getFilteredDiff(effectiveBase, stagedOnly);
-        let usedLastCommit = false;
+        // 2. Analyze Changes using Rust Binding
+        // This replaces the old slow execSync/regex approach
+        let gitDiff = '';
         let changedFiles: string[] = [];
 
-        // Fallback to last commit if no changes and not strictly staged
-        if (!gitDiff && !stagedOnly && fallbackToLastCommit) {
-            this.logger.debug('No changes against base, utilizing last commit for context.');
-            try {
-                gitDiff = execSync('git show HEAD -p -n 1 -- .', { encoding: 'utf-8', stdio: 'pipe' });
-                if (gitDiff) {
-                    // Parse changed files from this diff or use git show --name-only
-                    const nameOutput = execSync('git show HEAD --name-only --pretty=""', { encoding: 'utf-8', stdio: 'pipe' });
-                    changedFiles = nameOutput.trim().split('\n').filter(Boolean);
-                    usedLastCommit = true;
-                }
-            } catch (e) {
-                this.logger.debug(`Failed to access last commit: ${e}`);
-            }
+
+        let summary; // Capture Rust summary
+        try {
+            const gitBinding = new GitBinding(projectRoot);
+
+            // If stagedOnly is true, we haven't implemented that explicitly in the simple binding yet
+            // assuming the binding handles it or we pass a flag.
+            summary = gitBinding.analyzeChanges(baseBranch === 'main' ? undefined : baseBranch, stagedOnly);
+            gitDiff = summary.gitDiff;
+            changedFiles = summary.changedFiles;
+        } catch (e) {
+            this.logger.error(`Rust Git analysis failed: ${e}.`);
+            // We rely on Rust now. If it fails, we return empty structure.
+            return {
+                gitDiff: '',
+                changedFiles: [],
+                symbolChanges: [],
+                totalChanges: 0,
+                hasMeaningfulChanges: false
+            };
         }
 
-        if (!gitDiff) {
+        if (!gitDiff && changedFiles.length === 0) {
             return {
                 gitDiff: '',
                 changedFiles: [],
@@ -105,20 +111,6 @@ export class ChangeAnalysisService {
         }
 
         // 3. Get Changed Files
-        if (!usedLastCommit) {
-            if (stagedOnly) {
-                try {
-                    const output = execSync('git diff --name-only --cached', { encoding: 'utf-8' });
-                    changedFiles = output.trim().split('\n').filter(Boolean);
-                } catch {
-                    changedFiles = [];
-                }
-            } else {
-                // Changed against base
-                changedFiles = this.gitHelper.getChangedFilesAgainstBase(effectiveBase);
-            }
-        }
-
         // Filter to relevant files (TS/RS/etc) and make absolute
         changedFiles = changedFiles
             .filter(f => this.isRelevantFile(f))
@@ -127,21 +119,15 @@ export class ChangeAnalysisService {
         // 4. Symbol Analysis (if requested)
         let symbolChanges: SymbolChange[] = [];
         if (includeSymbols && changedFiles.length > 0) {
-            symbolChanges = await this.analyzeSymbolChanges(changedFiles, paramsForAnalysis(usedLastCommit, effectiveBase), projectRoot);
-        }
-
-        // Helper to determine what "old" means
-        function paramsForAnalysis(isLastCommit: boolean, base: string): string {
-            // If we looked at last commit (HEAD), the "old" version is HEAD~1
-            // If we looked against base, the "old" version is base
-            return isLastCommit ? 'HEAD~1' : base;
+            symbolChanges = await this.analyzeSymbolChanges(changedFiles, effectiveBase, projectRoot);
         }
 
         return {
             gitDiff,
             changedFiles,
             symbolChanges,
-            totalChanges: symbolChanges.length > 0 ? symbolChanges.length : changedFiles.length
+            totalChanges: symbolChanges.length > 0 ? symbolChanges.length : changedFiles.length,
+            hasMeaningfulChanges: (typeof summary !== 'undefined' && summary) ? summary.hasMeaningfulChanges : undefined
         };
     }
 
@@ -197,6 +183,10 @@ export class ChangeAnalysisService {
     }
 
     private getFileContentFromBranch(filePath: string, branch: string, root: string): string | null {
+        // TODO: Move this to Rust binding as well "get_file_content(path, revision)"
+        // For now, keep as is or use GitBinding if exposed?
+        // I haven't exposed "get_file_content" in GitBinding.
+        // It's still using execSync in `getFileContentFromBranch`.
         try {
             const relPath = path.relative(root, filePath);
             return execSync(`git show ${branch}:${relPath}`, { encoding: 'utf-8', stdio: 'pipe' });

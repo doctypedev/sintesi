@@ -283,6 +283,11 @@ export interface NapiFileInfo {
   extension?: string;
 }
 export declare function getProjectFiles(rootPath: string): Array<NapiFileInfo>;
+export interface ChangeSummary {
+  gitDiff: string;
+  changedFiles: Array<string>;
+  hasMeaningfulChanges: boolean;
+}
 /** Simple hello world function to test the napi binding */
 export declare function helloWorld(): string;
 /** Get version information */
@@ -318,4 +323,18 @@ export declare class AstAnalyzer {
    * @returns Detailed analysis result with symbols and errors (with hashes)
    */
   analyzeWithErrors(code: string): AnalysisResultJs;
+}
+export declare class GitBinding {
+  constructor(rootPath: string);
+  analyzeChanges(
+    baseBranch?: string | undefined | null,
+    staged?: boolean | undefined | null,
+  ): ChangeSummary;
+  static checkMeaningfulChanges(diff: string): boolean;
+}
+export declare class GraphAnalyzer {
+  constructor(rootPath: string);
+  /** Build the dependency graph and return dependents of a given file */
+  getDependents(filePath: string, allFiles: Array<string>): Array<string>;
+  getDependencies(filePath: string, allFiles: Array<string>): Array<string>;
 }
