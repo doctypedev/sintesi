@@ -13,7 +13,7 @@ switch (platform) {
             case 'x64':
                 localFileExisted = existsSync(join(__dirname, 'sintesi-core.linux-x64-gnu.node'))
                 try {
-                        if (fs.existsSync(join(__dirname, 'sintesi-core.linux-x64-gnu.node'))) {
+                        if (localFileExisted) {
                           nativeBinding = require('./sintesi-core.linux-x64-gnu.node')
                         } else {
                           nativeBinding = require('@sintesi/core-linux-x64-gnu')
