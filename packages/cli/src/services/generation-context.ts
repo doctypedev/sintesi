@@ -265,6 +265,18 @@ export class GenerationContextService {
             prompt += `> NOTE: The official package name is "${cliConfig.packageName}". Use this EXACT name for installation instructions. Do not hallucinate suffixes.\n\n`;
         }
 
+        // Repo Info - Prevent Hallucination
+        const pkg = context.packageJson as any;
+        const repoUrl = typeof pkg?.repository === 'string'
+            ? pkg.repository
+            : pkg?.repository?.url;
+
+        if (repoUrl) {
+            prompt += `> **REPOSITORY**: The git repository is defined as "${repoUrl}". Use this URL for any clone instructions.\n\n`;
+        } else {
+            prompt += `> **REPOSITORY**: No git repository is defined in package.json. DO NOT hallucinate a git clone URL. Use local installation instructions or assume published package usage.\n\n`;
+        }
+
         if (cliConfig.binName) {
             prompt += `> NOTE: The CLI binary command is "${cliConfig.binName}". Use this for usage examples (e.g. ${cliConfig.binName} <command>).\n\n`;
         }

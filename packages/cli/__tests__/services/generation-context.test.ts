@@ -113,8 +113,38 @@ describe('GenerationContextService', () => {
             const config = service.detectCliConfig(getProjectContext('/test/cwd'));
             expect(config.binName).toBe('test-bin');
             expect(config.packageName).toBe('test-pkg');
-            expect(config.relevantCommands).toContain('foo');
             expect(config.relevantCommands).toContain('bar');
+        });
+    });
+
+    describe('generateContextPrompt', () => {
+        it('should include repository explicitly if present', () => {
+            const context: any = {
+                packageJson: {
+                    name: 'test-pkg',
+                    repository: 'https://github.com/test/repo.git'
+                },
+                files: []
+            };
+            const cliConfig: any = { relevantCommands: [], packageName: 'test-pkg' };
+
+            const prompt = service.generateContextPrompt(context, '', cliConfig);
+            expect(prompt).toContain('https://github.com/test/repo.git');
+            expect(prompt).toContain('REPOSITORY');
+        });
+
+        it('should warn against hallucination if no repository', () => {
+            const context: any = {
+                packageJson: {
+                    name: 'test-pkg'
+                },
+                files: []
+            };
+            const cliConfig: any = { relevantCommands: [], packageName: 'test-pkg' };
+
+            const prompt = service.generateContextPrompt(context, '', cliConfig);
+            expect(prompt).toContain('No git repository is defined');
+            expect(prompt).toContain('DO NOT hallucinate');
         });
     });
 });

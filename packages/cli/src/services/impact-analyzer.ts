@@ -58,6 +58,9 @@ export class ImpactAnalyzer {
         const exclusions: string[] = [];
         if (docType === 'readme') {
             exclusions.push('README.md');
+        } else if (docType === 'documentation') {
+            exclusions.push('docs/');
+            exclusions.push('documentation/');
         }
 
         const cleanDiff = filterGitDiff(gitDiff, exclusions);
