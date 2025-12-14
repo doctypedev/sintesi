@@ -1,5 +1,12 @@
 # @sintesi/sintesi
 
+## 0.17.1
+
+### Patch Changes
+
+- 9bad0f3: Refine impact analysis to skip when output files are missing, ensuring generation.
+  - @sintesi/core@0.17.1
+
 ## 0.17.0
 
 ### Minor Changes
