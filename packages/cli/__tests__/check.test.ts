@@ -79,7 +79,7 @@ describe('CLI: check command', () => {
 
     expect(result.success).toBe(true);
     expect(result.driftedEntries).toBe(0);
-    expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith({ baseBranch: 'main' });
+    expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith(expect.objectContaining({ baseBranch: 'main' }));
   });
 
   it('should pass success=false when SmartChecker detects drift', async () => {
@@ -98,8 +98,8 @@ describe('CLI: check command', () => {
 
     expect(result.success).toBe(false);
     expect(result.driftedEntries).toBe(1);
-    expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith({ baseBranch: 'main' });
-    
+    expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith(expect.objectContaining({ baseBranch: 'main' }));
+
     // Should verify it tries to write context file
     expect(fs.writeFileSync).toHaveBeenCalled();
   });

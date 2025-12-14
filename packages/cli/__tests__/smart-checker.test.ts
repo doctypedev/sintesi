@@ -63,6 +63,8 @@ describe('SmartChecker', () => {
             const joined = args.join('/');
             return joined.startsWith('/') ? joined : `/${joined}`;
         });
+
+        vi.mocked(path).basename.mockImplementation((p) => p.split('/').pop() || '');
     });
 
     it('should return no drift if README does not exist', async () => {
