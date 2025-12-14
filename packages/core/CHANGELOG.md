@@ -1,5 +1,11 @@
 # @sintesi/core
 
+## 0.16.3
+
+### Patch Changes
+
+- 6394050: Fix "fs is not defined" error in native loader.
+
 ## 0.16.2
 
 ## 0.16.1
