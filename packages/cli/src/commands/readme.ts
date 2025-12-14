@@ -35,9 +35,9 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   if (!options.force) {
     let stateFound = false;
     
-    // Strategy A: Check Pipeline State (.sintesi/state.json)
+    // Strategy A: Check Pipeline State (.sintesi/readme.state.json)
     try {
-      const statePath = resolve(cwd, '.sintesi/state.json');
+      const statePath = resolve(cwd, '.sintesi/readme.state.json');
       if (existsSync(statePath)) {
         const state = JSON.parse(readFileSync(statePath, 'utf-8'));
         
@@ -63,19 +63,24 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
 
     // Strategy B: Standalone Smart Check (if no valid state found)
     if (!stateFound) {
-       logger.info('Performing standalone smart check...');
-       const smartChecker = new SmartChecker(logger, cwd);
-       // We use the smart checker (AI) to be consistent with the 'check' command logic
-       const result = await smartChecker.checkReadme();
-       
-       if (!result.hasDrift) {
-         logger.success('✅ No relevant changes detected (AI Smart Check). README is up to date.');
-         return;
-       }
-       
-       if (result.suggestion) {
-         smartSuggestion = result.suggestion;
-         logger.info('💡 Drift detected. Suggestion: ' + smartSuggestion);
+       const readmeTarget = resolve(cwd, options.output || 'README.md');
+       if (!existsSync(readmeTarget)) {
+          logger.info('README file not found. Skipping smart check and forcing generation.');
+       } else {
+          logger.info('Performing standalone smart check...');
+          const smartChecker = new SmartChecker(logger, cwd);
+          // We use the smart checker (AI) to be consistent with the 'check' command logic
+          const result = await smartChecker.checkReadme();
+          
+          if (!result.hasDrift) {
+            logger.success('✅ No relevant changes detected (AI Smart Check). README is up to date.');
+            return;
+          }
+          
+          if (result.suggestion) {
+            smartSuggestion = result.suggestion;
+            logger.info('💡 Drift detected. Suggestion: ' + smartSuggestion);
+          }
        }
     }
   }

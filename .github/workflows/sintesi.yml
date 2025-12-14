@@ -48,14 +48,19 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Run Sintesi Check
+      - name: Run Sintesi Check (README)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          # Runs smart check to detect drift and save context.
-          # We use --no-strict so it doesn't fail the build if drift is detected,
-          # allowing the subsequent steps to fix it.
-          node packages/cli/dist/cli/src/index.js check --no-strict --verbose
+          # Check specifically for README drift
+          node packages/cli/dist/cli/src/index.js check --readme --no-strict --verbose
+
+      - name: Run Sintesi Check (Documentation)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          # Check specifically for Documentation drift
+          node packages/cli/dist/cli/src/index.js check --doc --no-strict --verbose
 
       - name: Run Sintesi README command
         env:

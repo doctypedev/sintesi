@@ -25,6 +25,7 @@ describe('CLI: check command', () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.mkdirSync).mockReturnValue(undefined);
     vi.mocked(fs.writeFileSync).mockReturnValue(undefined);
+    vi.mocked(fs.readdirSync).mockReturnValue(['file.md'] as any);
 
     // Setup Logger mock implementation
     (Logger as unknown as Mock).mockImplementation(() => ({
