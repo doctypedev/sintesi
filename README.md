@@ -4,7 +4,7 @@
 
 # Sintesi
 
-[![npm version](https://badge.fury.io/js/@sintesi%2Fsintesi.svg)](https://www.npmjs.com/package/@sintesi/sintesi)
+[![npm version](https://badge.fury.io/js/sintesi-monorepo-root.svg)](https://www.npmjs.com/package/sintesi-monorepo-root)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **The intelligent documentation engine.**
@@ -26,7 +26,7 @@ Traditional docs rot. Sintesi keeps them fresh.
 
 1.  **Install**
     ```bash
-    npm install -g @sintesi/sintesi
+    npm install -g sintesi-monorepo-root
     ```
 
 2.  **Generate Documentation**
@@ -44,21 +44,24 @@ Traditional docs rot. Sintesi keeps them fresh.
     ```bash
     sintesi check
     ```
-    The `check` command performs dual drift detection for both the README and the documentation site. You can use the `--no-strict` flag to allow non-blocking CI usage. You can also run separate checks for the README or documentation site using:
-    ```bash
-    sintesi check --readme
-    ```
-    or
-    ```bash
-    sintesi check --doc
-    ```
+    The `check` command performs dual drift detection for both the README and the documentation site. 
+
+    - Use the `--no-strict` flag to allow non-blocking CI usage.
+    - Run separate checks for the README or documentation site using:
+      ```bash
+      sintesi check --readme
+      ```
+      or
+      ```bash
+      sintesi check --doc
+      ```
 
 4. **Force Overwrite**
     If you need to regenerate documentation or README files and want to bypass existing content checks, you can use the `--force` flag:
     ```bash
     sintesi documentation --force
     ```
-   or
+    or
     ```bash
     sintesi readme --force
     ```
@@ -78,7 +81,7 @@ Traditional docs rot. Sintesi keeps them fresh.
 Sintesi is not just a generator; it is a full **documentation lifecycle manager**.
 
 1.  **Analyze:** It scans your project structure and reads key files to understand the "DNA" of your codebase.
-2.  **Plan:** An AI Architect designs a documentation structure tailored to your project type.
+2.  **Plan:** An AI Architect designs a documentation structure tailored to your project type. Sintesi auto-detects the application type and entry point as part of its project analysis, thereby tailoring the documentation structure accordingly.
 3.  **Generate:** Specialized agents write comprehensive documentation, ensuring accuracy by reading actual source code.
 4.  **Verify:** The `check` command ensures your documentation stays in sync with your latest code changes.
 
@@ -90,6 +93,14 @@ We believe in eating our own dog food. This repository's documentation is mainta
 👉 **[CLI Reference](./docs/reference/commands.md)**
 
 ---
+
+## Troubleshooting
+
+If you encounter issues, consider the following common problems:
+
+- **Installation Issues:** Ensure you have the correct package name (`sintesi-monorepo-root`) and that your Node.js and npm versions are up to date.
+- **Drift Detection Failures:** If the `check` command fails, verify that your documentation is up to date with your code changes.
+- **Command Not Found:** Ensure that the Sintesi binary is in your PATH after installation.
 
 ## Contributing
 
