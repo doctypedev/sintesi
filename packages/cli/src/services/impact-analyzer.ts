@@ -16,9 +16,10 @@ export class ImpactAnalyzer {
         docType: 'readme' | 'documentation',
         aiAgents: AIAgents,
         force?: boolean,
-        targetExists?: boolean
+        targetExists?: boolean,
+        outputDir?: string
     }): Promise<{ shouldProceed: boolean; reason?: string }> {
-        const { gitDiff, docType, aiAgents, force = false, targetExists = true } = options;
+        const { gitDiff, docType, aiAgents, force = false, targetExists = true, outputDir } = options;
 
         if (!gitDiff) return { shouldProceed: true, reason: 'No git diff provided (or forced).' };
 
@@ -28,7 +29,7 @@ export class ImpactAnalyzer {
             return { shouldProceed: true, reason: 'Target missing' };
         }
 
-        const impact = await this.shouldUpdateDocs(gitDiff, docType, aiAgents);
+        const impact = await this.shouldUpdateDocs(gitDiff, docType, aiAgents, outputDir);
 
         if (!impact.update && !force) {
             this.logger.success(`✨ Impact Analysis: No relevant changes detected. Skipping generation.`);
@@ -49,7 +50,8 @@ export class ImpactAnalyzer {
     async shouldUpdateDocs(
         gitDiff: string,
         docType: 'readme' | 'documentation',
-        aiAgents: AIAgents
+        aiAgents: AIAgents,
+        outputDir?: string
     ): Promise<{ update: boolean; reason: string }> {
         if (!gitDiff || gitDiff.trim().length === 0) {
             return { update: false, reason: 'No git diff provided.' };
@@ -59,9 +61,18 @@ export class ImpactAnalyzer {
         const exclusions: string[] = [];
         if (docType === 'readme') {
             exclusions.push('README.md');
+            if (outputDir) exclusions.push(outputDir);
         } else if (docType === 'documentation') {
-            exclusions.push('docs/');
-            exclusions.push('documentation/');
+            if (outputDir) {
+                // Ensure directory paths end with / for proper filtering if needed by filterGitDiff
+                // But filterGitDiff usually handles glob patterns.
+                // If outputDir is 'docs', we want to exclude 'docs/' and contents.
+                const dir = outputDir.endsWith('/') ? outputDir : `${outputDir}/`;
+                exclusions.push(dir);
+            } else {
+                exclusions.push('docs/');
+                exclusions.push('documentation/');
+            }
         }
 
         const cleanDiff = filterGitDiff(gitDiff, exclusions);

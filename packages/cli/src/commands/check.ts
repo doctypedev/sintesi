@@ -30,11 +30,11 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
 
   // Resolve the root directory for source code
   const codeRoot = process.cwd();
-  
+
   // Initialize Services
   const contextService = new GenerationContextService(logger, codeRoot);
   const aiAgents = await contextService.getAIAgents(options.verbose || false);
-  
+
   if (!aiAgents) {
     logger.error('Failed to initialize AI agents. Cannot perform smart check.');
     return {
@@ -92,9 +92,9 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
       logger.info('Performing smart check (README vs Code)...');
       const smartChecker = new SmartChecker(logger, codeRoot);
       const smartResult = await smartChecker.checkReadme({
-            baseBranch: options.base,
-            readmePath: resolve(codeRoot, options.output || 'README.md')
-          });
+        baseBranch: options.base,
+        readmePath: resolve(codeRoot, options.output || 'README.md')
+      });
 
       if (smartResult.hasDrift) {
         logger.warn('⚠️ Drift detected: README might be outdated');
@@ -129,7 +129,8 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
         gitDiff,
         docType: 'documentation',
         aiAgents,
-        force: false
+        force: false,
+        outputDir: options.outputDir || 'docs'
       });
       docDriftDetected = docImpact.shouldProceed;
       docReason = docImpact.reason;

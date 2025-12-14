@@ -113,7 +113,8 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
       docType: 'readme',
       aiAgents,
       force: options.force,
-      targetExists: existsSync(outputPath)
+      targetExists: existsSync(outputPath),
+      outputDir: options.output
     });
 
     if (!impactResult.shouldProceed) return;

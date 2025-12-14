@@ -110,7 +110,8 @@ export async function documentationCommand(options: DocumentationOptions): Promi
         docType: 'documentation',
         aiAgents,
         force: true, // Keeping 'true' to preserve existing behavior
-        targetExists: docsDirNotEmpty
+        targetExists: docsDirNotEmpty,
+        outputDir: options.outputDir || 'docs'
       });
 
       if (!impactResult.shouldProceed) return;
