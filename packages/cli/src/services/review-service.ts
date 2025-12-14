@@ -13,6 +13,7 @@ export class ReviewService {
         content: string,
         itemPath: string,
         itemDescription: string,
+        sourceContext: string,
         agents: AIAgents
     ): Promise<string> {
         if (!agents.reviewer) {
@@ -33,8 +34,14 @@ export class ReviewService {
     ${content}
     \`\`\`
 
+    ## Source Context (GROUND TRUTH):
+    Use this context to verify facts.
+    \`\`\`
+    ${sourceContext.substring(0, 20000)} 
+    \`\`\`
+
     ## Evaluation Criteria:
-    1. **Accuracy**: Does it hallucinate commands/flags not in source code?
+    1. **Accuracy (CRITICAL)**: Check if commands, flags, and APIs mentioned in the content ACTUALLY EXIST in the Source Context. Flag any hallucination as a CRITICAL issue.
     2. **Clarity**: Is it easy to read?
     3. **Consistency**: Does it follow the style guide?
     4. **Completeness**: Does it cover the purpose?
@@ -43,8 +50,8 @@ export class ReviewService {
     Return ONLY a JSON object:
     {
       "score": number, // 1-5 (5 is perfect)
-      "critique": string, // Detailed feedback if score < 5, or "LGTM" if score is 5
-      "critical_issues": boolean // True if there are factual errors (hallucinations)
+      "critique": string, // Detailed feedback. If hallucinations found, list them explicitly.
+      "critical_issues": boolean // True if factual errors (hallucinations) are found
     }
     `;
 
