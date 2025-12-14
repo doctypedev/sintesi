@@ -90,7 +90,10 @@ export class DocumentationPlanner {
                 const entryContent = readFileSync(projectConfig.entryPoint, 'utf-8');
                 const safeContent = entryContent.length > 10000 ? entryContent.substring(0, 10000) + '\n... (truncated)' : entryContent;
 
-                const typeLabel = projectConfig.appType === 'cli' ? 'CLI Entry Definition (Yargs/Command Config)' : 'Application Entry Point';
+                let typeLabel = 'Application Entry Point';
+                if (projectConfig.appType === 'cli') typeLabel = 'CLI Entry Definition (Yargs/Command Config)';
+                else if (projectConfig.appType === 'web') typeLabel = 'Frontend App Entry / Mount Point';
+                else if (projectConfig.appType === 'backend') typeLabel = 'Backend Server Bootstrap';
 
                 specificContext += `\n## ${typeLabel}:\n> **CRITICAL**: Use this definition as the SOURCE OF TRUTH for command arguments, routing configuration, or app initialization.\n\`\`\`typescript\n${safeContent}\n\`\`\`\n`;
             } catch (e) { /* ignore */ }

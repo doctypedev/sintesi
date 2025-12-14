@@ -4,6 +4,7 @@ import { Logger } from '../../src/utils/logger';
 import { SmartChecker } from '../../src/services/smart-checker';
 import { createAIAgentsFromEnv } from '../../../ai';
 import * as path from 'path';
+import * as fs from 'fs';
 
 // Mock dependencies
 vi.mock('../../src/services/smart-checker');
@@ -115,6 +116,35 @@ describe('GenerationContextService', () => {
             expect(config.packageName).toBe('test-pkg');
             expect(config.relevantCommands).toContain('bar');
             expect(config.appType).toBe('cli');
+        });
+
+
+        it('should detect Web appType based on React dependency', () => {
+            (vi.mocked(getProjectContext) as any).mockReturnValue({
+                files: [{ path: '/test/cwd/src/App.tsx' }],
+                packageJson: { dependencies: { 'react': '18.0.0' } }
+            });
+
+            // Mock existence
+            vi.mocked(fs.existsSync).mockImplementation((p: string) => p.includes('src/App.tsx'));
+
+            const config = service.detectProjectConfig(getProjectContext('/test/cwd'));
+            expect(config.appType).toBe('web');
+            expect(config.entryPoint).toContain('src/App.tsx');
+        });
+
+        it('should detect Backend appType based on NestJS dependency', () => {
+            (vi.mocked(getProjectContext) as any).mockReturnValue({
+                files: [{ path: '/test/cwd/src/main.ts' }],
+                packageJson: { dependencies: { '@nestjs/core': '9.0.0' } }
+            });
+
+            // Mock existence
+            vi.mocked(fs.existsSync).mockImplementation((p: string) => p.includes('src/main.ts'));
+
+            const config = service.detectProjectConfig(getProjectContext('/test/cwd'));
+            expect(config.appType).toBe('backend');
+            expect(config.entryPoint).toContain('src/main.ts');
         });
     });
 
