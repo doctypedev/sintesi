@@ -77,6 +77,10 @@ export interface CheckOptions {
   readme?: boolean;
   /** Check only documentation */
   documentation?: boolean;
+  /** Output file path for README check */
+  output?: string;
+  /** Output directory for documentation check */
+  outputDir?: string;
 }
 
 /**
