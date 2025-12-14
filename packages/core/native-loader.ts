@@ -142,6 +142,8 @@ const {
   validateMarkdownAnchors: validateMarkdownAnchorsVal,
   parseCodeRef: parseCodeRefVal,
   getProjectContext: getProjectContextVal,
+  GitBinding: GitBindingVal,
+  GraphAnalyzer: GraphAnalyzerVal,
 } = nativeModule;
 
 export const SymbolType = SymbolTypeVal;
@@ -153,6 +155,8 @@ export const extractAnchors = extractAnchorsVal as typeof CoreTypes.extractAncho
 export const validateMarkdownAnchors = validateMarkdownAnchorsVal as typeof CoreTypes.validateMarkdownAnchors;
 export const parseCodeRef = parseCodeRefVal as typeof CoreTypes.parseCodeRef;
 export const getProjectContext = getProjectContextVal as typeof CoreTypes.getProjectContext;
+export const GitBinding = GitBindingVal as typeof CoreTypes.GitBinding;
+export const GraphAnalyzer = GraphAnalyzerVal as typeof CoreTypes.GraphAnalyzer;
 
 export type AstAnalyzer = CoreTypes.AstAnalyzer;
 
@@ -173,6 +177,10 @@ export type CodeRefParts = CoreTypes.CodeRefParts;
 export type ProjectContext = CoreTypes.ProjectContext;
 export type FileContext = CoreTypes.FileContext;
 export type PackageJson = CoreTypes.PackageJson;
+
+export type GitBinding = CoreTypes.GitBinding;
+export type GraphAnalyzer = CoreTypes.GraphAnalyzer;
+export type ChangeSummary = CoreTypes.ChangeSummary;
 
 // Export SymbolType as a type (it's a const enum in the .d.ts)
 export type { SymbolType as SymbolTypeValue } from './native-types';

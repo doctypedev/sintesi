@@ -58,6 +58,38 @@ pub fn build_graph(files: &[PathBuf], root: &Path) -> ProjectGraph {
 
     let import_regex = Regex::new(r#"(?:import\s+(?:[\w\s{},*]+from\s+)?|require\()['"]([^'"]+)['"]"#).unwrap();
 
+// Helper to normalize paths (remove . and ..) without checking filesystem
+    fn normalize_path(path: &Path) -> PathBuf {
+        let mut components = path.components().peekable();
+        let mut ret = if let Some(c) = components.peek() {
+            match c {
+                std::path::Component::Prefix(..) => {
+                    let mut p = PathBuf::new();
+                    p.push(components.next().unwrap());
+                    p
+                }
+                std::path::Component::RootDir => {
+                    components.next();
+                    PathBuf::from("/")
+                }
+                _ => PathBuf::new(),
+            }
+        } else {
+            PathBuf::new()
+        };
+    
+        for component in components {
+            match component {
+                std::path::Component::Prefix(..) => unreachable!(),
+                std::path::Component::RootDir => unreachable!(),
+                std::path::Component::CurDir => {}
+                std::path::Component::ParentDir => { ret.pop(); }
+                std::path::Component::Normal(c) => { ret.push(c); }
+            }
+        }
+        ret
+    }
+
     for file_path in files {
         // Only process JS/TS/RS files for now
         let ext = file_path.extension().and_then(|s| s.to_str()).unwrap_or("");
@@ -71,23 +103,13 @@ pub fn build_graph(files: &[PathBuf], root: &Path) -> ProjectGraph {
                 if let Some(import_path) = cap.get(1) {
                     let import_str = import_path.as_str();
                     
-                    // Simple resolution logic
-                    // 1. Ignore node_modules (non-relative imports) for now, or maybe track them differently?
-                    // For now, only track relative imports starting with .
                     if import_str.starts_with('.') {
+                        // Resolve relative to the current file
                         let current_dir = file_path.parent().unwrap_or(Path::new(""));
-                        let resolved = current_dir.join(import_str);
+                        let resolved_raw = current_dir.join(import_str);
+                        let resolved = normalize_path(&resolved_raw);
                         
-                        // Normalize (remove .. and .) - simplified for now
-                        // In a real implementation we need canonicalization, but that requires the file to exist.
-                        // Since we are working with relative paths inside the project, we can try to match against our file list.
-                        
-                        // Heuristic: try to find the matching file in our file list
-                        // This is O(N^2) effectively if we iterate, but with the map it's fast.
-                        // But we need to handle extensions (import './foo' -> './foo.ts')
-                        
-                        // Let's try to resolve it against known files
-                        // This logic needs to be robust.
+                        // Try various extensions
                          let candidates = vec![
                             resolved.clone(),
                             resolved.with_extension("ts"),
@@ -99,9 +121,6 @@ pub fn build_graph(files: &[PathBuf], root: &Path) -> ProjectGraph {
                         ];
 
                         for candidate in candidates {
-                             // "normalize" candidate path to match how we store them (no leading ./ if possible)
-                             // Actually, let's just check if it exists in our node_map
-                             // We might need a more robust normalization here.
                              if project_graph.node_map.contains_key(&candidate) {
                                  project_graph.add_dependency(file_path.clone(), candidate);
                                  break;

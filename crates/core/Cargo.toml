@@ -23,6 +23,8 @@ sha2 = "0.10"
 pulldown-cmark = "0.12"
 regex = "1"
 petgraph = "0.6"
+git2 = { version = "0.18", default-features = false }
+lazy_static = "1.4"
 
 # Oxc for TypeScript/JavaScript AST parsing
 oxc_parser = "0.39"

@@ -10,6 +10,8 @@ import { AstAnalyzer as RustAstAnalyzer } from './native-loader';
 // Re-export with TypeScript-compatible name for backward compatibility
 export { RustAstAnalyzer as ASTAnalyzer };
 
+
+
 // Rust native bindings (loaded via platform-specific package)
 export {
   SymbolType,
@@ -23,6 +25,8 @@ export {
   parseCodeRef,
   // Project Context
   getProjectContext,
+  GitBinding,
+  GraphAnalyzer,
 } from './native-loader';
 
 export type {
@@ -43,4 +47,7 @@ export type {
   ProjectContext,
   FileContext,
   PackageJson,
+  GitBinding as GitBindingType,
+  GraphAnalyzer as GraphAnalyzerType,
+  ChangeSummary,
 } from './native-loader';
