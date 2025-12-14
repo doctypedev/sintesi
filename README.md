@@ -4,7 +4,7 @@
 
 # Sintesi
 
-[![npm version](https://badge.fury.io/js/sintesi-monorepo-root.svg)](https://www.npmjs.com/package/sintesi-monorepo-root)
+[![npm version](https://badge.fury.io/js/@sintesi%2Fsintesi.svg)](https://www.npmjs.com/package/@sintesi/sintesi)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **The intelligent documentation engine.**
