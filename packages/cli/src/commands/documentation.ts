@@ -520,6 +520,8 @@ IMPORTANT:
 ## Rules
 - Return ONLY the Markdown content.
 - **NO HALLUCINATIONS**: Only document commands/flags/props you see in the "Source Code Context" or Git Diff.
+- **PROTECT CLI FLAGS**: If you see flags in "Existing Content" (like --no-strict, --dry-run) that are not explicitly in the code but are standard for CLI frameworks (Yargs, Commander), **DO NOT REMOVE THEM**. Assume they are valid implicit flags or defined in a global configuration you might not fully see.
+- **TRUST USAGE EXAMPLES**: Do NOT remove existing "Usage Examples" unless you have PROOF they are wrong. If the code context is partial, assume the existing examples are correct.
 - **NO DEAD LINKS**: Do NOT link to files like 'CODE_OF_CONDUCT.md' or 'CONTRIBUTING.md' unless you are absolutely sure they exist in the file list. Use absolute paths (starting with '/') for internal documentation links (e.g., '/guide/installation.md').
 - **SITE STRUCTURE MODE**:
   1. **Frontmatter**: Start with YAML frontmatter containing 'title', 'description', 'icon' (emoji), and 'order' (number, use a sensible default if not clear from context, e.g., 100 for general order, 10 for key items).
