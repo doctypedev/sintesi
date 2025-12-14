@@ -123,6 +123,17 @@ yargs(hideBin(process.argv))
         .option('base', {
           type: 'string',
           description: 'Base branch for smart check comparison (default: origin/main)',
+        })
+        .option('readme', {
+          type: 'boolean',
+          description: 'Check only README drift',
+          default: false,
+        })
+        .option('documentation', {
+          alias: 'doc',
+          type: 'boolean',
+          description: 'Check only documentation drift',
+          default: false,
         });
     },
     async (argv) => {
@@ -131,6 +142,8 @@ yargs(hideBin(process.argv))
         strict: argv.strict as boolean,
         smart: argv.smart as boolean, // Use the argv value, which defaults to true
         base: argv.base as string,
+        readme: argv.readme as boolean,
+        documentation: argv.documentation as boolean,
       };
 
       const result = await checkCommand(options);

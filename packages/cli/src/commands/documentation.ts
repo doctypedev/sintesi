@@ -182,7 +182,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     forceSmartCheck = true;
   } else {
     try {
-      const statePath = resolve(cwd, '.sintesi/state.json');
+      const statePath = resolve(cwd, '.sintesi/documentation.state.json');
       if (existsSync(statePath)) {
         const state = JSON.parse(readFileSync(statePath, 'utf-8'));
         
@@ -210,8 +210,15 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   // 0. Smart Check
   // If force is active, we skip the smart check entirely and proceed
   if (!options.force) {
-    const hasChanges = await contextService.performSmartCheck(forceSmartCheck);
-    if (!hasChanges) return;
+    const checkDir = resolve(cwd, options.outputDir || 'docs');
+    const docsExist = existsSync(checkDir) && readdirSync(checkDir).length > 0;
+
+    if (!docsExist) {
+       logger.info('Documentation directory missing or empty. Skipping smart check and forcing generation.');
+    } else {
+       const hasChanges = await contextService.performSmartCheck(forceSmartCheck);
+       if (!hasChanges) return;
+    }
   }
 
   const outputDir = resolve(cwd, options.outputDir || 'docs');

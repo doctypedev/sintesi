@@ -73,6 +73,10 @@ export interface CheckOptions {
   /** Use AI to detect high-level drift (e.g. README updates) */
   smart?: boolean;
   base?: string;
+  /** Check only README */
+  readme?: boolean;
+  /** Check only documentation */
+  documentation?: boolean;
 }
 
 /**
