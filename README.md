@@ -58,7 +58,20 @@ Traditional docs rot. Sintesi keeps them fresh.
     ```bash
     sintesi documentation --force
     ```
+   or
+    ```bash
+    sintesi readme --force
+    ```
     This will ignore existing files and regenerate them from scratch.
+
+5. **Output Options**
+    You can specify custom output paths for the README check and documentation check using the `--output` and `--output-dir` flags, respectively:
+    ```bash
+    sintesi check --output path/to/README.md
+    ```
+    ```bash
+    sintesi check --output-dir path/to/docs
+    ```
 
 ## 🧠 How it works
 
