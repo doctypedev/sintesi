@@ -2,6 +2,7 @@
 import { Logger } from '../utils/logger';
 import { AIAgents } from '../../../ai';
 import { filterGitDiff } from '../utils/diff-utils';
+import { getImpactAnalysisPrompt } from '../prompts/analysis';
 
 export class ImpactAnalyzer {
     constructor(private logger: Logger) { }
@@ -85,43 +86,7 @@ export class ImpactAnalyzer {
 
         this.logger.info(`🔍 Performing Semantic Impact Analysis on ${docType}...`);
 
-        const prompt = `
-You are a Senior Technical Editor.
-Your job is to act as a GATEKEEPER to prevent unnecessary documentation updates.
-You will evaluate the provided "Git Diff" and decide if the "${docType}" needs to be updated.
-
-## Git Diff
-\`\`\`diff
-${cleanDiff}
-\`\`\`
-
-## Rules
-1. **IGNORE** Trivial Changes:
-   - Formatting/Linting fixes.
-   - Version bumps in package.json.
-   - Internal refactors that don't change behavior or APIs.
-   - Changes to CI/CD workflows (.github, etc).
-   - Changes to ignored files (.gitignore, etc).
-   - Typos in comments.
-
-2. **FLAG** Important Changes:
-   - New CLI commands or flags.
-   - New API endpoints.
-   - Changes to configuration options.
-   - New features visible to the end-user.
-   - Breaking changes.
-
-## Critical Instruction
-**If you are unsure or if the context is ambiguous, lean towards TRUE (update).**
-It is better to update unnecessarily than to miss a critical change.
-
-## Output
-Return a JSON object:
-{
-  "update": boolean, // true if docs MUST be updated, false otherwise
-  "reason": "String explaining why. If false, explain why changes are trivial. If true, list the key feature that changed."
-}
-`;
+        const prompt = getImpactAnalysisPrompt(docType, cleanDiff);
 
         try {
             // Use the Planner or Reviewer (usually stronger models) for this logic

@@ -6,6 +6,7 @@ import { readFileSync, existsSync } from 'fs';
 import { SmartChecker } from './smart-checker';
 import { ChangeAnalysisService } from './analysis-service';
 import { createAIAgentsFromEnv, AIAgents, AIAgentRoleConfig } from '../../../ai';
+import { getContextPrompt } from '../prompts/analysis';
 
 export interface CliConfig {
     binName?: string;
@@ -241,42 +242,7 @@ export class GenerationContextService {
      * Generates a shared context prompt string including package info, CLI details, and git diff.
      */
     generateContextPrompt(context: ProjectContext, gitDiff: string, cliConfig: CliConfig, techStack?: TechStack): string {
-        const packageJsonSummary = context.packageJson
-            ? JSON.stringify(context.packageJson, null, 2)
-            : 'No package.json found';
-
-        let prompt = `## Package.json\n\`\`\`json\n${packageJsonSummary}\n\`\`\`\n\n`;
-
-        if (techStack) {
-            prompt += `## Detected Tech Stack\n`;
-            if (techStack.frameworks.length) prompt += `- **Frameworks**: ${techStack.frameworks.join(', ')}\n`;
-            if (techStack.languages.length) prompt += `- **Languages**: ${techStack.languages.join(', ')}\n`;
-            if (techStack.libraries.length) prompt += `- **Libraries**: ${techStack.libraries.join(', ')}\n`;
-            if (techStack.infrastructure.length) prompt += `- **Tools/Infra**: ${techStack.infrastructure.join(', ')}\n`;
-            prompt += `> **INSTRUCTION**: Strictly adhere to the detected stack. Do not suggest libraries not listed here (like React if this is Vue) unless explicitly asked.\n\n`;
-        }
-
-        if (cliConfig.relevantCommands && cliConfig.relevantCommands.length > 0) {
-            prompt += `> **VERIFIED AVAILABLE COMMANDS**: [${cliConfig.relevantCommands.join(', ')}]\n`;
-            prompt += `> **INSTRUCTION**: ONLY document the commands listed above. Do NOT document commands inferred from Changelogs or other text if they are not in this list.\n\n`;
-        }
-
-        if (cliConfig.packageName) {
-            prompt += `> NOTE: The official package name is "${cliConfig.packageName}". Use this EXACT name for installation instructions. Do not hallucinate suffixes.\n\n`;
-        }
-
-        // Repo Info - Prevent Hallucination
-        const pkg = context.packageJson as any;
-        prompt += this.getSafeRepoInstructions(pkg);
-
-
-        if (cliConfig.binName) {
-            prompt += `> NOTE: The CLI binary command is "${cliConfig.binName}". Use this for usage examples (e.g. ${cliConfig.binName} <command>).\n\n`;
-        }
-
-        prompt += "## Recent Code Changes (Git Diff)\nUse this to understand what features were recently added or modified.\n```diff\n" + (gitDiff || 'No recent uncommitted changes detected.') + "\n```\n\n";
-
-        return prompt;
+        return getContextPrompt(context, gitDiff, cliConfig, techStack);
     }
 
     /**
