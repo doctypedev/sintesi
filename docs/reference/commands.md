@@ -87,7 +87,7 @@ sintesi changeset
 - `--staged-only`: Analyzes only staged changes.
 - `--package-name <name>`: Package name for the changeset (auto-detected from package.json if not specified).
 - `--output-dir <path>`: Specifies the output directory for the changeset file (default is `.changeset`).
-- `--skip-ai`: Disables AI usage for version type and description.
+- `--no-ai`: Disables AI usage for version type and description.
 - `--version-type <type>`: Manually specify version type (`major`, `minor`, `patch`).
 - `--description <text>`: Manually specify description.
 - `--interactive`: Enables interactive package selection.
@@ -97,7 +97,7 @@ sintesi changeset
 #### Usage Examples
 ```bash
 sintesi changeset -- --base-branch main --staged-only
-sintesi changeset -- --skip-ai --version-type minor --description "New feature"
+sintesi changeset -- --no-ai --version-type minor --description "New feature"
 ```
 
 ---
