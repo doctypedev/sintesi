@@ -2,6 +2,7 @@ import { Logger } from '../utils/logger';
 import { ProjectContext } from '@sintesi/core';
 import { AIAgents } from '../../../ai';
 import { GenerationContextService } from './generation-context';
+import { DOC_PLANNING_PROMPT } from '../prompts/documentation';
 import { existsSync, readdirSync, statSync } from 'fs';
 import { join, relative } from 'path';
 
@@ -135,73 +136,23 @@ export class DocumentationPlanner {
 `;
         }
 
-        const planPrompt = `
-You are an expert Product Manager and Technical Writer.
-Your goal is to design a documentation structure for the End User / Developer who uses this software.
 
-## Project Context
-Package.json:
-${packageJsonSummary}
-
-File Structure (Filtered for relevance):
-${fileSummary}
-${specificContext}
-
-## Existing Documentation (in ${outputDir}/)
-${existingDocsSummary}
-
-## Task
-Analyze the project "DNA" to determine its TYPE.
-Then, propose a list of documentation files tailored SPECIFICALLY to that type.
-
-> **IMPORTANT**:
-> - **ONLY** propose files that need creation or updates based on the "Recent Changes" and "Impact Analysis Summary".
-> - **DO NOT** feel matched to propose 3-6 files. If only 1 file needs update, propose 1 file.
-> - **DO NOT** halluncinate features. If the git diff is about a "typo fix", do not propose "New Feature Guide".
-
-
-${strategyInstructions}
-
-## STRUCTURED DOCUMENTATION MODE
-- **Structure**: Group files into folders for a better sidebar (e.g., 'guide/installation.md', 'reference/commands.md').
-- **Index**: Ensure there is a 'index.md' or 'intro.md' as entry point.
-
-## Existing Flat Documentation for Reorganization
-${existingDocsList.map(p => `- ${p}`).join('\n')}
-
-**Instruction for MIGRATION:**
-When creating the 'Output' JSON, if a proposed file path (e.g., 'guide/installation.md') is conceptually similar or a direct migration of an existing flat file (e.g., 'installation.md'), include the 'originalPath' field in the JSON object like this:
-\`\`\`json
-{
-  "path": "guide/installation.md",
-  "description": "How to install the project",
-  "type": "guide",
-  "originalPath": "installation.md" // Path relative to outputDir
-}
-\`\`\`
-This indicates that the content for 'guide/installation.md' should be sourced from 'installation.md' (if it exists) and then updated.
-
-## Rules
-- **User-Centric**: Document *how to use it*.
-- **Smart Updates**: Reuse existing files if relevant.
-
-## Output
-Return ONLY a valid JSON array.
-[
-  {
-    "path": "commands.md", 
-    "description": "Reference of all CLI commands.", 
-    "type": "guide",
-    "relevantPaths": ["packages/cli/src/commands/check.ts", "packages/cli/src/commands/readme.ts"]
-  }
-]
-`;
+        const planPrompt = DOC_PLANNING_PROMPT(
+            packageJsonSummary,
+            fileSummary,
+            specificContext,
+            outputDir,
+            existingDocsSummary,
+            strategyInstructions,
+            existingDocsList
+        );
 
         try {
             let response = await aiAgents.planner.generateText(planPrompt, {
                 maxTokens: 2000,
                 temperature: 0.1
             });
+
             response = response.replace(/```json/g, '').replace(/```/g, '').trim();
             const plan: DocPlan[] = JSON.parse(response);
 
