@@ -5,6 +5,7 @@
  */
 
 import { Logger } from '../utils/logger';
+import { intro, outro, spinner } from '@clack/prompts';
 import { resolve } from 'path';
 import { readFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
 import { GenerationContextService } from '../services/generation-context';
@@ -86,8 +87,8 @@ export async function documentationCommand(options: DocumentationOptions): Promi
   if (!aiAgents) return;
 
   // 2. Get Project Context & Changes
-  const loggerSpinner = { start: (msg: string) => logger.info(msg), stop: (msg: string) => logger.info(msg) };
-  loggerSpinner.start('Analyzing project structure...');
+  const spinnerLogger = spinner();
+  spinnerLogger.start('Analyzing project structure...');
 
   let context;
   let gitDiff = '';
@@ -96,7 +97,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     const analysis = await contextService.analyzeProject();
     context = analysis.context;
     gitDiff = analysis.gitDiff;
-    loggerSpinner.stop('Analyzed ' + context.files.length + ' files');
+    spinnerLogger.stop('Analyzed ' + context.files.length + ' files');
 
     // Impact Analysis (Semantic Check)
     if (gitDiff && !options.force) {
