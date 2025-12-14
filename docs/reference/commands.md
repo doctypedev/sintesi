@@ -28,7 +28,6 @@ sintesi check
 - `--verbose`: Provides detailed output of the checks performed.
 - `--base <branch>`: Specifies the base branch for comparison (default is `main`).
 - `--readme`: Checks only for README drift.
-
 - `--documentation`: Checks only for documentation drift.
 - `--strict`: Exit with error code if drift detected (default: true).
 
