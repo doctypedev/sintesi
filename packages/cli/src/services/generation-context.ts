@@ -330,7 +330,15 @@ export class GenerationContextService {
         }
 
         // 3. Read Content
-        const sortedFiles = Array.from(expandedFiles).sort();
+        // Prioritize entry points to ensure CLI definition (Yargs) is always included
+        const priorityFiles = Array.from(expandedFiles).filter(f =>
+            f.endsWith('src/index.ts') ||
+            f.endsWith('src/main.ts') ||
+            f.endsWith('package.json')
+        );
+        const otherFiles = Array.from(expandedFiles).filter(f => !priorityFiles.includes(f)).sort();
+
+        const sortedFiles = [...priorityFiles, ...otherFiles];
 
         for (const filePath of sortedFiles) {
             if (chars >= MAX_CONTEXT_CHARS) break;
@@ -341,7 +349,8 @@ export class GenerationContextService {
                 const fileContent = readFileSync(filePath, 'utf-8');
                 const isSeed = targetFiles.includes(filePath);
 
-                const limit = isSeed ? 6000 : 2000;
+                // Give more space to configuration/entry files
+                const limit = (isSeed || priorityFiles.includes(filePath)) ? 8000 : 2000;
 
                 content += `\n\n--- FILE: ${filePath} ---\n${fileContent.substring(0, limit)}`;
                 chars += Math.min(fileContent.length, limit);
