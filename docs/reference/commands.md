@@ -21,16 +21,20 @@ sintesi check
 ```
 
 #### Description
-- Performs a smart check to validate that the README is in sync with the codebase.
+- Performs a smart check to validate that the README and documentation are in sync with the codebase.
 - Saves context for other commands to consume if drift is detected.
 
 #### Options
 - `--verbose`: Provides detailed output of the checks performed.
 - `--base <branch>`: Specifies the base branch for comparison (default is `main`).
+- `--readme`: Checks only for README drift.
+- `--documentation`: Checks only for documentation drift.
 
 #### Usage Examples
 ```bash
 sintesi check -- --verbose --base main
+sintesi check -- --readme --no-strict --verbose
+sintesi check -- --documentation --no-strict --verbose
 ```
 
 ---
