@@ -87,8 +87,8 @@ export class ChangeAnalysisService {
             // If stagedOnly is true, we haven't implemented that explicitly in the simple binding yet
             // assuming the binding handles it or we pass a flag.
             summary = gitBinding.analyzeChanges(baseBranch === 'main' ? undefined : baseBranch, stagedOnly);
-            gitDiff = summary.git_diff;
-            changedFiles = summary.changed_files;
+            gitDiff = summary.gitDiff;
+            changedFiles = summary.changedFiles;
         } catch (e) {
             this.logger.error(`Rust Git analysis failed: ${e}.`);
             // We rely on Rust now. If it fails, we return empty structure.
@@ -127,7 +127,7 @@ export class ChangeAnalysisService {
             changedFiles,
             symbolChanges,
             totalChanges: symbolChanges.length > 0 ? symbolChanges.length : changedFiles.length,
-            hasMeaningfulChanges: (typeof summary !== 'undefined' && summary) ? summary.has_meaningful_changes : undefined
+            hasMeaningfulChanges: (typeof summary !== 'undefined' && summary) ? summary.hasMeaningfulChanges : undefined
         };
     }
 

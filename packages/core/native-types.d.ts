@@ -284,9 +284,9 @@ export interface NapiFileInfo {
 }
 export declare function getProjectFiles(rootPath: string): Array<NapiFileInfo>;
 export interface ChangeSummary {
-  git_diff: string;
-  changed_files: Array<string>;
-  has_meaningful_changes: boolean;
+  gitDiff: string;
+  changedFiles: Array<string>;
+  hasMeaningfulChanges: boolean;
 }
 /** Simple hello world function to test the napi binding */
 export declare function helloWorld(): string;
