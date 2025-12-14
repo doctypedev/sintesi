@@ -44,7 +44,14 @@ Traditional docs rot. Sintesi keeps them fresh.
     ```bash
     sintesi check
     ```
-    The `check` command performs dual drift detection for both the README and the documentation site. You can use the `--no-strict` flag to allow non-blocking CI usage.
+    The `check` command performs dual drift detection for both the README and the documentation site. You can use the `--no-strict` flag to allow non-blocking CI usage. You can also run separate checks for the README or documentation site using:
+    ```bash
+    sintesi check --readme
+    ```
+    or
+    ```bash
+    sintesi check --doc
+    ```
 
 4. **Force Overwrite**
     If you need to regenerate documentation or README files and want to bypass existing content checks, you can use the `--force` flag:
