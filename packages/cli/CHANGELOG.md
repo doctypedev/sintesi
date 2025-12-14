@@ -1,5 +1,17 @@
 # @sintesi/sintesi
 
+## 0.17.0
+
+### Minor Changes
+
+- 125d36a: - Add new CLI options to check only README or documentation drift
+  - Separate state files for README and documentation
+  - Enhance existence checks and smart drift analysis for improved documentation
+
+### Patch Changes
+
+- @sintesi/core@0.17.0
+
 ## 0.16.3
 
 ### Patch Changes
