@@ -1,5 +1,13 @@
 # @sintesi/sintesi
 
+## 0.17.2
+
+### Patch Changes
+
+- 7f18571: - Fixed AI hallucinations of git repos by enforcing package.json source of truth.
+  - Fixed infinite documentation loop by excluding docs directories from impact analysis.
+  - @sintesi/core@0.17.2
+
 ## 0.17.1
 
 ### Patch Changes
