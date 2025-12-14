@@ -3,7 +3,7 @@ import { ProjectContext } from '@sintesi/core';
 import { AIAgents } from '../../../ai';
 import { GenerationContextService } from './generation-context';
 import { DOC_PLANNING_PROMPT } from '../prompts/documentation';
-import { existsSync, readdirSync, statSync } from 'fs';
+import { existsSync, readdirSync, statSync, readFileSync } from 'fs';
 import { join, relative } from 'path';
 
 export interface DocPlan {
