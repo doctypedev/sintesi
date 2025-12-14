@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { Logger } from '../utils/logger';
 import { createAIAgentsFromEnv, AIAgents } from '../../../ai'; // Updated import
+import { getSmartCheckReadmePrompt } from '../prompts/analysis';
 import { ChangeAnalysisService } from './analysis-service';
 import { filterGitDiff } from '../utils/diff-utils';
 
@@ -195,41 +196,7 @@ export class SmartChecker {
                 return { hasDrift: false };
             }
 
-            const prompt = `
-You are a documentation expert. 
-Your task is to analyze recent code changes and the current README to determine if the README is outdated.
-
-## Current README
-\`\`\`markdown
-${readmeContent.substring(0, 5000) + (readmeContent.length > 5000 ? '...' : '')}
-\`\`\`
-
-## Recent Code Changes (Git Diff)
-\`\`\`diff
-${gitDiff}
-\`\`\`
-
-## Task
-Determine if the recent code changes introduce features, commands, or behavior that SHOULD be in the README but are likely missing.
-
-Guidelines:
-1. **Check for Existence:** Look carefully! If a command (e.g., 'sintesi check') is already mentioned in "Quick Start" or "Usage", do NOT report it as missing. Only report drift if *critical* new functionality for that command is effectively invisible to the user.
-2. **Ignore Trivial Flags:** Do not report drift for standard flags like '--verbose', '--debug', '--help', or '--json' unless they are the main focus of a new major feature.
-3. **High-Level Summary:** The README is an overview. Detailed API docs belong elsewhere. Do not demand every single option be documented here.
-4. **Focus on Impact:** Focus on:
-   - Entirely NEW commands that are nowhere in the README.
-   - Breaking changes to existing commands.
-   - Critical configuration changes required for the app to work.
-
-## Output Format
-Return a JSON object with this structure:
-{
-  "hasDrift": boolean,
-  "reason": "Short explanation of what is missing or outdated (if any)",
-  "suggestion": "Brief suggestion on what to add/change (if any)"
-}
-Only return the JSON.
-`;
+            const prompt = getSmartCheckReadmePrompt(readmeContent, gitDiff);
 
             const response = await plannerAgent.generateText(prompt, {
                 temperature: 0
