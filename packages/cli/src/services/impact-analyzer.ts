@@ -65,6 +65,14 @@ export class ImpactAnalyzer {
 
         const cleanDiff = filterGitDiff(gitDiff, exclusions);
 
+        // 2. Short-circuit: If filtering removed everything, we don't need to ask AI
+        if (!cleanDiff || cleanDiff.trim().length === 0) {
+            return {
+                update: false,
+                reason: 'All changes were filtered out (likely docs-only changes).'
+            };
+        }
+
         // 2. Safety Check: Truncation Risk
         // If the cleaned diff is still massive, we risk truncating critical changes.
         // Fallback to safe update.
