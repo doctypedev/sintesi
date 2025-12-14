@@ -1,6 +1,6 @@
 {
   "name": "@sintesi/core-linux-x64-gnu",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Sintesi native core for Linux x64 GNU",
   "main": "index.js",
   "repository": {
