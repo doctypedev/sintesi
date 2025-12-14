@@ -1,5 +1,5 @@
 import { ProjectContext } from '@sintesi/core';
-import { CliConfig, TechStack } from '../services/generation-context';
+import { ProjectConfig, TechStack } from '../services/generation-context';
 
 export function getSmartCheckReadmePrompt(readmeContent: string, gitDiff: string): string {
     return `
@@ -82,7 +82,7 @@ Return a JSON object:
 export function getContextPrompt(
     context: ProjectContext,
     gitDiff: string,
-    cliConfig: CliConfig,
+    projectConfig: ProjectConfig,
     techStack?: TechStack
 ): string {
     const packageJsonSummary = context.packageJson
@@ -100,13 +100,13 @@ export function getContextPrompt(
         prompt += `> **INSTRUCTION**: Strictly adhere to the detected stack. Do not suggest libraries not listed here (like React if this is Vue) unless explicitly asked.\n\n`;
     }
 
-    if (cliConfig.relevantCommands && cliConfig.relevantCommands.length > 0) {
-        prompt += `> **VERIFIED AVAILABLE COMMANDS**: [${cliConfig.relevantCommands.join(', ')}]\n`;
+    if (projectConfig.relevantCommands && projectConfig.relevantCommands.length > 0) {
+        prompt += `> **VERIFIED AVAILABLE COMMANDS**: [${projectConfig.relevantCommands.join(', ')}]\n`;
         prompt += `> **INSTRUCTION**: ONLY document the commands listed above. Do NOT document commands inferred from Changelogs or other text if they are not in this list.\n\n`;
     }
 
-    if (cliConfig.packageName) {
-        prompt += `> NOTE: The official package name is "${cliConfig.packageName}". Use this EXACT name for installation instructions. Do not hallucinate suffixes.\n\n`;
+    if (projectConfig.packageName) {
+        prompt += `> NOTE: The official package name is "${projectConfig.packageName}". Use this EXACT name for installation instructions. Do not hallucinate suffixes.\n\n`;
     }
 
     // Repo Info - Prevent Hallucination
@@ -121,8 +121,8 @@ export function getContextPrompt(
         prompt += `> **REPOSITORY**: No git repository is defined in package.json. DO NOT hallucinate a git clone URL. Use local installation instructions or assume published package usage.\n\n`;
     }
 
-    if (cliConfig.binName) {
-        prompt += `> NOTE: The CLI binary command is "${cliConfig.binName}". Use this for usage examples (e.g. ${cliConfig.binName} <command>).\n\n`;
+    if (projectConfig.binName) {
+        prompt += `> NOTE: The CLI binary command is "${projectConfig.binName}". Use this for usage examples (e.g. ${projectConfig.binName} <command>).\n\n`;
     }
 
     prompt += "## Recent Code Changes (Git Diff)\nUse this to understand what features were recently added or modified.\n```diff\n" + (gitDiff || 'No recent uncommitted changes detected.') + "\n```\n\n";

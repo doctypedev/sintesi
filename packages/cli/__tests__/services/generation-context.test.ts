@@ -91,8 +91,8 @@ describe('GenerationContextService', () => {
         });
     });
 
-    describe('detectCliConfig', () => {
-        it('should detect commands and bin name', () => {
+    describe('detectProjectConfig', () => {
+        it('should detect commands and bin name for CLI', () => {
             const mockFiles = [
                 { path: '/test/cwd/src/commands/foo.ts' },
                 { path: '/test/cwd/src/commands/bar.ts' },
@@ -110,10 +110,11 @@ describe('GenerationContextService', () => {
                 return 'src/utils/helper.ts';
             });
 
-            const config = service.detectCliConfig(getProjectContext('/test/cwd'));
+            const config = service.detectProjectConfig(getProjectContext('/test/cwd'));
             expect(config.binName).toBe('test-bin');
             expect(config.packageName).toBe('test-pkg');
             expect(config.relevantCommands).toContain('bar');
+            expect(config.appType).toBe('cli');
         });
     });
 
@@ -126,9 +127,9 @@ describe('GenerationContextService', () => {
                 },
                 files: []
             };
-            const cliConfig: any = { relevantCommands: [], packageName: 'test-pkg' };
+            const projectConfig: any = { relevantCommands: [], packageName: 'test-pkg' };
 
-            const prompt = service.generateContextPrompt(context, '', cliConfig);
+            const prompt = service.generateContextPrompt(context, '', projectConfig);
             expect(prompt).toContain('https://github.com/test/repo.git');
             expect(prompt).toContain('REPOSITORY');
         });
@@ -140,9 +141,9 @@ describe('GenerationContextService', () => {
                 },
                 files: []
             };
-            const cliConfig: any = { relevantCommands: [], packageName: 'test-pkg' };
+            const projectConfig: any = { relevantCommands: [], packageName: 'test-pkg' };
 
-            const prompt = service.generateContextPrompt(context, '', cliConfig);
+            const prompt = service.generateContextPrompt(context, '', projectConfig);
             expect(prompt).toContain('No git repository is defined');
             expect(prompt).toContain('DO NOT hallucinate');
         });

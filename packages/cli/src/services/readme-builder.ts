@@ -57,12 +57,12 @@ export class ReadmeBuilder {
             })
             .join('\n');
 
-        const cliConfig = this.contextService.detectCliConfig(context);
+        const projectConfig = this.contextService.detectProjectConfig(context);
         const techStack = this.contextService.detectTechStack(context);
 
         // Use Service to generate context prompt (centralized)
         // This includes the Repository URL logic internally via generateContextPrompt -> getSafeRepoInstructions
-        const sharedContextPrompt = this.contextService.generateContextPrompt(context, gitDiff, cliConfig, techStack);
+        const sharedContextPrompt = this.contextService.generateContextPrompt(context, gitDiff, projectConfig, techStack);
 
         const prompt = README_GENERATION_PROMPT(
             isUpdate,

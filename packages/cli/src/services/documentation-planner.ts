@@ -39,6 +39,7 @@ export class DocumentationPlanner {
         outputDir: string,
         aiAgents: AIAgents,
         contextService: GenerationContextService,
+        gitDiff: string,
         force: boolean = false
     ): Promise<DocPlan[]> {
         this.logger.info('Planning documentation structure...');
@@ -63,23 +64,36 @@ export class DocumentationPlanner {
 
         let specificContext = '';
 
-        // Use Service to detect CLI config
-        const cliConfig = contextService.detectCliConfig(context);
+        // Use Service to detect Project config (CLI, Web, etc.)
+        const projectConfig = contextService.detectProjectConfig(context);
 
-        if (cliConfig.relevantCommands && cliConfig.relevantCommands.length > 0) {
-            specificContext += `\n## Detected CLI Commands:\n${cliConfig.relevantCommands.map(c => `- ${c}`).join('\n')}\n`;
-
-            if (cliConfig.relevantCommands.length > 0) {
-                specificContext += `\n> **VERIFIED AVAILABLE COMMANDS**: [${cliConfig.relevantCommands.join(', ')}]\n`;
+        // --- CLI CONTEXT ---
+        if (projectConfig.appType === 'cli') {
+            if (projectConfig.relevantCommands && projectConfig.relevantCommands.length > 0) {
+                specificContext += `\n## Detected CLI Commands:\n${projectConfig.relevantCommands.map(c => `- ${c}`).join('\n')}\n`;
+                specificContext += `\n> **VERIFIED AVAILABLE COMMANDS**: [${projectConfig.relevantCommands.join(', ')}]\n`;
                 specificContext += `\n> **INSTRUCTION**: Strictly limit documentation to these verified commands. Ignore references to deleted commands (like 'fix') in changelogs.\n`;
             }
 
-            if (cliConfig.binName) {
-                specificContext += `\n> NOTE: This project exports a CLI binary named "${cliConfig.binName}".\n> The detected commands above are likely executed as: ${cliConfig.binName} <command>\n`;
+            if (projectConfig.binName) {
+                specificContext += `\n> NOTE: This project exports a CLI binary named "${projectConfig.binName}".\n> The detected commands above are likely executed as: ${projectConfig.binName} <command>\n`;
             }
-            if (cliConfig.packageName) {
-                specificContext += `\n> NOTE: The official package name is "${cliConfig.packageName}".\n`;
-            }
+        }
+
+        if (projectConfig.packageName) {
+            specificContext += `\n> NOTE: The official package name is "${projectConfig.packageName}".\n`;
+        }
+
+        // --- ENTRY POINT CONTEXT (Generic) ---
+        if (projectConfig.entryPoint && existsSync(projectConfig.entryPoint)) {
+            try {
+                const entryContent = readFileSync(projectConfig.entryPoint, 'utf-8');
+                const safeContent = entryContent.length > 10000 ? entryContent.substring(0, 10000) + '\n... (truncated)' : entryContent;
+
+                const typeLabel = projectConfig.appType === 'cli' ? 'CLI Entry Definition (Yargs/Command Config)' : 'Application Entry Point';
+
+                specificContext += `\n## ${typeLabel}:\n> **CRITICAL**: Use this definition as the SOURCE OF TRUTH for command arguments, routing configuration, or app initialization.\n\`\`\`typescript\n${safeContent}\n\`\`\`\n`;
+            } catch (e) { /* ignore */ }
         }
 
         // 2. Web Routes Detection
@@ -144,7 +158,8 @@ export class DocumentationPlanner {
             outputDir,
             existingDocsSummary,
             strategyInstructions,
-            existingDocsList
+            existingDocsList,
+            gitDiff
         );
 
         try {
