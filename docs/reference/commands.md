@@ -29,6 +29,7 @@ sintesi check
 - `--base <branch>`: Specifies the base branch for comparison (default is `main`).
 - `--readme`: Checks only for README drift.
 - `--documentation`: Checks only for documentation drift.
+- `--strict`: Exit with error code if drift detected (default: true).
 - `--output <path>`: Specifies the output file path for README check (default is `README.md`).
 - `--output-dir <path>`: Specifies the output directory for documentation check (default is `docs`).
 
