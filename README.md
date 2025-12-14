@@ -4,7 +4,7 @@
 
 # Sintesi
 
-[![npm version](https://badge.fury.io/js/@sintesi%2Fsintesi.svg)](https://www.npmjs.com/package/@sintesi/sintesi)
+[![npm version](https://badge.fury.io/js/sintesi-monorepo-root.svg)](https://www.npmjs.com/package/sintesi-monorepo-root)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **The intelligent documentation engine.**
@@ -26,7 +26,7 @@ Traditional docs rot. Sintesi keeps them fresh.
 
 1.  **Install**
     ```bash
-    npm install -g @sintesi/sintesi
+    npm install -g sintesi-monorepo-root
     ```
 
 2.  **Generate Documentation**
@@ -59,6 +59,15 @@ Traditional docs rot. Sintesi keeps them fresh.
     sintesi documentation --force
     ```
     This will ignore existing files and regenerate them from scratch.
+
+5. **Output Options**
+    You can specify custom output paths for the README check and documentation check using the `--output` and `--output-dir` flags, respectively:
+    ```bash
+    sintesi check --output path/to/README.md
+    ```
+    ```bash
+    sintesi check --output-dir path/to/docs
+    ```
 
 ## 🧠 How it works
 
