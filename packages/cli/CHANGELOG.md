@@ -1,5 +1,16 @@
 # @sintesi/sintesi
 
+## 0.18.0
+
+### Minor Changes
+
+- dd4dbb0: Implement Rust-based Git analysis with NAPI binding to detect meaningful changes and retrieve diffs/changed files
+
+### Patch Changes
+
+- Updated dependencies [dd4dbb0]
+  - @sintesi/core@0.18.0
+
 ## 0.17.5
 
 ### Patch Changes
