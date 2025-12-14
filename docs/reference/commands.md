@@ -28,7 +28,9 @@ sintesi check
 - `--verbose`: Provides detailed output of the checks performed.
 - `--base <branch>`: Specifies the base branch for comparison (default is `main`).
 - `--readme`: Checks only for README drift.
+
 - `--documentation`: Checks only for documentation drift.
+- `--strict`: Exit with error code if drift detected (default: true).
 
 #### Usage Examples
 ```bash
@@ -80,17 +82,21 @@ sintesi changeset
 - Generates a changeset file in the `.changeset` directory.
 
 #### Options
-- `--base <branch>`: Specifies the base branch for comparison (default is `main`).
+- `--base-branch <branch>`: Specifies the base branch for comparison (default is `main`).
 - `--staged-only`: Analyzes only staged changes.
+- `--package-name <name>`: Package name for the changeset (auto-detected from package.json if not specified).
 - `--output-dir <path>`: Specifies the output directory for the changeset file (default is `.changeset`).
-- `--no-ai`: Disables AI usage for version type and description.
+- `--skip-ai`: Disables AI usage for version type and description.
+- `--version-type <type>`: Manually specify version type (`major`, `minor`, `patch`).
+- `--description <text>`: Manually specify description.
 - `--interactive`: Enables interactive package selection.
 - `--verbose`: Provides detailed output during the changeset generation process.
-- `--forceFetch`: Fetches from the specified base branch when true.
+- `--force-fetch`: Fetches from the specified base branch when true.
 
 #### Usage Examples
 ```bash
-sintesi changeset -- --base main --staged-only
+sintesi changeset -- --base-branch main --staged-only
+sintesi changeset -- --skip-ai --version-type minor --description "New feature"
 ```
 
 ---
