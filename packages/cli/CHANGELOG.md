@@ -1,5 +1,12 @@
 # @sintesi/sintesi
 
+## 0.17.3
+
+### Patch Changes
+
+- e3d9db8: - Fixed improper removal of CLI flags (e.g., --no-strict) in documentation by ensuring entry points like src/index.ts are included in the AI context.
+  - @sintesi/core@0.17.3
+
 ## 0.17.2
 
 ### Patch Changes
