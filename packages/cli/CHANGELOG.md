@@ -1,5 +1,12 @@
 # @sintesi/sintesi
 
+## 0.16.3
+
+### Patch Changes
+
+- Updated dependencies [6394050]
+  - @sintesi/core@0.16.3
+
 ## 0.16.2
 
 ### Patch Changes
