@@ -80,7 +80,7 @@ function readRelevantContext(
 
     if (lowerPath.includes('command') || lowerDesc.includes('cli')) {
       targetFiles = context.files
-        .filter(f => f.path.includes('commands/') || f.path.includes('cli/'))
+        .filter(f => f.path.includes('commands/') || f.path.includes('cli/') || f.path.endsWith('src/index.ts') || f.path.endsWith('src/main.ts'))
         .map(f => f.path);
     } else if (lowerPath.includes('routing') || lowerDesc.includes('architecture')) {
       targetFiles = context.files
