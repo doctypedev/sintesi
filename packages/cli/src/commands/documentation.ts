@@ -5,7 +5,7 @@
  */
 
 import { Logger } from '../utils/logger';
-import { intro, outro, spinner } from '@clack/prompts';
+import { spinner } from '@clack/prompts';
 import { resolve } from 'path';
 import { readFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
 import { GenerationContextService } from '../services/generation-context';
@@ -120,7 +120,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
       }
     }
   } catch (error) {
-    loggerSpinner.stop('Analysis failed');
+    spinnerLogger.stop('Analysis failed');
     logger.error('Failed to analyze project: ' + error);
     return;
   }

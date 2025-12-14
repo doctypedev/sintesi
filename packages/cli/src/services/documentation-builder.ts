@@ -8,7 +8,7 @@ import { DocPlan } from './documentation-planner';
 import { DOC_GENERATION_PROMPT } from '../prompts/documentation';
 import { pMap } from '../utils/concurrency';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join, resolve, dirname, relative } from 'path';
+import { join, dirname } from 'path';
 
 export class DocumentationBuilder {
     constructor(
