@@ -26,7 +26,7 @@ Traditional docs rot. Sintesi keeps them fresh.
 
 1.  **Install**
     ```bash
-    npm install -g sintesi-monorepo-root
+    npm install -g @sintesi/sintesi
     ```
 
 2.  **Generate Documentation**
@@ -57,6 +57,10 @@ Traditional docs rot. Sintesi keeps them fresh.
     If you need to regenerate documentation or README files and want to bypass existing content checks, you can use the `--force` flag:
     ```bash
     sintesi documentation --force
+    ```
+   or
+    ```bash
+    sintesi readme --force
     ```
     This will ignore existing files and regenerate them from scratch.
 
