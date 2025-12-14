@@ -267,15 +267,8 @@ export class GenerationContextService {
 
         // Repo Info - Prevent Hallucination
         const pkg = context.packageJson as any;
-        const repoUrl = typeof pkg?.repository === 'string'
-            ? pkg.repository
-            : pkg?.repository?.url;
+        prompt += this.getSafeRepoInstructions(pkg);
 
-        if (repoUrl) {
-            prompt += `> **REPOSITORY**: The git repository is defined as "${repoUrl}". Use this URL for any clone instructions.\n\n`;
-        } else {
-            prompt += `> **REPOSITORY**: No git repository is defined in package.json. DO NOT hallucinate a git clone URL. Use local installation instructions or assume published package usage.\n\n`;
-        }
 
         if (cliConfig.binName) {
             prompt += `> NOTE: The CLI binary command is "${cliConfig.binName}". Use this for usage examples (e.g. ${cliConfig.binName} <command>).\n\n`;
@@ -284,5 +277,20 @@ export class GenerationContextService {
         prompt += "## Recent Code Changes (Git Diff)\nUse this to understand what features were recently added or modified.\n```diff\n" + (gitDiff || 'No recent uncommitted changes detected.') + "\n```\n\n";
 
         return prompt;
+    }
+
+    /**
+     * Helper to consistently provide repository information instructions.
+     */
+    getSafeRepoInstructions(packageJson: any): string {
+        const repoUrl = typeof packageJson?.repository === 'string'
+            ? packageJson.repository
+            : packageJson?.repository?.url;
+
+        if (repoUrl) {
+            return `> **REPOSITORY**: The git repository is defined as "${repoUrl}". Use this URL for any clone instructions.\n\n`;
+        } else {
+            return `> **REPOSITORY**: No git repository is defined in package.json. DO NOT hallucinate a git clone URL. Use local installation instructions or assume published package usage.\n\n`;
+        }
     }
 }
