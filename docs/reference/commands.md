@@ -118,6 +118,7 @@ sintesi documentation
 #### Description
 - Analyzes the project structure and generates documentation files.
 - Skips generation if no relevant code changes are detected.
+- **Note**: If the `repository` field is missing in `package.json`, the command will automatically detect and populate the repository URL from the git configuration.
 
 #### Options
 - `--output-dir <path>`: Specifies the output directory for the generated documentation (default is `docs`).
