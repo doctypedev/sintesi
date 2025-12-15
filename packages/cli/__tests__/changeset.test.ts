@@ -103,13 +103,13 @@ describe('CLI: changeset command', () => {
     execSync('git init -b main');
     execSync('git config user.email "test@example.com"');
     execSync('git config user.name "Test User"');
-    writeFileSync('test.ts', 'export function foo() {}');
+    writeFileSync(join(testDir, 'test.ts'), 'export function foo() {}');
     execSync('git add .');
     execSync('git add .');
     execSync('git commit -m "initial commit"');
 
     // Create dummy package.json
-    writeFileSync('package.json', '{}');
+    writeFileSync(join(testDir, 'package.json'), '{}');
 
     // Default mockResolve behavior: successfully resolve
     mockResolve.mockReset();

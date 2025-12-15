@@ -5,8 +5,12 @@ import { SmartChecker } from '../../src/services/smart-checker';
 import { createAIAgentsFromEnv } from '../../../ai';
 import * as path from 'path';
 import * as fs from 'fs';
+import { execSync } from 'child_process';
 
 // Mock dependencies
+vi.mock('child_process', () => ({
+    execSync: vi.fn(),
+}));
 vi.mock('../../src/services/smart-checker');
 vi.mock('../../src/services/analysis-service');
 vi.mock('fs');
@@ -29,6 +33,8 @@ describe('GenerationContextService', () => {
         vi.resetAllMocks();
         logger = new Logger(false);
         service = new GenerationContextService(logger, mockCwd);
+        
+        (vi.mocked(execSync) as any).mockReturnValue('');
 
         // Default mocks
         // fs.resolve is not a function, removing it. path.relative and path.resolve are enough.
