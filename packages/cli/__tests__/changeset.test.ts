@@ -5,6 +5,18 @@ import { mkdirSync, rmSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 // Mock child_process.execSync
+const { mockResolve } = vi.hoisted(() => {
+  return { mockResolve: vi.fn() };
+});
+
+vi.mock('module', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('module')>();
+  return {
+    ...actual,
+    createRequire: vi.fn().mockReturnValue({ resolve: mockResolve }),
+  };
+});
+
 vi.mock('child_process', async (importOriginal) => {
   const actual = await importOriginal<typeof import('child_process')>();
   return {
@@ -93,7 +105,15 @@ describe('CLI: changeset command', () => {
     execSync('git config user.name "Test User"');
     writeFileSync('test.ts', 'export function foo() {}');
     execSync('git add .');
+    execSync('git add .');
     execSync('git commit -m "initial commit"');
+
+    // Create dummy package.json
+    writeFileSync('package.json', '{}');
+
+    // Default mockResolve behavior: successfully resolve
+    mockResolve.mockReset();
+    mockResolve.mockReturnValue('/mock/path/to/changeset');
   });
 
   afterEach(() => {
@@ -101,7 +121,7 @@ describe('CLI: changeset command', () => {
     if (existsSync(testDir)) {
       rmSync(testDir, { recursive: true, force: true });
     }
-    vi.restoreAllMocks(); // Restore all mocks to original implementation
+    vi.clearAllMocks(); // Use clear instead of restore to preserve manual mocks
   });
 
   it('should not fetch from origin/main by default', async () => {
@@ -158,6 +178,19 @@ describe('CLI: changeset command', () => {
     );
     expect(fetchCalls).toHaveLength(1);
     expect(fetchCalls[0][0]).toBe('git fetch origin develop');
+  });
+
+  it('should fail if @changesets/cli is not installed', async () => {
+    mockResolve.mockImplementation(() => {
+      throw new Error('Cannot find module');
+    });
+
+    const result = await changesetCommand({
+      noAI: true,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('@changesets/cli not installed');
   });
 });
 
