@@ -106,38 +106,6 @@ You can access these environment variables in your CLI commands using Node.js's 
 ```javascript
 const apiUrl = process.env.API_URL;
 ```
-
-## AI Model Configuration
-
-### Default Models
-
-The default AI models for the CLI tool are as follows:
-
-- **Researcher**: `o4-mini`
-- **Planner**: `o4-mini`
-- **Writer**: `gpt-4o-mini`
-- **Reviewer**: `gpt-4o`
-
-### Overriding Model Settings
-
-You can override any of the agent model settings by specifying them in your `sintesi.config.json` file. For example:
-
-```json
-{
-  "projectName": "sintesi",
-  "projectRoot": ".",
-  "docsFolder": "./docs",
-  "mapFile": "sintesi-map.json",
-  "outputStrategy": "mirror",
-  "aiModels": {
-    "researcher": "custom-model-name",
-    "planner": "custom-model-name",
-    "writer": "custom-model-name",
-    "reviewer": "custom-model-name"
-  }
-}
-```
-
 ## CLI Commands
 
 The following commands are available in the `packages/cli/src/commands` directory:
