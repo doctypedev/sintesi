@@ -177,10 +177,14 @@ export class GenerationContextService {
                 try {
                     const pkgContent = JSON.parse(readFileSync(resolve(this.cwd, pkgFile.path), 'utf-8'));
                     if (pkgContent.bin && pkgContent.name) {
-                        // Prefer "cli" packages
-                        if (!binName || pkgContent.name.includes('cli')) {
-                            packageName = pkgContent.name;
-                            if (typeof pkgContent.bin === 'string') {
+                                                // Prioritize packages in "cli" folder
+                                                // to avoid sticking with "monorepo-root" or secondary tools.
+                                                const isCliFolder = pkgFile.path.includes('/cli/') || pkgFile.path.includes('\\cli\\');
+                                                
+                                                // Prefer "cli" packages over generic ones
+                                                if (!binName || isCliFolder || pkgContent.name.includes('cli')) {
+                                                    packageName = pkgContent.name;
+                                                    if (typeof pkgContent.bin === 'string') {
                                 const pName = pkgContent.name;
                                 binName = pName.startsWith('@') ? pName.split('/')[1] : pName;
                             } else if (typeof pkgContent.bin === 'object') {

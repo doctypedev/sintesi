@@ -20,7 +20,7 @@ ${gitDiff}
 Determine if the recent code changes introduce features, commands, or behavior that SHOULD be in the README but are likely missing.
 
 Guidelines:
-1. **Check for Existence:** Look carefully! If a command (e.g., 'sintesi check') is already mentioned in "Quick Start" or "Usage", do NOT report it as missing. Only report drift if *critical* new functionality for that command is effectively invisible to the user.
+1. **Check for Existence:** Look carefully! If a command (e.g., 'my-cli check' or 'app start') is already mentioned in "Quick Start" or "Usage", do NOT report it as missing. Only report drift if *critical* new functionality for that command is effectively invisible to the user.
 2. **Ignore Trivial Flags:** Do not report drift for standard flags like '--verbose', '--debug', '--help', or '--json' unless they are the main focus of a new major feature.
 3. **High-Level Summary:** The README is an overview. Detailed API docs belong elsewhere. Do not demand every single option be documented here.
 4. **Focus on Impact:** Focus on:

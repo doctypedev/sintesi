@@ -35,7 +35,7 @@ export interface ChangesetResult {
  * Options for changeset generation
  */
 export interface GenerateOptions {
-  /** Package names (default: [@sintesi/sintesi]) */
+  /** Package names (default: ['package']) */
   packageNames?: string[];
   /** Output directory (default: .changeset) */
   outputDir?: string;
