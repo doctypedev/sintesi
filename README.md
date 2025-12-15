@@ -26,7 +26,7 @@ Traditional documentation often becomes outdated. Sintesi keeps your docs fresh 
 
 1.  **Install**
     ```bash
-    npm install -g sintesi-monorepo-root
+    npm install -g @sintesi/sintesi
     ```
 
 2.  **Generate Documentation**
