@@ -81,6 +81,7 @@ sintesi changeset
 - Analyzes git diff to find changed files.
 - Uses AI to determine version type (major/minor/patch) and description.
 - Generates a changeset file in the `.changeset` directory.
+- **Pre-flight Check**: Verifies if `@changesets/cli` is installed before proceeding.
 
 #### Options
 - `--base-branch <branch>`: Specifies the base branch for comparison (default is `main`).
@@ -93,6 +94,9 @@ sintesi changeset
 - `--interactive`: Enables interactive package selection.
 - `--verbose`: Provides detailed output during the changeset generation process.
 - `--force-fetch`: Fetches from the specified base branch when true.
+
+#### Error Handling
+- If `@changesets/cli` is not installed, the command will fail with an error message indicating the need to install it.
 
 #### Usage Examples
 ```bash
