@@ -1,5 +1,16 @@
 # @sintesi/sintesi
 
+## 0.18.1
+
+### Patch Changes
+
+- 09b94c3: - Add check for @changesets/cli installation, with clear error instructions if missing
+  - Introduce createRequire usage for robust module resolution in changesetCommand
+  - Extend tests to simulate dependency resolution and failure scenarios
+- b71ca86: Enhance researcher role and fix monorepo context detection
+- f7879b7: Improve OPENAI models and add researcher to the pipeline
+  - @sintesi/core@0.18.1
+
 ## 0.18.0
 
 ### Minor Changes
