@@ -43,6 +43,20 @@ The CLI tool can be configured through the `sintesi.config.json` file located at
 - **mapFile**: The name of the map file used by the CLI (string).
 - **outputStrategy**: The strategy for outputting results (string, e.g., "mirror").
 
+## Repository URL Auto-Detection
+
+A new feature has been added to automatically detect and populate the repository URL from the git configuration when it is missing in `package.json`. This enhancement ensures that the repository information is always available, preventing potential issues during operations that require this data.
+
+### How It Works
+
+When the CLI tool is executed, it checks if the `repository` field is present in the `package.json`. If it is missing, the tool attempts to retrieve the repository URL using the following command:
+
+```bash
+git config --get remote.origin.url
+```
+
+If the command successfully retrieves a URL, it will populate the `repository` field in the context, ensuring that the repository information is available for subsequent operations.
+
 ## Environment Configuration
 
 ### Development Environment
@@ -106,6 +120,7 @@ You can access these environment variables in your CLI commands using Node.js's 
 ```javascript
 const apiUrl = process.env.API_URL;
 ```
+
 ## CLI Commands
 
 The following commands are available in the `packages/cli/src/commands` directory:
