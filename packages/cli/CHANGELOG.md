@@ -1,5 +1,11 @@
 # @sintesi/sintesi
 
+## 0.18.2
+
+### Patch Changes
+
+- 0eca93a: - Auto-detect and populate repository URL from git config when missing in package.json
+
 ## 0.18.1
 
 ### Patch Changes
