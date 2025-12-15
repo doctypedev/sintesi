@@ -303,9 +303,9 @@ export function createAIAgentsFromEnv(
   const getModelDefaults = (provider: AIProvider) => { // Use AIProvider type
     switch (provider) {
       case 'openai': return {
-        planner: 'o3-mini',
+        planner: 'o4-mini',
         writer: 'gpt-4o-mini',
-        researcher: 'gpt-4o-mini',
+        researcher: 'o4-mini',
         reviewer: 'gpt-4o'
       };
       case 'gemini': return {
