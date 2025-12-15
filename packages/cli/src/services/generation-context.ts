@@ -3,6 +3,7 @@ import { Logger } from '../utils/logger';
 import { getProjectContext, ProjectContext } from '@sintesi/core';
 import { resolve, relative, dirname, join } from 'path';
 import { readFileSync, existsSync } from 'fs';
+import { execSync } from 'child_process';
 import { SmartChecker } from './smart-checker';
 import { ChangeAnalysisService } from './analysis-service';
 import { createAIAgentsFromEnv, AIAgents, AIAgentRoleConfig } from '../../../ai';
@@ -355,6 +356,18 @@ export class GenerationContextService {
      * Generates a shared context prompt string including package info, CLI details, and git diff.
      */
     generateContextPrompt(context: ProjectContext, gitDiff: string, projectConfig: ProjectConfig, techStack?: TechStack): string {
+        // Ensure repo URL is present in context if possible (prevent hallucinations)
+        if (context.packageJson) {
+            const pkg = context.packageJson as any;
+            if (!pkg.repository) {
+                try {
+                    const url = execSync('git config --get remote.origin.url', { encoding: 'utf-8', stdio: 'pipe' }).trim();
+                    if (url) pkg.repository = url;
+                } catch (e) {
+                    // Ignore
+                }
+            }
+        }
         return getContextPrompt(context, gitDiff, projectConfig, techStack);
     }
 
@@ -362,9 +375,19 @@ export class GenerationContextService {
      * Helper to consistently provide repository information instructions.
      */
     getSafeRepoInstructions(packageJson: any): string {
-        const repoUrl = typeof packageJson?.repository === 'string'
+        let repoUrl = typeof packageJson?.repository === 'string'
             ? packageJson.repository
             : packageJson?.repository?.url;
+
+        // Fallback: Try to detect from git config if missing in package.json
+        if (!repoUrl) {
+            try {
+                const url = execSync('git config --get remote.origin.url', { encoding: 'utf-8', stdio: 'pipe' }).trim();
+                if (url) repoUrl = url;
+            } catch (e) {
+                // Ignore
+            }
+        }
 
         if (repoUrl) {
             return `> **REPOSITORY**: The git repository is defined as "${repoUrl}". Use this URL for any clone instructions.\n\n`;
