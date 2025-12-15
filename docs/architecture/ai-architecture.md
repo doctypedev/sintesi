@@ -10,7 +10,7 @@ order: 10
 The Sintesi CLI implements a "Model Routing" architecture to optimize the balance between cost, quality, and speed when interacting with AI models. This approach assigns specific AI models (with varying capabilities and costs) to distinct roles:
 
 1.  **Planner (Architect)**: Reasoning and strategy.
-2.  **Researcher**: Exploring dependency graphs and gathering context.
+2.  **Researcher (The Scout)**: Exploring dependency graphs and gathering context.
 3.  **Writer (Builder)**: Efficient content generation.
 4.  **Reviewer (Critique)**: Validating output against strict rules.
 
@@ -19,9 +19,9 @@ The Sintesi CLI implements a "Model Routing" architecture to optimize the balanc
 The CLI automatically selects appropriate models based on the detected API key provider:
 
 *   **OpenAI API Key (`OPENAI_API_KEY`)**:
-    *   **Planner**: `o3-mini` (Reasoning).
+    *   **Planner**: `o4-mini` (Reasoning).
     *   **Writer**: `gpt-4o-mini` (Fast generation).
-    *   **Researcher**: `gpt-4o-mini` (Fast context gathering).
+    *   **Researcher**: `o4-mini` (Fast context gathering).
     *   **Reviewer**: `gpt-4o` (Critical analysis).
 *   **Gemini API Key (`GEMINI_API_KEY`)**:
     *   **Planner**: `gemini-1.5-flash`
@@ -63,7 +63,7 @@ graph TD
     *   **Action**: Decides the structure of the documentation site (e.g., "We need an API reference and a Getting Started guide").
     *   **Output**: A list of planned files with descriptions and relevant source paths.
 
-2.  **Researcher**:
+2.  **Researcher (The Scout)**:
     *   **Input**: Relevant source paths from the Plan.
     *   **Action**: Traverses the `ProjectContext` dependency graph to find imported types, interfaces, and utilities that the Writer might need to understand the code fully.
     *   **Output**: A rich context block containing source code and relevant dependencies.
@@ -80,9 +80,9 @@ graph TD
 
 ## Agent Roles in CLI Commands
 
-Here is how the Planner and Writer roles are utilized across different CLI commands:
+Here is how the Planner, Researcher, and Writer roles are utilized across different CLI commands:
 
-| Command | Planner (e.g. `o3-mini`) | Researcher (e.g. `gpt-4o-mini`) | Writer (e.g. `gpt-4o-mini`) | Reviewer (e.g. `gpt-4o`) | Main AI Input |
+| Command | Planner (e.g. `o4-mini`) | Researcher (e.g. `o4-mini`) | Writer (e.g. `gpt-4o-mini`) | Reviewer (e.g. `gpt-4o`) | Main AI Input |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`documentation`** | **The Architect**: Analyzes `package.json`, file structure, and dependency graph to define the strategy and optimal structure for a multi-page documentation site (JSON plan). | **The Scout**: Traverses the dependency graph to find imported types and utilities, gathering rich context for the Writer. | **The Builder**: Receives the detailed plan and researched context, then physically writes each Markdown page. | **The Critic**: Evaluates the drafts against strict rules (Accuracy, Clarity) and requests refinements if necessary. | `package.json` + File Tree + Dependency Info -> Source Code & Tests -> Draft -> Critique |
 | **`check --smart`** | **The Inspector**: Analyzes `git diff` and the existing `README.md`. Determines if recent code changes introduce "drift". | *Not used* | *Not used* (result is a JSON verdict). | *Not used* | `git diff` + `README.md` content + Changed files list |

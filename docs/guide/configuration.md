@@ -106,7 +106,6 @@ You can access these environment variables in your CLI commands using Node.js's 
 ```javascript
 const apiUrl = process.env.API_URL;
 ```
-
 ## CLI Commands
 
 The following commands are available in the `packages/cli/src/commands` directory:
