@@ -24,6 +24,41 @@ Traditional documentation often becomes outdated. Sintesi keeps your docs fresh 
 
 ## 🚀 Quick Start
 
+You can integrate Sintesi into your CI/CD pipeline or use it locally.
+
+Add a new workflow in `.github/workflows/docs.yml`:
+
+```yaml
+name: Sintesi - Documentation AI
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sintesi Check & Fix
+        uses: doctypedev/action@v0
+        with:
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          targets: 'readme,docs' # Documentation targets to generate (comma-separated). Options: readme, docs
+          docs_output: 'docs' # Optional: Directory for the output documentation - Default: docs
+```
+
 1.  **Install**
     ```bash
     npm install -g @sintesi/sintesi
@@ -47,9 +82,6 @@ Traditional documentation often becomes outdated. Sintesi keeps your docs fresh 
     The `check` command performs dual drift detection for both the README and the documentation site. You can use the `--no-strict` flag to allow non-blocking CI usage. You can also run separate checks for the README or documentation site using:
     ```bash
     sintesi check --readme
-    ```
-    or
-    ```bash
     sintesi check --doc
     ```
 
@@ -57,9 +89,6 @@ Traditional documentation often becomes outdated. Sintesi keeps your docs fresh 
     If you need to regenerate documentation or README files and want to bypass existing content checks, you can use the `--force` flag:
     ```bash
     sintesi documentation --force
-    ```
-    or
-    ```bash
     sintesi readme --force
     ```
     This will ignore existing files and regenerate them from scratch.
@@ -68,8 +97,6 @@ Traditional documentation often becomes outdated. Sintesi keeps your docs fresh 
     You can specify custom output paths for the README check and documentation check using the `--output` and `--output-dir` flags, respectively:
     ```bash
     sintesi check --output path/to/README.md
-    ```
-    ```bash
     sintesi check --output-dir path/to/docs
     ```
 
