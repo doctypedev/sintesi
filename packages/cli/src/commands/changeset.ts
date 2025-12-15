@@ -9,6 +9,7 @@ import { ChangesetGenerator } from '../changeset/generator';
 import { MonorepoDetector } from '../services/monorepo-detector';
 import { PackageSelector } from '../utils/package-selector';
 import * as path from 'path';
+import { createRequire } from 'module';
 
 /**
  * Generate a changeset from code changes
@@ -41,6 +42,32 @@ export async function changesetCommand(
   logger.debug(`Base branch: ${baseBranch}`);
   logger.debug(`Staged only: ${stagedOnly}`);
   logger.debug(`Force fetch: ${forceFetch}`); // Log forceFetch
+
+  // Check if @changesets/cli is installed
+  try {
+    const require = createRequire(path.resolve(process.cwd(), 'package.json'));
+    try {
+      require.resolve('@changesets/cli');
+    } catch (e) {
+      // Try resolving from the project root directly if the package.json resolution failed
+      // This handles cases where node_modules might be in a parent directory (monorepo root)
+      // require.resolve options 'paths' can be used
+      require.resolve('@changesets/cli', { paths: [process.cwd()] });
+    }
+  } catch (error) {
+    logger.error('The @changesets/cli package is not installed in this project.');
+    logger.error('This command requires @changesets/cli to be available.');
+    logger.error('Please install it using your package manager:');
+    logger.error('  npm install -D @changesets/cli');
+    logger.error('  pnpm add -D @changesets/cli');
+    logger.error('  yarn add -D @changesets/cli');
+
+    return {
+      success: false,
+      error: '@changesets/cli not installed',
+    };
+  }
+
   try {
     // Step 0: Detect monorepo and select package
     const monorepoDetector = new MonorepoDetector(logger);
