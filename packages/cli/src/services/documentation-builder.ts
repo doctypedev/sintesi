@@ -5,7 +5,7 @@ import { AIAgents } from '../../../ai';
 import { GenerationContextService } from './generation-context';
 import { ReviewService } from './review-service';
 import { DocPlan } from './documentation-planner';
-import { DOC_GENERATION_PROMPT } from '../prompts/documentation';
+import { DOC_GENERATION_PROMPT, DOC_RESEARCH_PROMPT } from '../prompts/documentation';
 import { pMap } from '../utils/concurrency';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
@@ -59,11 +59,42 @@ export class DocumentationBuilder {
                 ? JSON.stringify(context.packageJson, null, 2)
                 : 'No package.json found';
 
+            // --- RESEARCHER STEP ---
+            let finalContext = detailedSourceContext || '(No specific source files matched, rely on general context)';
+            
+            if (aiAgents.researcher && detailedSourceContext && detailedSourceContext.length > 100) {
+                try {
+                    this.logger.info(`  ↳ 🔍 Researcher analyzing context...`);
+                    const researchPrompt = DOC_RESEARCH_PROMPT(
+                        item.path,
+                        item.description,
+                        detailedSourceContext,
+                        packageJsonSummary
+                    );
+                    
+                    const researchOutput = await aiAgents.researcher.generateText(researchPrompt, {
+                        maxTokens: 4000,
+                        temperature: 0.0
+                    });
+
+                    finalContext = `
+                    *** RESEARCHER TECHNICAL BRIEF ***
+                    (The following information was extracted and verified by the Researcher Agent from the raw source code)
+
+                    ${researchOutput}
+                    
+                    *** END RESEARCHER BRIEF ***
+                    `;
+                } catch (e) {
+                    this.logger.debug(`Researcher failed, falling back to raw context: ${e}`);
+                }
+            }
+
             const genPrompt = DOC_GENERATION_PROMPT(
                 context.packageJson?.name || 'Project',
                 item.path,
                 item.description,
-                detailedSourceContext || '(No specific source files matched, rely on general context)',
+                finalContext,
                 packageJsonSummary,
                 repoInstructions,
                 gitDiff,

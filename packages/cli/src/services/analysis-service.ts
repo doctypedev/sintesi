@@ -74,7 +74,26 @@ export class ChangeAnalysisService {
             }
         }
 
-        // 2. Analyze Changes using Rust Binding
+        // 2. Auto-detect Post-Push/Merge scenario
+        // If HEAD is identical to the base branch (e.g. running in CI after a push to main),
+        // we must compare against the PREVIOUS commit to see what changed.
+        try {
+            if (!stagedOnly) {
+                const headSha = execSync('git rev-parse HEAD', { encoding: 'utf-8', cwd: projectRoot }).trim();
+                // Ensure effectiveBase is resolved to a SHA or valid ref for comparison
+                const baseSha = execSync(`git rev-parse ${effectiveBase}`, { encoding: 'utf-8', cwd: projectRoot }).trim();
+
+                if (headSha === baseSha) {
+                    this.logger.info(`ℹ HEAD is identical to ${effectiveBase}. Switching to ${effectiveBase}~1 to detect recent changes.`);
+                    effectiveBase = `${effectiveBase}~1`;
+                }
+            }
+        } catch (e) {
+            // Ignore errors (e.g. shallow clone, no commits yet) and proceed with original base
+            this.logger.debug(`Could not verify HEAD vs Base alignment: ${e}`);
+        }
+
+        // 3. Analyze Changes using Rust Binding
         // This replaces the old slow execSync/regex approach
         let gitDiff = '';
         let changedFiles: string[] = [];
@@ -86,7 +105,7 @@ export class ChangeAnalysisService {
 
             // If stagedOnly is true, we haven't implemented that explicitly in the simple binding yet
             // assuming the binding handles it or we pass a flag.
-            summary = gitBinding.analyzeChanges(baseBranch === 'main' ? undefined : baseBranch, stagedOnly);
+            summary = gitBinding.analyzeChanges(effectiveBase, stagedOnly);
             gitDiff = summary.gitDiff;
             changedFiles = summary.changedFiles;
         } catch (e) {
