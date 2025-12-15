@@ -6,13 +6,20 @@ export const README_GENERATION_PROMPT = (
     sharedContextPrompt: string,
     smartSuggestion: string,
     fileSummary: string,
-    existingContent: string
+    existingContent: string,
+    semanticHighlights: string = ''
 ) => `
 You are an expert technical writer. Your task is to ${isUpdate ? "update and improve the" : "write a comprehensive"} README.md for a software project.
 
 Here is the context of the project:
 
 ${sharedContextPrompt}
+
+${semanticHighlights ? `## Semantic Highlights & Core Architecture (RAG Retrieved)
+The following code snippets and summaries were retrieved from the project codebase as being architecturally significant. Use them to write accurate 'Features' and 'Architecture' sections.
+
+${semanticHighlights}
+` : ''}
 
 ${smartSuggestion ? `## Specific Suggestion (IMPORTANT)\nA previous analysis identified a specific issue to address:\n> ${smartSuggestion}\n\nPlease ensure this suggestion is addressed in your update.\n\n` : ''}
 

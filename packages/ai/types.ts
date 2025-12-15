@@ -191,6 +191,12 @@ export interface IAIProvider {
     prompt: string,
     options?: { temperature?: number; maxTokens?: number }
   ): Promise<string>;
+
+  /**
+   * Generate vector embedding for a given text
+   * @param text The text to embed
+   */
+  embed?(text: string): Promise<number[]>;
 }
 
 /**

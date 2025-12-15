@@ -7,6 +7,8 @@ import { README_GENERATION_PROMPT } from '../prompts/readme';
 import { ReviewService } from './review-service';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { spinner } from '@clack/prompts';
+import { SemanticService } from './semantic-service';
+import { join } from 'path';
 
 interface ReadmeOptions {
     output?: string;
@@ -27,7 +29,8 @@ export class ReadmeBuilder {
         gitDiff: string,
         outputPath: string,
         aiAgents: AIAgents,
-        smartSuggestion: string = ''
+        smartSuggestion: string = '',
+        semanticService?: SemanticService
     ): Promise<void> {
         let existingContent = '';
         let isUpdate = false;
@@ -49,6 +52,35 @@ export class ReadmeBuilder {
         const s = spinner();
         s.start(isUpdate ? 'Updating README...' : 'Generating README...');
 
+        // RAG Semantic Search (if enabled)
+        let semanticHighlights = '';
+        if (semanticService) {
+            s.message('Indexing and searching project context (RAG)...');
+            try {
+                // Index files present in context
+                const filesToIndex = context.files.map(f => f.path);
+                await semanticService.indexProject(filesToIndex);
+                
+                // Search for key concepts
+                const searchResults = await semanticService.search("Project entry point, core architecture, main configuration, key features");
+                
+                semanticHighlights = searchResults.map(doc => {
+                    try {
+                        const content = readFileSync(join(process.cwd(), doc.path), 'utf-8');
+                        // Slice to avoid token overflow
+                        return `File: ${doc.path}\n\`\`\`typescript\n${content.slice(0, 2000)}\n...\n\`\`\``;
+                    } catch (e) { return ''; }
+                }).join('\n\n');
+                
+                if (semanticHighlights) {
+                    this.logger.info(`RAG retrieved ${searchResults.length} relevant context files.`);
+                }
+            } catch (e: any) {
+                this.logger.warn('Semantic RAG failed, proceeding without it: ' + e.message);
+            }
+            s.message(isUpdate ? 'Updating README...' : 'Generating README...');
+        }
+
         // Format context for AI
         const fileSummary = context.files
             .map(function (f) {
@@ -69,7 +101,8 @@ export class ReadmeBuilder {
             sharedContextPrompt,
             smartSuggestion,
             fileSummary,
-            existingContent
+            existingContent,
+            semanticHighlights
         );
 
         try {

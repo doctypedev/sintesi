@@ -338,3 +338,15 @@ export declare class GraphAnalyzer {
   getDependents(filePath: string, allFiles: Array<string>): Array<string>;
   getDependencies(filePath: string, allFiles: Array<string>): Array<string>;
 }
+export interface JsDocumentVector {
+  path: string;
+  contentHash: string;
+  embedding: Array<number>;
+}
+export declare class SemanticSearch {
+  constructor(storagePath: string);
+  upsert(path: string, hash: string, embedding: Array<number>): void;
+  save(): void;
+  getHash(path: string): string | null;
+  search(query: Array<number>, limit: number): Array<JsDocumentVector>;
+}

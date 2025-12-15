@@ -11,6 +11,7 @@ import { GenerationContextService } from '../services/generation-context';
 import { ReviewService } from '../services/review-service';
 import { SmartChecker } from '../services/smart-checker';
 import { ReadmeBuilder } from '../services/readme-builder';
+import { SemanticService } from '../services/semantic-service';
 
 export interface ReadmeOptions {
   output?: string;
@@ -84,6 +85,10 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   const aiAgents = await contextService.getAIAgents(options.verbose || false);
   if (!aiAgents) return;
 
+  // Initialize Semantic Service (RAG)
+  // We use the writer agent for embedding as it typically uses a standard model/key
+  const semanticService = new SemanticService(cwd, logger, aiAgents.writer);
+
   // 2. Analyze Project (Context & Diff)
   const spinnerLogger = { start: (msg: string) => logger.info(msg), stop: (msg: string) => logger.info(msg) };
   spinnerLogger.start('Analyzing project structure...');
@@ -121,5 +126,5 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
   }
 
   // 3. Delegate to Builder
-  await builder.buildReadme(options, context, gitDiff, outputPath, aiAgents, smartSuggestion);
+  await builder.buildReadme(options, context, gitDiff, outputPath, aiAgents, smartSuggestion, semanticService);
 }

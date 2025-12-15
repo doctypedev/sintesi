@@ -1,5 +1,5 @@
 import { IAIProvider, AIProvider, DocumentationRequest, DocumentationResponse, AIModel, AIProviderError, BatchDocumentationResult } from '../types';
-import { generateObject, generateText } from 'ai';
+import { generateObject, generateText, embed } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createAnthropic } from '@ai-sdk/anthropic';
@@ -49,6 +49,39 @@ export class VercelAIProvider implements IAIProvider {
       }
       default:
         throw new Error(`Unsupported provider: ${this.provider}`);
+    }
+  }
+
+  private getEmbeddingModel() {
+    switch (this.provider) {
+      case 'openai': {
+        const provider = createOpenAI({
+          apiKey: this.modelConfig.apiKey,
+          baseURL: this.modelConfig.endpoint,
+        });
+        return provider.embedding('text-embedding-3-small');
+      }
+      case 'gemini': {
+        const provider = createGoogleGenerativeAI({
+          apiKey: this.modelConfig.apiKey,
+        });
+        return provider.embedding('text-embedding-004');
+      }
+      case 'mistral': {
+        const provider = createMistral({
+          apiKey: this.modelConfig.apiKey,
+        });
+        return provider.embedding('mistral-embed');
+      }
+      case 'anthropic': {
+        throw new AIProviderError(
+          'EMBEDDING_NOT_SUPPORTED',
+          'Anthropic provider does not support embeddings natively.',
+          this.provider
+        );
+      }
+      default:
+        throw new Error(`Unsupported provider for embeddings: ${this.provider}`);
     }
   }
 
@@ -248,6 +281,26 @@ export class VercelAIProvider implements IAIProvider {
       throw new AIProviderError(
         'GENERATION_FAILED',
         err.message || 'Text generation failed',
+        this.provider,
+        error
+      );
+    }
+  }
+
+  async embed(text: string): Promise<number[]> {
+    const model = this.getEmbeddingModel();
+
+    try {
+      const { embedding } = await embed({
+        model,
+        value: text,
+      });
+      return embedding;
+    } catch (error) {
+      const err = error as any;
+      throw new AIProviderError(
+        'EMBEDDING_FAILED',
+        err.message || 'Embedding generation failed',
         this.provider,
         error
       );

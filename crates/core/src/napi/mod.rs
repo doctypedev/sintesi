@@ -9,4 +9,5 @@ pub mod context;
 pub mod crawler;
 pub mod git;
 pub mod graph; // [NEW]
+pub mod semantic;
 pub mod utils;

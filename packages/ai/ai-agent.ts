@@ -131,6 +131,17 @@ export class AIAgent {
   }
 
   /**
+   * Generate embedding for text
+   */
+  async embed(text: string): Promise<number[]> {
+    if (this.provider.embed) {
+      return this.executeWithRetry(() => this.provider.embed!(text));
+    }
+    // Fallback or error if not supported
+    throw new Error(`Provider ${this.config.model.provider} does not support embeddings`);
+  }
+
+  /**
    * Validate the AI provider connection
    */
   async validateConnection(): Promise<boolean> {

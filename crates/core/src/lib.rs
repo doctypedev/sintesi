@@ -60,6 +60,9 @@ pub mod git; // [NEW] Git module
 /// Gen AI agent for documentation generation
 pub mod genai;
 
+/// Semantic RAG module
+pub mod semantic;
+
 /// NAPI bindings for Node.js (separate layer)
 mod napi;
 
