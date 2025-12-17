@@ -1,5 +1,11 @@
 # @sintesi/core
 
+## 0.19.0
+
+### Minor Changes
+
+- a710458: - Introduce AI toolset (search, readFile, listFiles, dependency analysis)
+
 ## 0.18.3
 
 ## 0.18.2

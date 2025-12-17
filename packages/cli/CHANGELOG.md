@@ -1,5 +1,18 @@
 # @sintesi/sintesi
 
+## 0.19.0
+
+### Minor Changes
+
+- a710458: - Introduce AI toolset (search, readFile, listFiles, dependency analysis)
+
+### Patch Changes
+
+- 938e451: - Only load and summarize existing documentation when not in force mode
+  - Improve CLI behavior by skipping docs scan in force mode
+- Updated dependencies [a710458]
+  - @sintesi/core@0.19.0
+
 ## 0.18.3
 
 ### Patch Changes
