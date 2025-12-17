@@ -1,33 +1,26 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "tsBuildInfoFile": "./node_modules/.tsbuildinfo",
-    "types": [
-      "node"
-    ],
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "*": [
-        "node_modules/*"
-      ]
-    }
-  },
-  "include": [
-    "src",
-    "../ai"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "__tests__",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "../**/node_modules",
-    "../**/dist",
-    "../**/__tests__"
-  ]
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "tsBuildInfoFile": "./node_modules/.tsbuildinfo",
+        "types": ["node"],
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "baseUrl": ".",
+        "paths": {
+            "*": ["node_modules/*"]
+        }
+    },
+    "include": ["src", "../ai"],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "__tests__",
+        "**/*.test.ts",
+        "**/*.spec.ts",
+        "../**/node_modules",
+        "../**/dist",
+        "../**/__tests__"
+    ]
 }

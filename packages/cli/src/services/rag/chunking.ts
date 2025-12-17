@@ -26,25 +26,34 @@ export class CodeChunkingService {
      * Splits a file content into chunks based on AST (for TS/JS) or simple logic.
      */
     chunkFile(filePath: string, content: string): Chunk[] {
-        if (filePath.endsWith('.ts') || filePath.endsWith('.tsx') || filePath.endsWith('.js') || filePath.endsWith('.jsx')) {
+        if (
+            filePath.endsWith('.ts') ||
+            filePath.endsWith('.tsx') ||
+            filePath.endsWith('.js') ||
+            filePath.endsWith('.jsx')
+        ) {
             return this.chunkTypeScript(filePath, content);
         }
 
         // Fallback for other files (simple whole file or naive split)
-        // For now, let's just return the whole file if it's not too huge, 
+        // For now, let's just return the whole file if it's not too huge,
         // or split by paragraphs if Markdown.
         // Keeping it simple: One chunk per file for non-code.
-        return [{
-            content: content,
-            startLine: 1,
-            endLine: content.split('\n').length,
-            functionName: 'FILE_CONTENT'
-        }];
+        return [
+            {
+                content: content,
+                startLine: 1,
+                endLine: content.split('\n').length,
+                functionName: 'FILE_CONTENT',
+            },
+        ];
     }
 
     private chunkTypeScript(filePath: string, content: string): Chunk[] {
         try {
-            const sourceFile = this.project.createSourceFile(filePath, content, { overwrite: true });
+            const sourceFile = this.project.createSourceFile(filePath, content, {
+                overwrite: true,
+            });
             const chunks: Chunk[] = [];
 
             // 1. Functions
@@ -60,7 +69,7 @@ export class CodeChunkingService {
                     content: `Function ${name}: ${text}`, // Add descriptor to help embedding
                     startLine,
                     endLine,
-                    functionName: name
+                    functionName: name,
                 });
             }
 
@@ -84,7 +93,7 @@ export class CodeChunkingService {
                             content: `Method ${mName}: ${mText}`,
                             startLine: method.getStartLineNumber(),
                             endLine: method.getEndLineNumber(),
-                            functionName: mName
+                            functionName: mName,
                         });
                     }
                 } else {
@@ -92,7 +101,7 @@ export class CodeChunkingService {
                         content: `Class ${name}: ${text}`,
                         startLine,
                         endLine,
-                        functionName: name
+                        functionName: name,
                     });
                 }
             }
@@ -104,14 +113,18 @@ export class CodeChunkingService {
                 const decls = v.getDeclarations();
                 for (const decl of decls) {
                     const init = decl.getInitializer();
-                    if (init && (init.getKind() === SyntaxKind.ArrowFunction || init.getKind() === SyntaxKind.FunctionExpression)) {
+                    if (
+                        init &&
+                        (init.getKind() === SyntaxKind.ArrowFunction ||
+                            init.getKind() === SyntaxKind.FunctionExpression)
+                    ) {
                         const name = decl.getName();
                         const text = v.getFullText();
                         chunks.push({
                             content: `Function (Arrow) ${name}: ${text}`,
                             startLine: v.getStartLineNumber(),
                             endLine: v.getEndLineNumber(),
-                            functionName: name
+                            functionName: name,
                         });
                     }
                 }
@@ -119,24 +132,27 @@ export class CodeChunkingService {
 
             // If no chunks found (e.g. file with just exports or simple script), return whole file
             if (chunks.length === 0) {
-                return [{
-                    content: content,
-                    startLine: 1,
-                    endLine: sourceFile.getEndLineNumber(),
-                    functionName: 'MODULE_ROOT'
-                }];
+                return [
+                    {
+                        content: content,
+                        startLine: 1,
+                        endLine: sourceFile.getEndLineNumber(),
+                        functionName: 'MODULE_ROOT',
+                    },
+                ];
             }
 
             return chunks;
-
         } catch (e: any) {
             this.logger.warn(`Failed to chunk ${filePath}: ${e.message}. Using whole file.`);
-            return [{
-                content: content,
-                startLine: 1,
-                endLine: content.split('\n').length,
-                functionName: 'FILE_FALLBACK'
-            }];
+            return [
+                {
+                    content: content,
+                    startLine: 1,
+                    endLine: content.split('\n').length,
+                    functionName: 'FILE_FALLBACK',
+                },
+            ];
         }
     }
 }

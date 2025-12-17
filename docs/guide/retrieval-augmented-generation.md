@@ -27,10 +27,10 @@ The RAG pipeline consists of several key components:
 
 To utilize the RAG pipeline, you need to configure the following environment variables in your `.env` file:
 
-| Name               | Required? | Effect                                            |
-|--------------------|-----------|---------------------------------------------------|
-| `OPENAI_API_KEY`   | Yes       | Required for initializing the EmbeddingService and RetrievalService. |
-| `COHERE_API_KEY`   | No        | Enables the RerankingService to utilize the Cohere API for improved context retrieval. |
+| Name             | Required? | Effect                                                                                 |
+| ---------------- | --------- | -------------------------------------------------------------------------------------- |
+| `OPENAI_API_KEY` | Yes       | Required for initializing the EmbeddingService and RetrievalService.                   |
+| `COHERE_API_KEY` | No        | Enables the RerankingService to utilize the Cohere API for improved context retrieval. |
 
 ### Example `.env` Configuration
 
@@ -65,7 +65,7 @@ To retrieve relevant context for a specific query, use the `retrieveContext` met
 ### Example Query
 
 ```typescript
-const context: string = await service.retrieveContext("How does authentication work?");
+const context: string = await service.retrieveContext('How does authentication work?');
 console.log(context);
 ```
 
@@ -80,7 +80,7 @@ When generating documentation, ensure the RAG index is built before fetching con
 await generationContextService.ensureRAGIndex();
 
 // To fetch semantic context for a query
-const ragContext = await generationContextService.retrieveContext("How does auth work?");
+const ragContext = await generationContextService.retrieveContext('How does auth work?');
 ```
 
 ## Troubleshooting Tips

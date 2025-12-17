@@ -6,123 +6,123 @@
  * Result of a drift check operation
  */
 export interface CheckResult {
-  /** Total number of entries checked */
-  totalEntries: number;
-  /** Number of entries with drift detected */
-  driftedEntries: number;
-  /** Number of entries with missing symbols */
-  missingEntries: number;
-  /** Number of untracked symbols found */
-  untrackedEntries?: number;
-  /** List of drifted entry details */
-  drifts: DriftDetail[];
-  /** List of missing symbol details */
-  missing: MissingSymbolDetail[];
-  /** Overall success status (false if any drift detected) */
-  success: boolean;
-  /** Configuration error (e.g., map file not found) - should always exit with error regardless of --strict */
-  configError?: string;
+    /** Total number of entries checked */
+    totalEntries: number;
+    /** Number of entries with drift detected */
+    driftedEntries: number;
+    /** Number of entries with missing symbols */
+    missingEntries: number;
+    /** Number of untracked symbols found */
+    untrackedEntries?: number;
+    /** List of drifted entry details */
+    drifts: DriftDetail[];
+    /** List of missing symbol details */
+    missing: MissingSymbolDetail[];
+    /** Overall success status (false if any drift detected) */
+    success: boolean;
+    /** Configuration error (e.g., map file not found) - should always exit with error regardless of --strict */
+    configError?: string;
 }
 
 /**
  * Details about a specific drift
  */
 export interface DriftDetail {
-  /** Anchor ID */
-  id: string;
-  /** Symbol name that drifted */
-  symbolName: string;
-  /** File path of the code */
-  codeFilePath: string;
-  /** Documentation file path */
-  docFilePath: string;
-  /** Old signature hash */
-  oldHash: string;
-  /** New signature hash */
-  newHash: string;
-  /** Old signature text */
-  oldSignature?: string;
-  /** New signature text */
-  newSignature?: string;
+    /** Anchor ID */
+    id: string;
+    /** Symbol name that drifted */
+    symbolName: string;
+    /** File path of the code */
+    codeFilePath: string;
+    /** Documentation file path */
+    docFilePath: string;
+    /** Old signature hash */
+    oldHash: string;
+    /** New signature hash */
+    newHash: string;
+    /** Old signature text */
+    oldSignature?: string;
+    /** New signature text */
+    newSignature?: string;
 }
 
 /**
  * Details about a missing symbol
  */
 export interface MissingSymbolDetail {
-  /** Anchor ID */
-  id: string;
-  /** Symbol name that is missing */
-  symbolName: string;
-  /** File path where the symbol was expected */
-  codeFilePath: string;
-  /** Documentation file path */
-  docFilePath: string;
-  /** Reason for missing */
-  reason: 'file_not_found' | 'symbol_not_found';
+    /** Anchor ID */
+    id: string;
+    /** Symbol name that is missing */
+    symbolName: string;
+    /** File path where the symbol was expected */
+    codeFilePath: string;
+    /** Documentation file path */
+    docFilePath: string;
+    /** Reason for missing */
+    reason: 'file_not_found' | 'symbol_not_found';
 }
 
 /**
  * Options for the check command
  */
 export interface CheckOptions {
-  /** Verbose output */
-  verbose?: boolean;
-  /** Exit with error code if drift detected */
-  strict?: boolean;
-  /** Use AI to detect high-level drift (e.g. README updates) */
-  smart?: boolean;
-  base?: string;
-  /** Check only README */
-  readme?: boolean;
-  /** Check only documentation */
-  documentation?: boolean;
-  /** Output file path for README check */
-  output?: string;
-  /** Output directory for documentation check */
-  outputDir?: string;
+    /** Verbose output */
+    verbose?: boolean;
+    /** Exit with error code if drift detected */
+    strict?: boolean;
+    /** Use AI to detect high-level drift (e.g. README updates) */
+    smart?: boolean;
+    base?: string;
+    /** Check only README */
+    readme?: boolean;
+    /** Check only documentation */
+    documentation?: boolean;
+    /** Output file path for README check */
+    output?: string;
+    /** Output directory for documentation check */
+    outputDir?: string;
 }
 
 /**
  * Options for the changeset command
  */
 export interface ChangesetOptions {
-  /** Base branch to compare against */
-  baseBranch?: string;
-  /** Only analyze staged changes */
-  stagedOnly?: boolean;
-  /** Package name for the changeset */
-  packageName?: string;
-  /** Output directory for changeset */
-  outputDir?: string;
-  /** Skip AI analysis and use defaults */
-  noAI?: boolean;
-  /** Manually specify version type */
-  versionType?: 'major' | 'minor' | 'patch';
-  /** Manually specify description */
-  description?: string;
-  /** Verbose output */
-  verbose?: boolean;
-  /** Force interactive package selection */
-  interactive?: boolean;
-  /** Force fetch the base branch from origin before analyzing changes */
-  forceFetch?: boolean;
+    /** Base branch to compare against */
+    baseBranch?: string;
+    /** Only analyze staged changes */
+    stagedOnly?: boolean;
+    /** Package name for the changeset */
+    packageName?: string;
+    /** Output directory for changeset */
+    outputDir?: string;
+    /** Skip AI analysis and use defaults */
+    noAI?: boolean;
+    /** Manually specify version type */
+    versionType?: 'major' | 'minor' | 'patch';
+    /** Manually specify description */
+    description?: string;
+    /** Verbose output */
+    verbose?: boolean;
+    /** Force interactive package selection */
+    interactive?: boolean;
+    /** Force fetch the base branch from origin before analyzing changes */
+    forceFetch?: boolean;
 }
 
 /**
  * Result of a changeset operation
  */
 export interface ChangesetResult {
-  /** Whether the changeset was generated successfully */
-  success: boolean;
-  /** Path to the generated changeset file */
-  filePath?: string;
-  /** Version type determined */
-  versionType?: 'major' | 'minor' | 'patch';
-  /** Generated description */
-  description?: string;
-  /** Error message if failed */
-  error?: string;
+    /** Whether the changeset was generated successfully */
+    success: boolean;
+    /** Path to the generated changeset file */
+    filePath?: string;
+    /** Version type determined */
+    versionType?: 'major' | 'minor' | 'patch';
+    /** Generated description */
+    description?: string;
+    /** Error message if failed */
+    error?: string;
 }
 
 export type AIProvider = 'openai' | 'gemini' | 'anthropic' | 'mistral';

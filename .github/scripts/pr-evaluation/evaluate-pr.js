@@ -2,7 +2,7 @@ module.exports = async ({ github, context, core }) => {
     const openAIKey = process.env.OPENAI_API_KEY;
 
     if (!openAIKey) {
-        core.setFailed("❌ OPENAI_API_KEY missing.");
+        core.setFailed('❌ OPENAI_API_KEY missing.');
         return;
     }
 
@@ -17,7 +17,7 @@ module.exports = async ({ github, context, core }) => {
             repo,
             pull_number,
             mediaType: {
-                format: "diff", // Ask for raw diff format
+                format: 'diff', // Ask for raw diff format
             },
         });
         diffData = response.data;
@@ -29,7 +29,7 @@ module.exports = async ({ github, context, core }) => {
     // Protection: cut diff if it's too bigger to save tokens and costs
     const MAX_DIFF_LENGTH = 15000;
     if (diffData.length > MAX_DIFF_LENGTH) {
-        diffData = diffData.substring(0, MAX_DIFF_LENGTH) + "\n... (Diff was too big)";
+        diffData = diffData.substring(0, MAX_DIFF_LENGTH) + '\n... (Diff was too big)';
     }
 
     // 2. Preparing the Prompt for OpenAI
@@ -52,19 +52,19 @@ Respond in Markdown.
     const userPrompt = `Here is the PR diff:\n\n\`\`\`diff\n${diffData}\n\`\`\``;
 
     // 3. Call to OpenAI (using Node 18+ native fetch)
-    let aiReview = "";
+    let aiReview = '';
     try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${openAIKey}`,
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${openAIKey}`,
             },
             body: JSON.stringify({
-                model: "gpt-4o", // Or gpt-3.5-turbo if you want to save costs
+                model: 'gpt-4o', // Or gpt-3.5-turbo if you want to save costs
                 messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userPrompt },
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt },
                 ],
                 temperature: 0.5,
             }),
@@ -73,14 +73,12 @@ Respond in Markdown.
         const json = await response.json();
         if (json.error) throw new Error(json.error.message);
         aiReview = json.choices[0].message.content;
-
     } catch (error) {
-        console.error("OpenAI Error:", error);
-        aiReview = "⚠️ *Unable to complete AI review at this time.*";
+        console.error('OpenAI Error:', error);
+        aiReview = '⚠️ *Unable to complete AI review at this time.*';
     }
 
     // 4. Building the final comment
-
 
     const commentBody = `
 ## 🤖 Doctype AI Code Review
@@ -103,7 +101,7 @@ ${aiReview}
         issue_number: pull_number,
     });
 
-    const botComment = comments.data.find(c => c.body.includes('## 🤖 Doctype AI Code Review'));
+    const botComment = comments.data.find((c) => c.body.includes('## 🤖 Doctype AI Code Review'));
 
     if (botComment) {
         await github.rest.issues.updateComment({

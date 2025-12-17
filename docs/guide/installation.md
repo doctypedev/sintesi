@@ -20,30 +20,34 @@ Before installing the CLI tool, ensure that you have the following prerequisites
 
 1. **Clone the Repository**:
    First, clone the `sintesi-monorepo-root` repository to your local machine. Open your terminal and run:
-   ```bash
-   git clone https://github.com/doctypedev/sintesi.git
-   cd sintesi
-   ```
+
+    ```bash
+    git clone https://github.com/doctypedev/sintesi.git
+    cd sintesi
+    ```
 
 2. **Install Dependencies**:
    Navigate to the root of the cloned repository and install the necessary dependencies using your preferred package manager:
-   ```bash
-   npm install
-   ```
-   or
-   ```bash
-   yarn install
-   ```
+
+    ```bash
+    npm install
+    ```
+
+    or
+
+    ```bash
+    yarn install
+    ```
 
 3. **Build the Project**:
    After installing the dependencies, build the project to ensure everything is set up correctly:
-   ```bash
-   npm run build
-   ```
-   or
-   ```bash
-   yarn build
-   ```
+    ```bash
+    npm run build
+    ```
+    or
+    ```bash
+    yarn build
+    ```
 
 ## Installing the CLI Tool Globally
 
@@ -52,7 +56,9 @@ To use the `sintesi` CLI tool from anywhere in your terminal, you can install it
 ```bash
 npm install -g @sintesi/sintesi
 ```
+
 or
+
 ```bash
 yarn global add @sintesi/sintesi
 ```
@@ -63,27 +69,30 @@ Once installed, you can use the CLI tool with various commands. Here are some ex
 
 1. **Check for Documentation Drift**:
    To check for any drift in your documentation, run:
-   ```bash
-   sintesi check --smart --base main
-   ```
+
+    ```bash
+    sintesi check --smart --base main
+    ```
 
 2. **Generate a README**:
    To generate a README file based on your project context, use:
-   ```bash
-   sintesi readme
-   ```
+
+    ```bash
+    sintesi readme
+    ```
 
 3. **Generate Documentation**:
    To generate project documentation, execute:
-   ```bash
-   sintesi documentation
-   ```
+
+    ```bash
+    sintesi documentation
+    ```
 
 4. **Create a Changeset**:
    To create a changeset based on your code changes, run:
-   ```bash
-   sintesi changeset --base main --forceFetch
-   ```
+    ```bash
+    sintesi changeset --base main --forceFetch
+    ```
 
 ## Conclusion
 

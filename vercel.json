@@ -1,33 +1,33 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run docs:build",
-  "outputDirectory": "docs/.vitepress/dist",
-  "framework": null,
-  "installCommand": "pnpm install",
-  "devCommand": "npm run docs:dev",
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "buildCommand": "npm run docs:build",
+    "outputDirectory": "docs/.vitepress/dist",
+    "framework": null,
+    "installCommand": "pnpm install",
+    "devCommand": "npm run docs:dev",
+    "headers": [
         {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "X-XSS-Protection",
+                    "value": "1; mode=block"
+                }
+            ]
         }
-      ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/:path*",
-      "destination": "/:path*"
-    }
-  ]
+    ],
+    "rewrites": [
+        {
+            "source": "/:path*",
+            "destination": "/:path*"
+        }
+    ]
 }

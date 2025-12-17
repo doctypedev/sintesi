@@ -17,9 +17,9 @@ Before configuring the CLI tool, ensure that you have the following:
 
 - **Node.js**: Version 20.x or higher.
 - **pnpm**: Ensure `pnpm` is installed globally. You can install it using npm:
-  ```bash
-  npm install -g pnpm
-  ```
+    ```bash
+    npm install -g pnpm
+    ```
 
 ## Configuration Overview
 
@@ -27,11 +27,11 @@ The CLI tool can be configured through the `sintesi.config.json` file located at
 
 ```json
 {
-  "projectName": "sintesi",
-  "projectRoot": ".",
-  "docsFolder": "./docs",
-  "mapFile": "sintesi-map.json",
-  "outputStrategy": "mirror"
+    "projectName": "sintesi",
+    "projectRoot": ".",
+    "docsFolder": "./docs",
+    "mapFile": "sintesi-map.json",
+    "outputStrategy": "mirror"
 }
 ```
 
@@ -127,13 +127,13 @@ const apiUrl = process.env.API_URL;
 
 The following environment variables are supported:
 
-| Name               | Required? | Purpose                                                      |
-|--------------------|-----------|--------------------------------------------------------------|
-| OPENAI_API_KEY     | yes       | embeddings & OpenAI LLMs                                     |
-| GEMINI_API_KEY     | optional  | alternative LLM provider                                      |
-| ANTHROPIC_API_KEY  | optional  | alternative LLM provider                                      |
-| MISTRAL_API_KEY    | optional  | alternative LLM provider                                      |
-| COHERE_API_KEY     | optional  | enables `RerankingService.rerank` via Cohere Rerank API       |
+| Name              | Required? | Purpose                                                 |
+| ----------------- | --------- | ------------------------------------------------------- |
+| OPENAI_API_KEY    | yes       | embeddings & OpenAI LLMs                                |
+| GEMINI_API_KEY    | optional  | alternative LLM provider                                |
+| ANTHROPIC_API_KEY | optional  | alternative LLM provider                                |
+| MISTRAL_API_KEY   | optional  | alternative LLM provider                                |
+| COHERE_API_KEY    | optional  | enables `RerankingService.rerank` via Cohere Rerank API |
 
 ## CLI Commands
 

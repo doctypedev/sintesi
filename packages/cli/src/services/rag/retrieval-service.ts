@@ -15,7 +15,10 @@ export class RetrievalService {
     private chunker: CodeChunkingService;
     private stateManager: IndexingStateManager;
 
-    constructor(private logger: Logger, private projectRoot: string) {
+    constructor(
+        private logger: Logger,
+        private projectRoot: string,
+    ) {
         this.vectorStore = new VectorStoreService(logger, projectRoot);
         this.embeddingService = new EmbeddingService(logger);
         this.reranker = new RerankingService(logger);
@@ -34,7 +37,13 @@ export class RetrievalService {
         // 1. Find Files
         const files = await glob('**/*.{ts,tsx,js,jsx,rs,md}', {
             cwd: this.projectRoot,
-            ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/.git/**', '**/.sintesi/**'],
+            ignore: [
+                '**/node_modules/**',
+                '**/dist/**',
+                '**/build/**',
+                '**/.git/**',
+                '**/.sintesi/**',
+            ],
             absolute: true,
         });
 
@@ -95,11 +104,11 @@ export class RetrievalService {
                 const chunks = this.chunker.chunkFile(file, content);
 
                 // Add metadata
-                chunks.forEach(c => {
+                chunks.forEach((c) => {
                     allChunks.push({
                         ...c,
                         filePath: file,
-                        vector: []
+                        vector: [],
                     });
                 });
             } catch (e) {
@@ -109,7 +118,7 @@ export class RetrievalService {
 
         if (allChunks.length === 0) {
             // Just update state if empty files (rare)
-            filesToProcess.forEach(f => {
+            filesToProcess.forEach((f) => {
                 this.stateManager.updateFileState(f, Date.now(), []);
             });
             this.stateManager.save();
@@ -121,7 +130,9 @@ export class RetrievalService {
 
         for (let i = 0; i < allChunks.length; i += TEXTS_PER_BATCH) {
             const batch = allChunks.slice(i, i + TEXTS_PER_BATCH);
-            const batchTexts = batch.map(c => `File: ${c.filePath}\nFunction: ${c.functionName || 'N/A'}\n\n${c.content}`);
+            const batchTexts = batch.map(
+                (c) => `File: ${c.filePath}\nFunction: ${c.functionName || 'N/A'}\n\n${c.content}`,
+            );
 
             try {
                 const vectors = await this.embeddingService.embedDocuments(batchTexts);
@@ -133,7 +144,7 @@ export class RetrievalService {
             }
         }
 
-        const validChunks = allChunks.filter(c => c.vector && c.vector.length > 0);
+        const validChunks = allChunks.filter((c) => c.vector && c.vector.length > 0);
 
         // Store
         if (validChunks.length > 0) {
@@ -160,7 +171,7 @@ export class RetrievalService {
             }
         } else {
             // Even if no chunks valid (e.g. empty files), update timestamp so we don't check again
-            filesToProcess.forEach(file => {
+            filesToProcess.forEach((file) => {
                 const stats = statSync(file);
                 this.stateManager.updateFileState(file, stats.mtimeMs, []);
             });
@@ -190,15 +201,18 @@ export class RetrievalService {
 
         // 3. Rerank
         // Create candidate strings for reranker
-        const candidateTexts = candidates.map(c => c.content);
+        const candidateTexts = candidates.map((c) => c.content);
         const bestIndices = await this.reranker.rerank(query, candidateTexts, limit);
 
-        const bestChunks = bestIndices.map(i => candidates[i]);
+        const bestChunks = bestIndices.map((i) => candidates[i]);
 
         // 4. Format Output
         // Return a formatted context string
-        return bestChunks.map(chunk =>
-            `\n--- CONTEXT [File: ${chunk.filePath} | Lines: ${chunk.startLine}-${chunk.endLine}] ---\n${chunk.content}\n`
-        ).join('\n');
+        return bestChunks
+            .map(
+                (chunk) =>
+                    `\n--- CONTEXT [File: ${chunk.filePath} | Lines: ${chunk.startLine}-${chunk.endLine}] ---\n${chunk.content}\n`,
+            )
+            .join('\n');
     }
 }

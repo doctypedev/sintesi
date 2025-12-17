@@ -48,10 +48,10 @@ The script can be customized by modifying `DEFAULT_CONFIG` in `generateSidebar.t
 
 ```typescript
 const DEFAULT_CONFIG: SidebarConfig = {
-  docsRoot: path.resolve(process.cwd(), 'docs'),
-  outputPath: path.resolve(process.cwd(), 'docs/.vitepress/sidebar-auto.ts'),
-  ignorePatterns: ['index.md', 'README.md', 'node_modules/**', '.vitepress/**', 'scripts/**'],
-  sortByPrefix: true,
+    docsRoot: path.resolve(process.cwd(), 'docs'),
+    outputPath: path.resolve(process.cwd(), 'docs/.vitepress/sidebar-auto.ts'),
+    ignorePatterns: ['index.md', 'README.md', 'node_modules/**', '.vitepress/**', 'scripts/**'],
+    sortByPrefix: true,
 };
 ```
 
@@ -63,30 +63,30 @@ The script generates a **unified sidebar** that displays all sections on every p
 import type { DefaultTheme } from 'vitepress';
 
 export const autoSidebar: DefaultTheme.Sidebar = [
-  {
-    "text": "Api",
-    "items": [
-      { "text": "ast-analyzer", "link": "/api/ast-analyzer" },
-      { "text": "content-injector", "link": "/api/content-injector" }
-    ],
-    "collapsed": false
-  },
-  {
-    "text": "Cli",
-    "items": [
-      { "text": "check", "link": "/cli/check" },
-      { "text": "fix", "link": "/cli/fix" }
-    ],
-    "collapsed": false
-  },
-  {
-    "text": "Guide",
-    "items": [
-      { "text": "getting-started", "link": "/guide/getting-started" },
-      { "text": "core-concepts", "link": "/guide/core-concepts" }
-    ],
-    "collapsed": false
-  }
+    {
+        text: 'Api',
+        items: [
+            { text: 'ast-analyzer', link: '/api/ast-analyzer' },
+            { text: 'content-injector', link: '/api/content-injector' },
+        ],
+        collapsed: false,
+    },
+    {
+        text: 'Cli',
+        items: [
+            { text: 'check', link: '/cli/check' },
+            { text: 'fix', link: '/cli/fix' },
+        ],
+        collapsed: false,
+    },
+    {
+        text: 'Guide',
+        items: [
+            { text: 'getting-started', link: '/guide/getting-started' },
+            { text: 'core-concepts', link: '/guide/core-concepts' },
+        ],
+        collapsed: false,
+    },
 ];
 ```
 

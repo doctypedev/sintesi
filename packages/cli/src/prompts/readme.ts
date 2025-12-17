@@ -1,4 +1,3 @@
-
 import { SHARED_SAFETY_RULES } from './shared';
 
 export const README_GENERATION_PROMPT = (
@@ -6,9 +5,9 @@ export const README_GENERATION_PROMPT = (
     sharedContextPrompt: string,
     smartSuggestion: string,
     fileSummary: string,
-    existingContent: string
+    existingContent: string,
 ) => `
-You are an expert technical writer. Your task is to ${isUpdate ? "update and improve the" : "write a comprehensive"} README.md for a software project.
+You are an expert technical writer. Your task is to ${isUpdate ? 'update and improve the' : 'write a comprehensive'} README.md for a software project.
 
 Here is the context of the project:
 
@@ -19,7 +18,9 @@ ${smartSuggestion ? `## Specific Suggestion (IMPORTANT)\nA previous analysis ide
 ## File Structure & Dependencies
 ${fileSummary}
 
-${isUpdate ? `
+${
+    isUpdate
+        ? `
 ## Current README Content
 \`\`\`markdown
 ${existingContent}
@@ -34,7 +35,8 @@ ${existingContent}
    - *Example*: If you see \`src/commands/readme.ts\`, ensure \`readme\` command is listed.
 6. **Keep manual details**: Preserve specific configuration details, project philosophy, or manual instructions that cannot be inferred from code.
 7. **Delete Obsolete**: Remove commands or features that were deleted, but do not touch valid ones.
-` : `
+`
+        : `
 ## Instructions for NEW CREATION
 1. Analyze the file structure, package.json, and **Recent Code Changes**.
 2. **Identify Project Type**: Is it a CLI? A Web App? A Library? Adjust the 'Usage' section accordingly.
@@ -47,7 +49,8 @@ ${existingContent}
    - **Installation**
    - **Usage**: Detailed instructions on how to run/use the project.
    - **Project Structure**
-`}
+`
+}
 
 ${SHARED_SAFETY_RULES}
 `;

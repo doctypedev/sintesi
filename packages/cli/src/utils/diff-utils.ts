@@ -1,7 +1,6 @@
-
 /**
  * Filters out noisy files from the git diff to save tokens and improve focus.
- * 
+ *
  * @param fullDiff The raw git diff string
  * @param excludePatterns Optional list of patterns (strings or regex) to exclude if matched in the filename
  */
@@ -15,7 +14,7 @@ export function filterGitDiff(fullDiff: string, excludePatterns: string[] = []):
         'yarn.lock',
         '.map',
         '.snap',
-        '.DS_Store'
+        '.DS_Store',
     ];
 
     const chunks = fullDiff.split('diff --git ');
@@ -29,12 +28,16 @@ export function filterGitDiff(fullDiff: string, excludePatterns: string[] = []):
         const firstLine = chunk.split('\n')[0];
 
         // 1. Filter standard noise
-        if (noisePatterns.some(pattern => firstLine.includes(pattern))) {
+        if (noisePatterns.some((pattern) => firstLine.includes(pattern))) {
             continue;
         }
 
         // 2. Filter custom patterns (e.g. self-trigger prevention)
-        if (excludePatterns.some(pattern => firstLine.toLowerCase().includes(pattern.toLowerCase()))) {
+        if (
+            excludePatterns.some((pattern) =>
+                firstLine.toLowerCase().includes(pattern.toLowerCase()),
+            )
+        ) {
             continue;
         }
 

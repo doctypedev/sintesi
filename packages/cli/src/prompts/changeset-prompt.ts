@@ -29,13 +29,13 @@ export class ChangesetPrompt {
         if (symbolChanges.length > 0) {
             prompt += `**Symbol Changes (${symbolChanges.length} total):**\n`;
 
-            const added = symbolChanges.filter(c => c.changeType === 'added');
-            const modified = symbolChanges.filter(c => c.changeType === 'modified');
-            const deleted = symbolChanges.filter(c => c.changeType === 'deleted');
+            const added = symbolChanges.filter((c) => c.changeType === 'added');
+            const modified = symbolChanges.filter((c) => c.changeType === 'modified');
+            const deleted = symbolChanges.filter((c) => c.changeType === 'deleted');
 
             if (added.length > 0) {
                 prompt += `\nAdded (${added.length}):\n`;
-                added.forEach(c => {
+                added.forEach((c) => {
                     prompt += `- ${c.symbolName} in ${c.filePath}\n`;
                     if (c.newSignature?.signatureText) {
                         prompt += `  Signature: ${c.newSignature.signatureText.slice(0, 200)}\n`;
@@ -45,7 +45,7 @@ export class ChangesetPrompt {
 
             if (modified.length > 0) {
                 prompt += `\nModified (${modified.length}):\n`;
-                modified.forEach(c => {
+                modified.forEach((c) => {
                     prompt += `- ${c.symbolName} in ${c.filePath}\n`;
                     if (c.oldSignature?.signatureText && c.newSignature?.signatureText) {
                         prompt += `  Old: ${c.oldSignature.signatureText.slice(0, 150)}\n`;
@@ -56,7 +56,7 @@ export class ChangesetPrompt {
 
             if (deleted.length > 0) {
                 prompt += `\nDeleted (${deleted.length}):\n`;
-                deleted.forEach(c => {
+                deleted.forEach((c) => {
                     prompt += `- ${c.symbolName} in ${c.filePath}\n`;
                 });
             }
@@ -66,9 +66,10 @@ export class ChangesetPrompt {
 
         // Add git diff (truncated if too long)
         const maxDiffLength = 100000;
-        const truncatedDiff = gitDiff.length > maxDiffLength
-            ? gitDiff.slice(0, maxDiffLength) + '\n\n[... diff truncated ...]'
-            : gitDiff;
+        const truncatedDiff =
+            gitDiff.length > maxDiffLength
+                ? gitDiff.slice(0, maxDiffLength) + '\n\n[... diff truncated ...]'
+                : gitDiff;
 
         prompt += `**Git Diff:**\n\`\`\`diff\n${truncatedDiff}\n\`\`\`\n\n`;
 

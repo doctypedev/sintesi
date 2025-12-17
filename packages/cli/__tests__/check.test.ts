@@ -14,108 +14,112 @@ vi.mock('fs');
 vi.mock('../src/utils/logger'); // Auto-mock first
 
 describe('CLI: check command', () => {
-  let mockSmartCheckerInstance: any;
-  let mockContextServiceInstance: any;
-  let mockImpactAnalyzerInstance: any;
+    let mockSmartCheckerInstance: any;
+    let mockContextServiceInstance: any;
+    let mockImpactAnalyzerInstance: any;
 
-  beforeEach(() => {
-    vi.resetAllMocks();
+    beforeEach(() => {
+        vi.resetAllMocks();
 
-    // Mock fs functions
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(fs.mkdirSync).mockReturnValue(undefined);
-    vi.mocked(fs.writeFileSync).mockReturnValue(undefined);
-    vi.mocked(fs.readdirSync).mockReturnValue(['file.md'] as any);
+        // Mock fs functions
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        vi.mocked(fs.mkdirSync).mockReturnValue(undefined);
+        vi.mocked(fs.writeFileSync).mockReturnValue(undefined);
+        vi.mocked(fs.readdirSync).mockReturnValue(['file.md'] as any);
 
-    // Setup Logger mock implementation
-    (Logger as unknown as Mock).mockImplementation(() => ({
-      header: vi.fn(),
-      info: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-      debug: vi.fn(),
-      success: vi.fn(),
-      newline: vi.fn(),
-      divider: vi.fn(),
-      log: vi.fn(),
-      getVerbose: vi.fn(),
-    }));
+        // Setup Logger mock implementation
+        (Logger as unknown as Mock).mockImplementation(() => ({
+            header: vi.fn(),
+            info: vi.fn(),
+            warn: vi.fn(),
+            error: vi.fn(),
+            debug: vi.fn(),
+            success: vi.fn(),
+            newline: vi.fn(),
+            divider: vi.fn(),
+            log: vi.fn(),
+            getVerbose: vi.fn(),
+        }));
 
-    // Setup SmartChecker mock
-    mockSmartCheckerInstance = {
-      checkReadme: vi.fn(),
-    };
-    vi.mocked(SmartChecker).mockImplementation(() => mockSmartCheckerInstance);
+        // Setup SmartChecker mock
+        mockSmartCheckerInstance = {
+            checkReadme: vi.fn(),
+        };
+        vi.mocked(SmartChecker).mockImplementation(() => mockSmartCheckerInstance);
 
-    // Setup GenerationContextService mock
-    mockContextServiceInstance = {
-      getAIAgents: vi.fn().mockResolvedValue({}), // Truthy agents
-      analyzeProject: vi.fn().mockResolvedValue({ gitDiff: 'some changes' }), // Truthy diff
-    };
-    vi.mocked(GenerationContextService).mockImplementation(() => mockContextServiceInstance);
+        // Setup GenerationContextService mock
+        mockContextServiceInstance = {
+            getAIAgents: vi.fn().mockResolvedValue({}), // Truthy agents
+            analyzeProject: vi.fn().mockResolvedValue({ gitDiff: 'some changes' }), // Truthy diff
+        };
+        vi.mocked(GenerationContextService).mockImplementation(() => mockContextServiceInstance);
 
-    // Setup ImpactAnalyzer mock
-    mockImpactAnalyzerInstance = {
-      checkWithLogging: vi.fn().mockResolvedValue({ shouldProceed: false, reason: '' }),
-    };
-    vi.mocked(ImpactAnalyzer).mockImplementation(() => mockImpactAnalyzerInstance);
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should pass success=true when SmartChecker detects no drift', async () => {
-    // Setup mock return
-    mockSmartCheckerInstance.checkReadme.mockResolvedValue({
-      hasDrift: false
+        // Setup ImpactAnalyzer mock
+        mockImpactAnalyzerInstance = {
+            checkWithLogging: vi.fn().mockResolvedValue({ shouldProceed: false, reason: '' }),
+        };
+        vi.mocked(ImpactAnalyzer).mockImplementation(() => mockImpactAnalyzerInstance);
     });
 
-    const result = await checkCommand({
-      verbose: false,
-      smart: true,
-      base: 'main'
+    afterEach(() => {
+        vi.clearAllMocks();
     });
 
-    expect(result.success).toBe(true);
-    expect(result.driftedEntries).toBe(0);
-    expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith(expect.objectContaining({ baseBranch: 'main' }));
-  });
+    it('should pass success=true when SmartChecker detects no drift', async () => {
+        // Setup mock return
+        mockSmartCheckerInstance.checkReadme.mockResolvedValue({
+            hasDrift: false,
+        });
 
-  it('should pass success=false when SmartChecker detects drift', async () => {
-    // Setup mock return
-    mockSmartCheckerInstance.checkReadme.mockResolvedValue({
-      hasDrift: true,
-      reason: 'Missing docs',
-      suggestion: 'Update docs'
+        const result = await checkCommand({
+            verbose: false,
+            smart: true,
+            base: 'main',
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.driftedEntries).toBe(0);
+        expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith(
+            expect.objectContaining({ baseBranch: 'main' }),
+        );
     });
 
-    const result = await checkCommand({
-      verbose: false,
-      smart: true,
-      base: 'main'
+    it('should pass success=false when SmartChecker detects drift', async () => {
+        // Setup mock return
+        mockSmartCheckerInstance.checkReadme.mockResolvedValue({
+            hasDrift: true,
+            reason: 'Missing docs',
+            suggestion: 'Update docs',
+        });
+
+        const result = await checkCommand({
+            verbose: false,
+            smart: true,
+            base: 'main',
+        });
+
+        expect(result.success).toBe(false);
+        expect(result.driftedEntries).toBe(1);
+        expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith(
+            expect.objectContaining({ baseBranch: 'main' }),
+        );
+
+        // Should verify it tries to write context file
+        expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
-    expect(result.success).toBe(false);
-    expect(result.driftedEntries).toBe(1);
-    expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith(expect.objectContaining({ baseBranch: 'main' }));
+    it('should default to smart check even if not explicitly enabled (as it is the only check)', async () => {
+        // Setup mock return
+        mockSmartCheckerInstance.checkReadme.mockResolvedValue({
+            hasDrift: false,
+        });
 
-    // Should verify it tries to write context file
-    expect(fs.writeFileSync).toHaveBeenCalled();
-  });
+        const result = await checkCommand({
+            verbose: false,
+            // smart option omitted, but command should run it
+        });
 
-  it('should default to smart check even if not explicitly enabled (as it is the only check)', async () => {
-    // Setup mock return
-    mockSmartCheckerInstance.checkReadme.mockResolvedValue({
-      hasDrift: false
+        expect(result.success).toBe(true);
+        expect(SmartChecker).toHaveBeenCalled(); // Should still instantiate SmartChecker
     });
-
-    const result = await checkCommand({
-      verbose: false,
-      // smart option omitted, but command should run it
-    });
-
-    expect(result.success).toBe(true);
-    expect(SmartChecker).toHaveBeenCalled(); // Should still instantiate SmartChecker
-  });
 });

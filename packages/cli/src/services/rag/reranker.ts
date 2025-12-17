@@ -13,7 +13,9 @@ export class RerankingService {
             });
             this.enabled = true;
         } else {
-            this.logger.debug('COHERE_API_KEY not found. Reranking will be disabled (fallback to vector search order).');
+            this.logger.debug(
+                'COHERE_API_KEY not found. Reranking will be disabled (fallback to vector search order).',
+            );
         }
     }
 
@@ -33,14 +35,14 @@ export class RerankingService {
         try {
             this.logger.debug(`Reranking ${documents.length} documents...`);
             const response = await this.cohere.rerank({
-                documents: documents.map(doc => ({ text: doc })),
+                documents: documents.map((doc) => ({ text: doc })),
                 query: query,
                 topN: topN,
                 model: 'rerank-english-v3.0', // Standard high-performance model
             });
 
             // Map result indices back
-            return response.results.map(r => r.index);
+            return response.results.map((r) => r.index);
         } catch (error: any) {
             this.logger.warn(`Reranking failed: ${error.message}. Falling back to vector order.`);
             return documents.slice(0, topN).map((_, i) => i);

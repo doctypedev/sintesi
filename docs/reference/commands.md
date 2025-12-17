@@ -16,15 +16,18 @@ This document provides a comprehensive reference for all available CLI commands 
 The `check` command verifies that documentation is in sync with code by detecting drift.
 
 #### Usage
+
 ```bash
 sintesi check
 ```
 
 #### Description
+
 - Performs a smart check to validate that the README and documentation are in sync with the codebase.
 - Saves context for other commands to consume if drift is detected.
 
 #### Options
+
 - `--verbose`: Provides detailed output of the checks performed.
 - `--base <branch>`: Specifies the base branch for comparison (default is `origin/main`).
 - `--readme`: Checks only for README drift.
@@ -35,6 +38,7 @@ sintesi check
 - `--output-dir <path>`: Specifies the output directory for documentation check (default is `docs`).
 
 #### Usage Examples
+
 ```bash
 sintesi check -- --verbose --base origin/main
 sintesi check -- --readme --no-strict --verbose
@@ -48,22 +52,26 @@ sintesi check -- --documentation --no-strict --verbose
 The `readme` command generates or updates the README file for the project.
 
 #### Usage
+
 ```bash
 sintesi readme
 ```
 
 #### Description
+
 - Creates or updates the README file based on the current project context.
 - Integrates recent code changes and suggestions from previous checks.
 - Skips generation if no relevant code changes are detected, unless forced.
 - **Diff-reset behavior**: Using `--force` or if the output file is missing will bypass checks and always regenerate the README.
 
 #### Options
+
 - `--output <path>`: Specifies the output path for the README file (default is `README.md`).
 - `--force`: Forces a regeneration of README, bypassing existing checks.
 - `--verbose`: Provides detailed output during the generation process.
 
 #### Usage Examples
+
 ```bash
 sintesi readme -- --output README.md --force
 ```
@@ -75,22 +83,25 @@ sintesi readme -- --output README.md --force
 The `changeset` command generates changesets from code changes using AI.
 
 #### Usage
+
 ```bash
 sintesi changeset
 ```
 
 #### Description
+
 - Analyzes git diff to find changed files.
 - Uses AI to determine version type (major/minor/patch) and description.
 - Generates a changeset file in the `.changeset` directory.
 - **Pre-flight Check**: Verifies if `@changesets/cli` is installed before proceeding.
 - **Changeset generation priority**:
-  1. Manual flags (`--version-type`, `--description`) override AI.
-  2. `--skip-ai` disables AI entirely, falling back to default bump (patch) and generic description.
-  3. Default (no manual flags, AI enabled): AI determines version bump and description.
-  4. `--interactive` enforces interactive package selection regardless of detection.
+    1. Manual flags (`--version-type`, `--description`) override AI.
+    2. `--skip-ai` disables AI entirely, falling back to default bump (patch) and generic description.
+    3. Default (no manual flags, AI enabled): AI determines version bump and description.
+    4. `--interactive` enforces interactive package selection regardless of detection.
 
 #### Options
+
 - `--base-branch <branch>`: Specifies the base branch for comparison (default is `main`).
 - `--staged-only`: Analyzes only staged changes.
 - `--package-name <name>`: Package name for the changeset (auto-detected from package.json if not specified).
@@ -103,9 +114,11 @@ sintesi changeset
 - `--force-fetch`: Fetches from the specified base branch when true.
 
 #### Error Handling
+
 - If `@changesets/cli` is not installed, the command will fail with an error message indicating the need to install it.
 
 #### Usage Examples
+
 ```bash
 sintesi changeset -- --base-branch main --staged-only
 sintesi changeset -- --skip-ai --version-type minor --description "New feature"
@@ -118,22 +131,26 @@ sintesi changeset -- --skip-ai --version-type minor --description "New feature"
 The `documentation` command automates the generation of project documentation based on the current codebase.
 
 #### Usage
+
 ```bash
 sintesi documentation
 ```
 
 #### Description
+
 - Analyzes the project structure and generates documentation files.
 - Skips generation if no relevant code changes are detected.
 - **Diff-reset behavior**: Using `--force` or if the output directory is missing will bypass checks and always regenerate the documentation.
 - **Note**: If the `repository` field is missing in `package.json`, the command will automatically detect and populate the repository URL from the git configuration.
 
 #### Options
+
 - `--output-dir <path>`: Specifies the output directory for the generated documentation (default is `docs`).
 - `--verbose`: Provides detailed output during the documentation process.
 - `--force`: Forces a regeneration of documentation, bypassing existing checks.
 
 #### Usage Examples
+
 ```bash
 sintesi documentation -- --output-dir docs --verbose --force
 ```
@@ -144,11 +161,12 @@ sintesi documentation -- --output-dir docs --verbose --force
 
 To utilize the RAG feature, you can set the following environment variable:
 
-| Name               | Required? | Purpose                                                      |
-|--------------------|-----------|--------------------------------------------------------------|
-| COHERE_API_KEY     | optional  | Enables `RerankingService.rerank` via Cohere Rerank API.   |
+| Name           | Required? | Purpose                                                  |
+| -------------- | --------- | -------------------------------------------------------- |
+| COHERE_API_KEY | optional  | Enables `RerankingService.rerank` via Cohere Rerank API. |
 
 Make sure to include `COHERE_API_KEY` in your `.env` configuration:
+
 ```plaintext
 COHERE_API_KEY=your-cohere-api-key-here
 ```

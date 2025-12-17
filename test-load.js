@@ -13,10 +13,10 @@ console.log('analyzer.analyzeCode:', typeof analyzer.analyzeCode);
 
 // Try calling it
 try {
-  const result = analyzer.analyzeFile('./test.ts');
-  console.log('analyzeFile result:', result);
-  console.log('result type:', typeof result);
-  console.log('result.find:', typeof result.find);
+    const result = analyzer.analyzeFile('./test.ts');
+    console.log('analyzeFile result:', result);
+    console.log('result type:', typeof result);
+    console.log('result.find:', typeof result.find);
 } catch (e) {
-  console.error('Error:', e.message);
+    console.error('Error:', e.message);
 }

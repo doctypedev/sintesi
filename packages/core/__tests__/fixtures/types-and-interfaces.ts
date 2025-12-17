@@ -3,41 +3,41 @@
  */
 
 export interface UserProfile {
-  id: string;
-  name: string;
-  email: string;
-  age?: number;
+    id: string;
+    name: string;
+    email: string;
+    age?: number;
 }
 
 export interface ApiResponse<T> {
-  data: T;
-  status: number;
-  message: string;
+    data: T;
+    status: number;
+    message: string;
 }
 
 export type StringOrNumber = string | number;
 
 export type Point = {
-  x: number;
-  y: number;
+    x: number;
+    y: number;
 };
 
 export enum Status {
-  PENDING = 'pending',
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
+    PENDING = 'pending',
+    ACTIVE = 'active',
+    INACTIVE = 'inactive',
 }
 
 export enum Priority {
-  LOW = 1,
-  MEDIUM = 2,
-  HIGH = 3,
+    LOW = 1,
+    MEDIUM = 2,
+    HIGH = 3,
 }
 
 // Not exported
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface _InternalConfig {
-  secret: string;
+    secret: string;
 }
 
 export const API_URL = 'https://api.example.com';

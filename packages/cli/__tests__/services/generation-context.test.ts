@@ -33,7 +33,7 @@ describe('GenerationContextService', () => {
         vi.resetAllMocks();
         logger = new Logger(false);
         service = new GenerationContextService(logger, mockCwd);
-        
+
         (vi.mocked(execSync) as any).mockReturnValue('');
 
         // Default mocks
@@ -43,7 +43,7 @@ describe('GenerationContextService', () => {
         vi.mocked(path.resolve).mockImplementation((...args) => args.join('/'));
         (vi.mocked(getProjectContext) as any).mockReturnValue({
             files: [],
-            packageJson: { name: 'test-pkg' }
+            packageJson: { name: 'test-pkg' },
         });
     });
 
@@ -56,7 +56,7 @@ describe('GenerationContextService', () => {
 
         it('should delegate to SmartChecker if force is false', async () => {
             const mockSmartChecker = {
-                hasRelevantCodeChanges: vi.fn().mockResolvedValue(true)
+                hasRelevantCodeChanges: vi.fn().mockResolvedValue(true),
             };
             (vi.mocked(SmartChecker) as any).mockImplementation(() => mockSmartChecker);
 
@@ -72,13 +72,13 @@ describe('GenerationContextService', () => {
                 writer: {
                     validateConnection: vi.fn().mockResolvedValue(true),
                     getModelId: vi.fn().mockReturnValue('m'),
-                    getProvider: vi.fn().mockReturnValue('p')
+                    getProvider: vi.fn().mockReturnValue('p'),
                 },
                 planner: {
                     validateConnection: vi.fn().mockResolvedValue(true),
                     getModelId: vi.fn().mockReturnValue('m'),
-                    getProvider: vi.fn().mockReturnValue('p')
-                }
+                    getProvider: vi.fn().mockReturnValue('p'),
+                },
             };
             (vi.mocked(createAIAgentsFromEnv) as any).mockReturnValue(mockAgents);
 
@@ -89,7 +89,7 @@ describe('GenerationContextService', () => {
         it('should return null if connection fails', async () => {
             const mockAgents = {
                 writer: { validateConnection: vi.fn().mockResolvedValue(false) },
-                planner: { validateConnection: vi.fn().mockResolvedValue(true) }
+                planner: { validateConnection: vi.fn().mockResolvedValue(true) },
             };
             (vi.mocked(createAIAgentsFromEnv) as any).mockReturnValue(mockAgents);
 
@@ -103,11 +103,11 @@ describe('GenerationContextService', () => {
             const mockFiles = [
                 { path: '/test/cwd/src/commands/foo.ts' },
                 { path: '/test/cwd/src/commands/bar.ts' },
-                { path: '/test/cwd/src/utils/helper.ts' }
+                { path: '/test/cwd/src/utils/helper.ts' },
             ];
             (vi.mocked(getProjectContext) as any).mockReturnValue({
                 files: mockFiles,
-                packageJson: { name: 'test-pkg', bin: { 'test-bin': './bin.js' } }
+                packageJson: { name: 'test-pkg', bin: { 'test-bin': './bin.js' } },
             });
 
             // Mock relative path behavior for specific test paths
@@ -124,11 +124,10 @@ describe('GenerationContextService', () => {
             expect(config.appType).toBe('cli');
         });
 
-
         it('should detect Web appType based on React dependency', () => {
             (vi.mocked(getProjectContext) as any).mockReturnValue({
                 files: [{ path: '/test/cwd/src/App.tsx' }],
-                packageJson: { dependencies: { 'react': '18.0.0' } }
+                packageJson: { dependencies: { react: '18.0.0' } },
             });
 
             // Mock existence
@@ -142,7 +141,7 @@ describe('GenerationContextService', () => {
         it('should detect Backend appType based on NestJS dependency', () => {
             (vi.mocked(getProjectContext) as any).mockReturnValue({
                 files: [{ path: '/test/cwd/src/main.ts' }],
-                packageJson: { dependencies: { '@nestjs/core': '9.0.0' } }
+                packageJson: { dependencies: { '@nestjs/core': '9.0.0' } },
             });
 
             // Mock existence
@@ -159,9 +158,9 @@ describe('GenerationContextService', () => {
             const context: any = {
                 packageJson: {
                     name: 'test-pkg',
-                    repository: 'https://github.com/test/repo.git'
+                    repository: 'https://github.com/test/repo.git',
                 },
-                files: []
+                files: [],
             };
             const projectConfig: any = { relevantCommands: [], packageName: 'test-pkg' };
 
@@ -173,9 +172,9 @@ describe('GenerationContextService', () => {
         it('should warn against hallucination if no repository', () => {
             const context: any = {
                 packageJson: {
-                    name: 'test-pkg'
+                    name: 'test-pkg',
                 },
-                files: []
+                files: [],
             };
             const projectConfig: any = { relevantCommands: [], packageName: 'test-pkg' };
 

@@ -25,248 +25,253 @@ import { CheckOptions, ChangesetOptions } from './types';
 
 // Parse command line arguments
 yargs(hideBin(process.argv))
-  .scriptName('sintesi')
-  .usage('$0 <command> [options]')
-  .version('0.1.0')
-  .alias('v', 'version')
-  .alias('h', 'help')
+    .scriptName('sintesi')
+    .usage('$0 <command> [options]')
+    .version('0.1.0')
+    .alias('v', 'version')
+    .alias('h', 'help')
 
-  // Readme command
-  .command(
-    'readme',
-    'Generate a README.md based on project context',
-    (yargs) => {
-      return yargs
-        .option('output', {
-          alias: 'o',
-          type: 'string',
-          description: 'Output file path (default: README.md)',
-        })
-        .option('force', {
-          alias: 'f',
-          type: 'boolean',
-          description: 'Overwrite existing file',
-          default: false,
-        })
-        .option('verbose', {
-          type: 'boolean',
-          description: 'Enable verbose logging',
-          default: false,
-        });
-    },
-    async (argv) => {
-      const options: ReadmeOptions = {
-        output: argv.output as string,
-        force: argv.force as boolean,
-        verbose: argv.verbose as boolean,
-      };
+    // Readme command
+    .command(
+        'readme',
+        'Generate a README.md based on project context',
+        (yargs) => {
+            return yargs
+                .option('output', {
+                    alias: 'o',
+                    type: 'string',
+                    description: 'Output file path (default: README.md)',
+                })
+                .option('force', {
+                    alias: 'f',
+                    type: 'boolean',
+                    description: 'Overwrite existing file',
+                    default: false,
+                })
+                .option('verbose', {
+                    type: 'boolean',
+                    description: 'Enable verbose logging',
+                    default: false,
+                });
+        },
+        async (argv) => {
+            const options: ReadmeOptions = {
+                output: argv.output as string,
+                force: argv.force as boolean,
+                verbose: argv.verbose as boolean,
+            };
 
-      await readmeCommand(options);
-    }
-  )
+            await readmeCommand(options);
+        },
+    )
 
-  // Documentation command
-  .command(
-    'documentation',
-    'Generate comprehensive documentation site structure',
-    (yargs) => {
-      return yargs
-        .option('output-dir', {
-          alias: 'o',
-          type: 'string',
-          description: 'Output directory (default: docs)',
-        })
-        .option('force', {
-          alias: 'f',
-          type: 'boolean',
-          description: 'Force full regeneration (ignores existing state)',
-          default: false,
-        })
-        .option('verbose', {
-          type: 'boolean',
-          description: 'Enable verbose logging',
-          default: false,
-        });
-    },
-    async (argv) => {
-      const options: DocumentationOptions = {
-        outputDir: argv['output-dir'] as string,
-        verbose: argv.verbose as boolean,
-        force: argv.force as boolean,
-      };
+    // Documentation command
+    .command(
+        'documentation',
+        'Generate comprehensive documentation site structure',
+        (yargs) => {
+            return yargs
+                .option('output-dir', {
+                    alias: 'o',
+                    type: 'string',
+                    description: 'Output directory (default: docs)',
+                })
+                .option('force', {
+                    alias: 'f',
+                    type: 'boolean',
+                    description: 'Force full regeneration (ignores existing state)',
+                    default: false,
+                })
+                .option('verbose', {
+                    type: 'boolean',
+                    description: 'Enable verbose logging',
+                    default: false,
+                });
+        },
+        async (argv) => {
+            const options: DocumentationOptions = {
+                outputDir: argv['output-dir'] as string,
+                verbose: argv.verbose as boolean,
+                force: argv.force as boolean,
+            };
 
-      await documentationCommand(options);
-    }
-  )
+            await documentationCommand(options);
+        },
+    )
 
-  // Check command
-  .command(
-    'check',
-    'Verify documentation is in sync with code',
-    (yargs) => {
-      return yargs
-        .option('verbose', {
-          type: 'boolean',
-          description: 'Enable verbose logging',
-          default: false,
-        })
-        .option('strict', {
-          type: 'boolean',
-          description: 'Exit with error code if drift detected',
-          default: true,
-        })
-        .option('smart', {
-          type: 'boolean',
-          description: 'Use AI to detect high-level drift (e.g. README updates). (Default: true)',
-          default: true, // TODO: This is now the only check, consider removing the option entirely in a future major version.
-        })
-        .option('base', {
-          type: 'string',
-          description: 'Base branch for smart check comparison (default: origin/main)',
-        })
-        .option('readme', {
-          type: 'boolean',
-          description: 'Check only README drift',
-          default: false,
-        })
-        .option('documentation', {
-          alias: 'doc',
-          type: 'boolean',
-          description: 'Check only documentation drift',
-          default: false,
-        })
-        .option('output', {
-          alias: 'o',
-          type: 'string',
-          description: 'Output file path for README check',
-        })
-        .option('output-dir', {
-          alias: 'd',
-          type: 'string',
-          description: 'Output directory for documentation check',
-        });
-    },
-    async (argv) => {
-      const options: CheckOptions = {
-        verbose: argv.verbose as boolean,
-        strict: argv.strict as boolean,
-        smart: argv.smart as boolean, // Use the argv value, which defaults to true
-        base: argv.base as string,
-        readme: argv.readme as boolean,
-        documentation: argv.documentation as boolean,
-        output: argv.output as string,
-        outputDir: argv['output-dir'] as string,
-      };
+    // Check command
+    .command(
+        'check',
+        'Verify documentation is in sync with code',
+        (yargs) => {
+            return yargs
+                .option('verbose', {
+                    type: 'boolean',
+                    description: 'Enable verbose logging',
+                    default: false,
+                })
+                .option('strict', {
+                    type: 'boolean',
+                    description: 'Exit with error code if drift detected',
+                    default: true,
+                })
+                .option('smart', {
+                    type: 'boolean',
+                    description:
+                        'Use AI to detect high-level drift (e.g. README updates). (Default: true)',
+                    default: true, // TODO: This is now the only check, consider removing the option entirely in a future major version.
+                })
+                .option('base', {
+                    type: 'string',
+                    description: 'Base branch for smart check comparison (default: origin/main)',
+                })
+                .option('readme', {
+                    type: 'boolean',
+                    description: 'Check only README drift',
+                    default: false,
+                })
+                .option('documentation', {
+                    alias: 'doc',
+                    type: 'boolean',
+                    description: 'Check only documentation drift',
+                    default: false,
+                })
+                .option('output', {
+                    alias: 'o',
+                    type: 'string',
+                    description: 'Output file path for README check',
+                })
+                .option('output-dir', {
+                    alias: 'd',
+                    type: 'string',
+                    description: 'Output directory for documentation check',
+                });
+        },
+        async (argv) => {
+            const options: CheckOptions = {
+                verbose: argv.verbose as boolean,
+                strict: argv.strict as boolean,
+                smart: argv.smart as boolean, // Use the argv value, which defaults to true
+                base: argv.base as string,
+                readme: argv.readme as boolean,
+                documentation: argv.documentation as boolean,
+                output: argv.output as string,
+                outputDir: argv['output-dir'] as string,
+            };
 
-      const result = await checkCommand(options);
+            const result = await checkCommand(options);
 
-      // Always exit with error if there's a configuration error
-      if (result.configError) {
-        process.exit(1);
-      }
+            // Always exit with error if there's a configuration error
+            if (result.configError) {
+                process.exit(1);
+            }
 
-      // Exit with error code if drift detected and strict mode
-      if (!result.success && options.strict) {
-        process.exit(1);
-      }
-    }
-  )
+            // Exit with error code if drift detected and strict mode
+            if (!result.success && options.strict) {
+                process.exit(1);
+            }
+        },
+    )
 
-  // Changeset command
-  .command(
-    'changeset',
-    'Generate a changeset file from code changes using AI',
-    (yargs) => {
-      return yargs
-        .option('base-branch', {
-          alias: 'b',
-          type: 'string',
-          description: 'Base branch to compare against',
-          default: 'main',
-        })
-        .option('staged-only', {
-          alias: 's',
-          type: 'boolean',
-          description: 'Only analyze staged changes',
-          default: false,
-        })
-        .option('package-name', {
-          alias: 'p',
-          type: 'string',
-          description: 'Package name for the changeset (auto-detected from package.json if not specified)',
-        })
-        .option('output-dir', {
-          alias: 'o',
-          type: 'string',
-          description: 'Output directory for changeset',
-          default: '.changeset',
-        })
-        .option('skip-ai', {
-          type: 'boolean',
-          description: 'Skip AI analysis and use defaults',
-          default: false,
-        })
-        .option('version-type', {
-          alias: 't',
-          type: 'string',
-          description: 'Manually specify version type',
-          choices: ['major', 'minor', 'patch'],
-        })
-        .option('description', {
-          alias: 'd',
-          type: 'string',
-          description: 'Manually specify description',
-        })
-        .option('verbose', {
-          type: 'boolean',
-          description: 'Enable verbose logging',
-          default: false,
-        })
-        .option('interactive', {
-          alias: 'i',
-          type: 'boolean',
-          description: 'Force interactive package selection',
-          default: false,
-        })
-        .option('force-fetch', {
-          type: 'boolean',
-          description: 'Fetch latest changes from remote before analyzing',
-          default: false
-        });
-    },
-    async (argv) => {
-      const options: ChangesetOptions = {
-        baseBranch: argv['base-branch'] as string,
-        stagedOnly: argv['staged-only'] as boolean,
-        packageName: argv['package-name'] as string,
-        outputDir: argv['output-dir'] as string,
-        noAI: argv['skip-ai'] as boolean,
-        versionType: argv['version-type'] as 'major' | 'minor' | 'patch' | undefined,
-        description: argv.description as string | undefined,
-        verbose: argv.verbose as boolean,
-        interactive: argv.interactive as boolean,
-      };
+    // Changeset command
+    .command(
+        'changeset',
+        'Generate a changeset file from code changes using AI',
+        (yargs) => {
+            return yargs
+                .option('base-branch', {
+                    alias: 'b',
+                    type: 'string',
+                    description: 'Base branch to compare against',
+                    default: 'main',
+                })
+                .option('staged-only', {
+                    alias: 's',
+                    type: 'boolean',
+                    description: 'Only analyze staged changes',
+                    default: false,
+                })
+                .option('package-name', {
+                    alias: 'p',
+                    type: 'string',
+                    description:
+                        'Package name for the changeset (auto-detected from package.json if not specified)',
+                })
+                .option('output-dir', {
+                    alias: 'o',
+                    type: 'string',
+                    description: 'Output directory for changeset',
+                    default: '.changeset',
+                })
+                .option('skip-ai', {
+                    type: 'boolean',
+                    description: 'Skip AI analysis and use defaults',
+                    default: false,
+                })
+                .option('version-type', {
+                    alias: 't',
+                    type: 'string',
+                    description: 'Manually specify version type',
+                    choices: ['major', 'minor', 'patch'],
+                })
+                .option('description', {
+                    alias: 'd',
+                    type: 'string',
+                    description: 'Manually specify description',
+                })
+                .option('verbose', {
+                    type: 'boolean',
+                    description: 'Enable verbose logging',
+                    default: false,
+                })
+                .option('interactive', {
+                    alias: 'i',
+                    type: 'boolean',
+                    description: 'Force interactive package selection',
+                    default: false,
+                })
+                .option('force-fetch', {
+                    type: 'boolean',
+                    description: 'Fetch latest changes from remote before analyzing',
+                    default: false,
+                });
+        },
+        async (argv) => {
+            const options: ChangesetOptions = {
+                baseBranch: argv['base-branch'] as string,
+                stagedOnly: argv['staged-only'] as boolean,
+                packageName: argv['package-name'] as string,
+                outputDir: argv['output-dir'] as string,
+                noAI: argv['skip-ai'] as boolean,
+                versionType: argv['version-type'] as 'major' | 'minor' | 'patch' | undefined,
+                description: argv.description as string | undefined,
+                verbose: argv.verbose as boolean,
+                interactive: argv.interactive as boolean,
+            };
 
-      const result = await changesetCommand(options);
+            const result = await changesetCommand(options);
 
-      // Exit with error code if changeset generation failed
-      if (!result.success) {
-        process.exit(1);
-      }
-    }
-  )
+            // Exit with error code if changeset generation failed
+            if (!result.success) {
+                process.exit(1);
+            }
+        },
+    )
 
-  // Help and examples
-  .example('$0 check', 'Check for documentation drift')
-  .example('$0 check --verbose', 'Check with detailed output')
-  .example('$0 changeset', 'Generate changeset from current changes')
-  .example('$0 changeset --base-branch develop', 'Compare against develop branch')
-  .example('$0 changeset --staged-only', 'Only analyze staged changes')
-  .example('$0 changeset --skip-ai', 'Generate changeset without AI analysis')
-  .example('$0 changeset -t minor -d "Add new feature"', 'Manually specify version and description')
-  .example('$0 readme', 'Generate README.md for the current project')
-  .example('$0 readme --force', 'Force overwrite existing README.md')
-  .strict()
-  .recommendCommands()
-  .showHelpOnFail(true)
-  .parse();
+    // Help and examples
+    .example('$0 check', 'Check for documentation drift')
+    .example('$0 check --verbose', 'Check with detailed output')
+    .example('$0 changeset', 'Generate changeset from current changes')
+    .example('$0 changeset --base-branch develop', 'Compare against develop branch')
+    .example('$0 changeset --staged-only', 'Only analyze staged changes')
+    .example('$0 changeset --skip-ai', 'Generate changeset without AI analysis')
+    .example(
+        '$0 changeset -t minor -d "Add new feature"',
+        'Manually specify version and description',
+    )
+    .example('$0 readme', 'Generate README.md for the current project')
+    .example('$0 readme --force', 'Force overwrite existing README.md')
+    .strict()
+    .recommendCommands()
+    .showHelpOnFail(true)
+    .parse();

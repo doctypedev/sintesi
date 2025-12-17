@@ -9,353 +9,384 @@ import { Logger } from './logger';
  * Result of a git operation
  */
 export interface GitOperationResult {
-  /** Whether the operation succeeded */
-  success: boolean;
-  /** Output from the git command */
-  output?: string;
-  /** Error message if failed */
-  error?: string;
+    /** Whether the operation succeeded */
+    success: boolean;
+    /** Output from the git command */
+    output?: string;
+    /** Error message if failed */
+    error?: string;
 }
 
 /**
  * Git helper for auto-commit functionality
  */
 export class GitHelper {
-  private logger: Logger;
+    private logger: Logger;
 
-  constructor(logger: Logger) {
-    this.logger = logger;
-  }
-
-  /**
-   * Check if current directory is a git repository
-   */
-  isGitRepository(): boolean {
-    try {
-      execSync('git rev-parse --git-dir', { stdio: 'pipe' });
-      return true;
-    } catch {
-      return false;
+    constructor(logger: Logger) {
+        this.logger = logger;
     }
-  }
 
-  /**
-   * Get current git status
-   */
-  getStatus(): GitOperationResult {
-    try {
-      const output = execSync('git status --porcelain', { encoding: 'utf-8' });
-      return {
-        success: true,
-        output: output.trim(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      };
-    }
-  }
-
-  /**
-   * Check if there are uncommitted changes
-   */
-  hasUncommittedChanges(): boolean {
-    const status = this.getStatus();
-    return status.success && !!status.output;
-  }
-
-  /**
-   * Get diff of changes
-   * @param staged - Whether to get diff of staged changes
-   */
-  async getDiff(staged: boolean = false): Promise<string> {
-    try {
-      const args = staged ? '--staged' : '';
-      return execSync(`git diff ${args}`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-    } catch (error) {
-      this.logger.debug(`Failed to get diff: ${error instanceof Error ? error.message : String(error)}`);
-      return '';
-    }
-  }
-
-  /**
-   * Get list of changed files
-   * @param revision Optional revision to check against (e.g. 'HEAD'). If omitted, checks working tree (staged + unstaged).
-   */
-  getChangedFiles(revision?: string): string[] {
-    try {
-      if (revision) {
-        // Get changed files in the specified revision (comparing against its parent)
-        // git show --name-only --pretty="" HEAD
-        const output = execSync(`git show --name-only --pretty="" ${revision}`, { encoding: 'utf-8' });
-        return output.trim().split('\n').filter(Boolean);
-      }
-
-      // Get staged changes
-      const staged = execSync('git diff --name-only --cached', { encoding: 'utf-8' }).trim().split('\n').filter(Boolean);
-      // Get unstaged changes
-      const unstaged = execSync('git diff --name-only', { encoding: 'utf-8' }).trim().split('\n').filter(Boolean);
-
-      // Combine and deduplicate
-      return Array.from(new Set([...staged, ...unstaged]));
-    } catch (error) {
-      this.logger.debug(`Failed to get changed files: ${error instanceof Error ? error.message : String(error)}`);
-      return [];
-    }
-  }
-
-  /**
-   * Get list of changed files against a base branch (e.g. origin/main)
-   * Uses "git diff base...HEAD" (triple dot)
-   */
-  getChangedFilesAgainstBase(base: string): string[] {
-    try {
-      const output = execSync(`git diff --name-only ${base}...HEAD`, { encoding: 'utf-8' });
-      return output.trim().split('\n').filter(Boolean);
-    } catch (error) {
-      this.logger.debug(`Failed to get changed files against base ${base}: ${error instanceof Error ? error.message : String(error)}`);
-      return [];
-    }
-  }
-
-  /**
-   * Get merge base between HEAD and a base branch
-   */
-  getMergeBase(base: string): string | null {
-    try {
-      return execSync(`git merge-base ${base} HEAD`, { encoding: 'utf-8', stdio: 'pipe' }).trim();
-    } catch {
-      this.logger.debug(`Could not find merge base with ${base}`);
-      return null;
-    }
-  }
-
-  /**
-   * Get diff against a base branch
-   */
-  getDiffAgainstBase(base: string): string {
-    try {
-      // First try to find a merge base to capture the divergence
-      const mergeBase = this.getMergeBase(base);
-
-      if (mergeBase) {
-        // Diff from merge-base to HEAD
-        // This is safe even if base is remote and we have local commits
-        return execSync(`git diff ${mergeBase}..HEAD`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-      }
-
-      // If no merge base (shallow clone?), try direct comparison
-      // The triple dot ... in 'git diff base...HEAD' actually implies using merge base unless it falls back
-      return execSync(`git diff ${base}...HEAD`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-    } catch (error) {
-      this.logger.debug(`Failed to get diff against base ${base}: ${error instanceof Error ? error.message : String(error)}`);
-      // Fallback: compare directly against whatever 'base' is resolvable to
-      // Logic: If merge-base fails (e.g. shallow clone), we try a direct diff between the two tips.
-      // This is less accurate for divergence but better than nothing.
-      try {
-        return execSync(`git diff ${base} HEAD`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-      } catch {
-        return '';
-      }
-    }
-  }
-
-  /**
-   * Get filtered diff (excluding locks)
-   */
-  getFilteredDiff(base: string, staged: boolean = false): string {
-    // Defines excludes as an array for safe passing to spawnSync
-    // This avoids shell quoting issues on Windows (PowerShell/CMD)
-    const excludes = [
-      ':(exclude)package-lock.json',
-      ':(exclude)yarn.lock',
-      ':(exclude)pnpm-lock.yaml'
-    ];
-
-    try {
-      const args = ['diff'];
-      if (staged) {
-        args.push('--cached');
-      } else {
-        const mergeBase = this.getMergeBase(base);
-        if (mergeBase) {
-          args.push(`${mergeBase}..HEAD`);
-        } else {
-          args.push(`${base}...HEAD`);
+    /**
+     * Check if current directory is a git repository
+     */
+    isGitRepository(): boolean {
+        try {
+            execSync('git rev-parse --git-dir', { stdio: 'pipe' });
+            return true;
+        } catch {
+            return false;
         }
-      }
-
-      // Add standard args
-      args.push('--', '.', ...excludes);
-
-      const result = spawnSync('git', args, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-
-      if (result.error) {
-        throw result.error;
-      }
-
-      if (result.stderr && result.stderr.trim().length > 0) {
-        this.logger.debug(`Git diff stderr: ${result.stderr}`);
-      }
-
-      return result.stdout || '';
-    } catch (error) {
-      this.logger.debug(`Failed to get filtered diff: ${error}`);
-      return '';
-    }
-  }
-
-  /**
-   * Stage files for commit
-   */
-  addFiles(files: string[]): GitOperationResult {
-    try {
-      this.logger.debug(`Staging files: ${files.join(', ')}`);
-
-      const filesArg = files.map(f => `"${f}"`).join(' ');
-      const output = execSync(`git add ${filesArg}`, { encoding: 'utf-8' });
-
-      return {
-        success: true,
-        output: output.trim(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      };
-    }
-  }
-
-  /**
-   * Create a git commit
-   */
-  commit(message: string): GitOperationResult {
-    try {
-      this.logger.debug(`Creating commit: ${message}`);
-
-      // Escape quotes in commit message
-      const escapedMessage = message.replace(/"/g, '\\"');
-      const output = execSync(`git commit -m "${escapedMessage}"`, { encoding: 'utf-8' });
-
-      return {
-        success: true,
-        output: output.trim(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      };
-    }
-  }
-
-  /**
-   * Fetch changes from remote
-   */
-  fetch(remote: string, branch: string): GitOperationResult {
-    try {
-      this.logger.debug(`Fetching ${remote} ${branch}`);
-      const output = execSync(`git fetch ${remote} ${branch}`, { encoding: 'utf-8' });
-      return {
-        success: true,
-        output: output.trim(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      };
-    }
-  }
-
-  /**
-   * Push commits to remote
-   */
-  push(): GitOperationResult {
-    try {
-      this.logger.debug('Pushing to remote');
-
-      const output = execSync('git push', { encoding: 'utf-8' });
-
-      return {
-        success: true,
-        output: output.trim(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      };
-    }
-  }
-
-  /**
-   * Auto-commit documentation changes
-   * Stages files, commits with a standard message, and optionally pushes
-   */
-  autoCommit(files: string[], symbolNames: string[], push: boolean = false): GitOperationResult {
-    // Check if git repository
-    if (!this.isGitRepository()) {
-      return {
-        success: false,
-        error: 'Not a git repository',
-      };
     }
 
-    // Stage files
-    const addResult = this.addFiles(files);
-    if (!addResult.success) {
-      return addResult;
+    /**
+     * Get current git status
+     */
+    getStatus(): GitOperationResult {
+        try {
+            const output = execSync('git status --porcelain', { encoding: 'utf-8' });
+            return {
+                success: true,
+                output: output.trim(),
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
     }
 
-    this.logger.info(`Staged ${files.length} ${files.length === 1 ? 'file' : 'files'}`);
-
-    // Create commit message
-    const commitMessage = this.createCommitMessage(symbolNames);
-
-    // Commit
-    const commitResult = this.commit(commitMessage);
-    if (!commitResult.success) {
-      return commitResult;
+    /**
+     * Check if there are uncommitted changes
+     */
+    hasUncommittedChanges(): boolean {
+        const status = this.getStatus();
+        return status.success && !!status.output;
     }
 
-    this.logger.success('Changes committed successfully');
-
-    // Push if requested
-    if (push) {
-      const pushResult = this.push();
-      if (!pushResult.success) {
-        this.logger.warn('Failed to push to remote');
-        return pushResult;
-      }
-
-      this.logger.success('Changes pushed to remote');
+    /**
+     * Get diff of changes
+     * @param staged - Whether to get diff of staged changes
+     */
+    async getDiff(staged: boolean = false): Promise<string> {
+        try {
+            const args = staged ? '--staged' : '';
+            return execSync(`git diff ${args}`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
+        } catch (error) {
+            this.logger.debug(
+                `Failed to get diff: ${error instanceof Error ? error.message : String(error)}`,
+            );
+            return '';
+        }
     }
 
-    return {
-      success: true,
-      output: commitMessage,
-    };
-  }
+    /**
+     * Get list of changed files
+     * @param revision Optional revision to check against (e.g. 'HEAD'). If omitted, checks working tree (staged + unstaged).
+     */
+    getChangedFiles(revision?: string): string[] {
+        try {
+            if (revision) {
+                // Get changed files in the specified revision (comparing against its parent)
+                // git show --name-only --pretty="" HEAD
+                const output = execSync(`git show --name-only --pretty="" ${revision}`, {
+                    encoding: 'utf-8',
+                });
+                return output.trim().split('\n').filter(Boolean);
+            }
 
-  /**
-   * Create a commit message for documentation updates
-   */
-  private createCommitMessage(symbolNames: string[]): string {
-    if (symbolNames.length === 0) {
-      return '🤖 Sintesi Bot: Auto-fix documentation';
+            // Get staged changes
+            const staged = execSync('git diff --name-only --cached', { encoding: 'utf-8' })
+                .trim()
+                .split('\n')
+                .filter(Boolean);
+            // Get unstaged changes
+            const unstaged = execSync('git diff --name-only', { encoding: 'utf-8' })
+                .trim()
+                .split('\n')
+                .filter(Boolean);
+
+            // Combine and deduplicate
+            return Array.from(new Set([...staged, ...unstaged]));
+        } catch (error) {
+            this.logger.debug(
+                `Failed to get changed files: ${error instanceof Error ? error.message : String(error)}`,
+            );
+            return [];
+        }
     }
 
-    if (symbolNames.length === 1) {
-      return `🤖 Sintesi Bot: Auto-fix documentation for ${symbolNames[0]}`;
+    /**
+     * Get list of changed files against a base branch (e.g. origin/main)
+     * Uses "git diff base...HEAD" (triple dot)
+     */
+    getChangedFilesAgainstBase(base: string): string[] {
+        try {
+            const output = execSync(`git diff --name-only ${base}...HEAD`, { encoding: 'utf-8' });
+            return output.trim().split('\n').filter(Boolean);
+        } catch (error) {
+            this.logger.debug(
+                `Failed to get changed files against base ${base}: ${error instanceof Error ? error.message : String(error)}`,
+            );
+            return [];
+        }
     }
 
-    if (symbolNames.length <= 3) {
-      return `🤖 Sintesi Bot: Auto-fix documentation for ${symbolNames.join(', ')}`;
+    /**
+     * Get merge base between HEAD and a base branch
+     */
+    getMergeBase(base: string): string | null {
+        try {
+            return execSync(`git merge-base ${base} HEAD`, {
+                encoding: 'utf-8',
+                stdio: 'pipe',
+            }).trim();
+        } catch {
+            this.logger.debug(`Could not find merge base with ${base}`);
+            return null;
+        }
     }
 
-    return `🤖 Sintesi Bot: Auto-fix documentation for ${symbolNames.length} symbols`;
-  }
+    /**
+     * Get diff against a base branch
+     */
+    getDiffAgainstBase(base: string): string {
+        try {
+            // First try to find a merge base to capture the divergence
+            const mergeBase = this.getMergeBase(base);
+
+            if (mergeBase) {
+                // Diff from merge-base to HEAD
+                // This is safe even if base is remote and we have local commits
+                return execSync(`git diff ${mergeBase}..HEAD`, {
+                    encoding: 'utf-8',
+                    maxBuffer: 10 * 1024 * 1024,
+                });
+            }
+
+            // If no merge base (shallow clone?), try direct comparison
+            // The triple dot ... in 'git diff base...HEAD' actually implies using merge base unless it falls back
+            return execSync(`git diff ${base}...HEAD`, {
+                encoding: 'utf-8',
+                maxBuffer: 10 * 1024 * 1024,
+            });
+        } catch (error) {
+            this.logger.debug(
+                `Failed to get diff against base ${base}: ${error instanceof Error ? error.message : String(error)}`,
+            );
+            // Fallback: compare directly against whatever 'base' is resolvable to
+            // Logic: If merge-base fails (e.g. shallow clone), we try a direct diff between the two tips.
+            // This is less accurate for divergence but better than nothing.
+            try {
+                return execSync(`git diff ${base} HEAD`, {
+                    encoding: 'utf-8',
+                    maxBuffer: 10 * 1024 * 1024,
+                });
+            } catch {
+                return '';
+            }
+        }
+    }
+
+    /**
+     * Get filtered diff (excluding locks)
+     */
+    getFilteredDiff(base: string, staged: boolean = false): string {
+        // Defines excludes as an array for safe passing to spawnSync
+        // This avoids shell quoting issues on Windows (PowerShell/CMD)
+        const excludes = [
+            ':(exclude)package-lock.json',
+            ':(exclude)yarn.lock',
+            ':(exclude)pnpm-lock.yaml',
+        ];
+
+        try {
+            const args = ['diff'];
+            if (staged) {
+                args.push('--cached');
+            } else {
+                const mergeBase = this.getMergeBase(base);
+                if (mergeBase) {
+                    args.push(`${mergeBase}..HEAD`);
+                } else {
+                    args.push(`${base}...HEAD`);
+                }
+            }
+
+            // Add standard args
+            args.push('--', '.', ...excludes);
+
+            const result = spawnSync('git', args, {
+                encoding: 'utf-8',
+                maxBuffer: 10 * 1024 * 1024,
+            });
+
+            if (result.error) {
+                throw result.error;
+            }
+
+            if (result.stderr && result.stderr.trim().length > 0) {
+                this.logger.debug(`Git diff stderr: ${result.stderr}`);
+            }
+
+            return result.stdout || '';
+        } catch (error) {
+            this.logger.debug(`Failed to get filtered diff: ${error}`);
+            return '';
+        }
+    }
+
+    /**
+     * Stage files for commit
+     */
+    addFiles(files: string[]): GitOperationResult {
+        try {
+            this.logger.debug(`Staging files: ${files.join(', ')}`);
+
+            const filesArg = files.map((f) => `"${f}"`).join(' ');
+            const output = execSync(`git add ${filesArg}`, { encoding: 'utf-8' });
+
+            return {
+                success: true,
+                output: output.trim(),
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+
+    /**
+     * Create a git commit
+     */
+    commit(message: string): GitOperationResult {
+        try {
+            this.logger.debug(`Creating commit: ${message}`);
+
+            // Escape quotes in commit message
+            const escapedMessage = message.replace(/"/g, '\\"');
+            const output = execSync(`git commit -m "${escapedMessage}"`, { encoding: 'utf-8' });
+
+            return {
+                success: true,
+                output: output.trim(),
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+
+    /**
+     * Fetch changes from remote
+     */
+    fetch(remote: string, branch: string): GitOperationResult {
+        try {
+            this.logger.debug(`Fetching ${remote} ${branch}`);
+            const output = execSync(`git fetch ${remote} ${branch}`, { encoding: 'utf-8' });
+            return {
+                success: true,
+                output: output.trim(),
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+
+    /**
+     * Push commits to remote
+     */
+    push(): GitOperationResult {
+        try {
+            this.logger.debug('Pushing to remote');
+
+            const output = execSync('git push', { encoding: 'utf-8' });
+
+            return {
+                success: true,
+                output: output.trim(),
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+
+    /**
+     * Auto-commit documentation changes
+     * Stages files, commits with a standard message, and optionally pushes
+     */
+    autoCommit(files: string[], symbolNames: string[], push: boolean = false): GitOperationResult {
+        // Check if git repository
+        if (!this.isGitRepository()) {
+            return {
+                success: false,
+                error: 'Not a git repository',
+            };
+        }
+
+        // Stage files
+        const addResult = this.addFiles(files);
+        if (!addResult.success) {
+            return addResult;
+        }
+
+        this.logger.info(`Staged ${files.length} ${files.length === 1 ? 'file' : 'files'}`);
+
+        // Create commit message
+        const commitMessage = this.createCommitMessage(symbolNames);
+
+        // Commit
+        const commitResult = this.commit(commitMessage);
+        if (!commitResult.success) {
+            return commitResult;
+        }
+
+        this.logger.success('Changes committed successfully');
+
+        // Push if requested
+        if (push) {
+            const pushResult = this.push();
+            if (!pushResult.success) {
+                this.logger.warn('Failed to push to remote');
+                return pushResult;
+            }
+
+            this.logger.success('Changes pushed to remote');
+        }
+
+        return {
+            success: true,
+            output: commitMessage,
+        };
+    }
+
+    /**
+     * Create a commit message for documentation updates
+     */
+    private createCommitMessage(symbolNames: string[]): string {
+        if (symbolNames.length === 0) {
+            return '🤖 Sintesi Bot: Auto-fix documentation';
+        }
+
+        if (symbolNames.length === 1) {
+            return `🤖 Sintesi Bot: Auto-fix documentation for ${symbolNames[0]}`;
+        }
+
+        if (symbolNames.length <= 3) {
+            return `🤖 Sintesi Bot: Auto-fix documentation for ${symbolNames.join(', ')}`;
+        }
+
+        return `🤖 Sintesi Bot: Auto-fix documentation for ${symbolNames.length} symbols`;
+    }
 }

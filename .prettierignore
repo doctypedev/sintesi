@@ -1,0 +1,6 @@
+dist
+node_modules
+coverage
+.sintesi
+.git
+pnpm-lock.yaml

@@ -17,10 +17,10 @@ Sintesi guarantees your documentation never drifts from your codebase. It uses *
 
 Traditional documentation often becomes outdated. Sintesi keeps your docs fresh and relevant.
 
--   **🛡️ Drift Protection:** Detects inconsistencies between code and documentation before you merge.
--   **🕵️ Context-Aware:** Reads your actual source code to write specific, accurate documentation.
--   **🤖 Multi-Agent:** Utilizes specialized agents (Planner, Writer, Reviewer, and Researcher) to produce high-quality content.
--   **📦 Monorepo Native:** Designed for complex workspaces from day one, allowing seamless integration in monorepo environments.
+- **🛡️ Drift Protection:** Detects inconsistencies between code and documentation before you merge.
+- **🕵️ Context-Aware:** Reads your actual source code to write specific, accurate documentation.
+- **🤖 Multi-Agent:** Utilizes specialized agents (Planner, Writer, Reviewer, and Researcher) to produce high-quality content.
+- **📦 Monorepo Native:** Designed for complex workspaces from day one, allowing seamless integration in monorepo environments.
 
 ## 🚀 Quick Start
 
@@ -31,70 +31,79 @@ Add a new workflow in `.github/workflows/docs.yml`:
 ```yaml
 name: Sintesi - Documentation AI
 on:
-  push:
-    branches: [ main ]
+    push:
+        branches: [main]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 permissions:
-  contents: write
-  pull-requests: write
+    contents: write
+    pull-requests: write
 
 jobs:
-  sync-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    sync-docs:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-      - name: Sintesi Check & Fix
-        uses: doctypedev/action@v0
-        with:
-          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-          cohere_api_key: ${{ secrets.COHERE_API_KEY }} # Add COHERE_API_KEY for semantic retrieval
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          targets: 'readme,docs' # Documentation targets to generate (comma-separated). Options: readme, docs
-          docs_output: 'docs' # Optional: Directory for the output documentation - Default: docs
+            - name: Sintesi Check & Fix
+              uses: doctypedev/action@v0
+              with:
+                  openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+                  cohere_api_key: ${{ secrets.COHERE_API_KEY }} # Add COHERE_API_KEY for semantic retrieval
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  targets: 'readme,docs' # Documentation targets to generate (comma-separated). Options: readme, docs
+                  docs_output: 'docs' # Optional: Directory for the output documentation - Default: docs
 ```
 
 1.  **Install**
+
     ```bash
     npm install -g @sintesi/sintesi
     ```
 
 2.  **Generate Documentation**
     Don't have documentation? Let Sintesi inspect your code and create a living documentation site.
+
     ```bash
     sintesi documentation
     ```
+
     Or just a README:
+
     ```bash
     sintesi readme
     ```
 
 3.  **Verify Integrity**
     Run this in your CI/CD pipeline. If the code changes but the documentation doesn't, this returns exit code 1.
+
     ```bash
     sintesi check
     ```
+
     The `check` command performs dual drift detection for both the README and the documentation site. You can use the `--no-strict` flag to allow non-blocking CI usage. You can also run separate checks for the README or documentation site using:
+
     ```bash
     sintesi check --readme
     sintesi check --doc
     ```
 
-4. **Force Overwrite**
+4.  **Force Overwrite**
     If you need to regenerate documentation or README files and want to bypass existing content checks, you can use the `--force` flag:
+
     ```bash
     sintesi documentation --force
     sintesi readme --force
     ```
+
     This will ignore existing files and regenerate them from scratch.
 
-5. **Output Options**
+5.  **Output Options**
     You can specify custom output paths for the README check and documentation check using the `--output` and `--output-dir` flags, respectively:
     ```bash
     sintesi check --output path/to/README.md
@@ -133,9 +142,9 @@ Sintesi includes a **Retrieval-Augmented Generation (RAG)** pipeline that enhanc
 
 To utilize the RAG feature to its full potential, set the following environment variable:
 
-| Name               | Required? | Purpose                                                      |
-|--------------------|-----------|--------------------------------------------------------------|
-| COHERE_API_KEY     | no  | Enables `reranking` via Cohere Rerank API.   |
+| Name           | Required? | Purpose                                    |
+| -------------- | --------- | ------------------------------------------ |
+| COHERE_API_KEY | no        | Enables `reranking` via Cohere Rerank API. |
 
 You should include `COHERE_API_KEY` in your `.env` configuration:
 

@@ -22,7 +22,7 @@ describe('ImpactAnalyzer', () => {
     it('should exclude README.md for readme type', async () => {
         const agents: any = {
             reviewer: { generateText: vi.fn().mockResolvedValue('{"update":false}') },
-            planner: { generateText: vi.fn().mockResolvedValue('{"update":false}') }
+            planner: { generateText: vi.fn().mockResolvedValue('{"update":false}') },
         };
 
         await analyzer.shouldUpdateDocs('diff', 'readme', agents);
@@ -33,7 +33,7 @@ describe('ImpactAnalyzer', () => {
     it('should exclude docs/ and documentation/ for documentation type', async () => {
         const agents: any = {
             reviewer: { generateText: vi.fn().mockResolvedValue('{"update":false}') },
-            planner: { generateText: vi.fn().mockResolvedValue('{"update":false}') }
+            planner: { generateText: vi.fn().mockResolvedValue('{"update":false}') },
         };
 
         await analyzer.shouldUpdateDocs('diff', 'documentation', agents);

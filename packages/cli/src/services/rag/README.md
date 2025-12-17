@@ -24,7 +24,7 @@ const service = new RetrievalService(logger, process.cwd());
 await service.indexProject();
 
 // 2. Retrieve context for a query
-const context = await service.retrieveContext("How does authentication work?");
+const context = await service.retrieveContext('How does authentication work?');
 
 console.log(context);
 ```

@@ -1,38 +1,48 @@
-
 import { Logger } from '../utils/logger';
 import { AIAgents } from '../../../ai';
 import { filterGitDiff } from '../utils/diff-utils';
 import { getImpactAnalysisPrompt } from '../prompts/analysis';
 
 export class ImpactAnalyzer {
-    constructor(private logger: Logger) { }
+    constructor(private logger: Logger) {}
 
     /**
      * Helper to centralize the check & logging logic.
      * Returns TRUE if we should proceed with generation (update needed), FALSE if we should skip.
      */
     async checkWithLogging(options: {
-        gitDiff: string,
-        docType: 'readme' | 'documentation',
-        aiAgents: AIAgents,
-        force?: boolean,
-        targetExists?: boolean,
-        outputDir?: string
+        gitDiff: string;
+        docType: 'readme' | 'documentation';
+        aiAgents: AIAgents;
+        force?: boolean;
+        targetExists?: boolean;
+        outputDir?: string;
     }): Promise<{ shouldProceed: boolean; reason?: string }> {
-        const { gitDiff, docType, aiAgents, force = false, targetExists = true, outputDir } = options;
+        const {
+            gitDiff,
+            docType,
+            aiAgents,
+            force = false,
+            targetExists = true,
+            outputDir,
+        } = options;
 
         if (!gitDiff) return { shouldProceed: true, reason: 'No git diff provided (or forced).' };
 
         // 1. Existence Check: If the target file/folder is missing, we MUST generate.
         if (targetExists === false) {
-            this.logger.info(`${docType === 'readme' ? 'README' : 'Documentation'} missing: Skipping semantic impact analysis to ensure generation.`);
+            this.logger.info(
+                `${docType === 'readme' ? 'README' : 'Documentation'} missing: Skipping semantic impact analysis to ensure generation.`,
+            );
             return { shouldProceed: true, reason: 'Target missing' };
         }
 
         const impact = await this.shouldUpdateDocs(gitDiff, docType, aiAgents, outputDir);
 
         if (!impact.update && !force) {
-            this.logger.success(`✨ Impact Analysis: No relevant changes detected. Skipping generation.`);
+            this.logger.success(
+                `✨ Impact Analysis: No relevant changes detected. Skipping generation.`,
+            );
             this.logger.info(`   Reason: ${impact.reason}`);
             return { shouldProceed: false, reason: impact.reason }; // Skip
         } else if (impact.update) {
@@ -51,7 +61,7 @@ export class ImpactAnalyzer {
         gitDiff: string,
         docType: 'readme' | 'documentation',
         aiAgents: AIAgents,
-        outputDir?: string
+        outputDir?: string,
     ): Promise<{ update: boolean; reason: string }> {
         if (!gitDiff || gitDiff.trim().length === 0) {
             return { update: false, reason: 'No git diff provided.' };
@@ -81,7 +91,7 @@ export class ImpactAnalyzer {
         if (!cleanDiff || cleanDiff.trim().length === 0) {
             return {
                 update: false,
-                reason: 'All changes were filtered out (likely docs-only changes).'
+                reason: 'All changes were filtered out (likely docs-only changes).',
             };
         }
 
@@ -91,7 +101,7 @@ export class ImpactAnalyzer {
         if (cleanDiff.length > 20000) {
             return {
                 update: true,
-                reason: 'Diff is too large (>20k chars) for semantic analysis. Forcing update to ensure no breaking changes are missed.'
+                reason: 'Diff is too large (>20k chars) for semantic analysis. Forcing update to ensure no breaking changes are missed.',
             };
         }
 
@@ -104,25 +114,26 @@ export class ImpactAnalyzer {
             const agent = aiAgents.reviewer || aiAgents.planner;
             let response = await agent.generateText(prompt, {
                 maxTokens: 500,
-                temperature: 0.1
+                temperature: 0.1,
             });
 
             response = response.trim();
             // Clean up markdown code blocks
-            if (response.startsWith('```json')) response = response.replace(/^```json\s*/, '').replace(/```$/, '');
-            else if (response.startsWith('```')) response = response.replace(/^```\s*/, '').replace(/```$/, '');
+            if (response.startsWith('```json'))
+                response = response.replace(/^```json\s*/, '').replace(/```$/, '');
+            else if (response.startsWith('```'))
+                response = response.replace(/^```\s*/, '').replace(/```$/, '');
 
             const result = JSON.parse(response);
             return {
                 update: result.update === true,
-                reason: result.reason || 'No reason provided.'
+                reason: result.reason || 'No reason provided.',
             };
-
         } catch (e) {
-            this.logger.warn(`Impact analysis failed (JSON parse error or AI error): ${e}. Defaulting to TRUE (safe mode).`);
+            this.logger.warn(
+                `Impact analysis failed (JSON parse error or AI error): ${e}. Defaulting to TRUE (safe mode).`,
+            );
             return { update: true, reason: 'Analysis failed (fallback to safe update).' };
         }
     }
-
-
 }
