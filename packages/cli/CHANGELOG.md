@@ -1,5 +1,12 @@
 # @sintesi/sintesi
 
+## 0.18.3
+
+### Patch Changes
+
+- f6222d5: Improve documentation and readme commands to reset diff when using --force or missing output
+  - @sintesi/core@0.18.3
+
 ## 0.18.2
 
 ### Patch Changes
