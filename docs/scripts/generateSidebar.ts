@@ -49,7 +49,14 @@ type SidebarStructure = SidebarGroup[];
 const DEFAULT_CONFIG: SidebarConfig = {
     docsRoot: path.resolve(process.cwd(), 'docs'),
     outputPath: path.resolve(process.cwd(), 'docs/.vitepress/sidebar-auto.ts'),
-    ignorePatterns: ['index.md', 'README.md', 'node_modules/**', '.vitepress/**', 'scripts/**'],
+    ignorePatterns: [
+        'index.md',
+        'README.md',
+        'node_modules/**',
+        '.vitepress/**',
+        'scripts/**',
+        'public/**',
+    ],
     sortByPrefix: true,
 };
 
