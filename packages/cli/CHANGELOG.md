@@ -1,5 +1,17 @@
 # @sintesi/sintesi
 
+## 0.19.0
+
+### Minor Changes
+
+- 54aa685: - Add Retrieval-Augmented Generation (RAG) pipeline: CodeChunkingService, EmbeddingService, VectorStoreService, RerankingService, and RetrievalService for semantic context retrieval
+  - Update CLI to initialize and use RAG index in documentation generation
+  - Introduce COHERE_API_KEY support and update workflows/docs accordingly
+
+### Patch Changes
+
+- @sintesi/core@0.19.0
+
 ## 0.18.4
 
 ### Patch Changes
