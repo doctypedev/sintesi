@@ -9,7 +9,7 @@
 
 > **The intelligent documentation engine.**
 
-Sintesi guarantees your documentation never drifts from your codebase. It uses **multi-agent AI** to analyze your source code, plan a documentation structure, and write comprehensive, up-to-date docs. No outdated wikis, no "docs rot".
+Sintesi guarantees your documentation never drifts from your codebase. It uses **multi-agent AI** and **RAG** to analyze your source code, plan a documentation structure, and write comprehensive, up-to-date docs. No outdated wikis, no "docs rot".
 
 ---
 
@@ -114,18 +114,8 @@ Sintesi is not just a generator; it is a full **documentation lifecycle manager*
 
 We believe in eating our own dog food. This repository's documentation is maintained by Sintesi.
 
-👉 **[Read the Architecture Guide](./docs/architecture.md)**
-👉 **[CLI Reference](./docs/reference/commands.md)**
-
----
-
-## Contributing
-
-We love contributions! Please check out our [Contributing Guide](./docs/community/contributing.md).
-
-## License
-
-MIT © [Doctypedev](https://github.com/doctypedev)
+👉 **[Read the Architecture Guide](https://sintesicli.dev/architecture/ai-architecture.html)**
+👉 **[CLI Reference](https://sintesicli.dev/reference/commands.html)**
 
 ---
 
@@ -135,20 +125,32 @@ MIT © [Doctypedev](https://github.com/doctypedev)
 
 ---
 
-## New Feature: Retrieval-Augmented Generation (RAG)
+## Retrieval-Augmented Generation (RAG)
 
-Sintesi now includes a **Retrieval-Augmented Generation (RAG)** pipeline that enhances the documentation generation process. This feature allows for semantic context retrieval, improving the accuracy and relevance of generated documentation.
+Sintesi includes a **Retrieval-Augmented Generation (RAG)** pipeline that enhances the documentation generation process. This feature allows for semantic context retrieval, improving the accuracy and relevance of generated documentation.
 
 ### Environment Variables
 
-To utilize the RAG feature, you can set the following environment variable:
+To utilize the RAG feature to its full potential, set the following environment variable:
 
 | Name               | Required? | Purpose                                                      |
 |--------------------|-----------|--------------------------------------------------------------|
-| COHERE_API_KEY     | optional  | Enables `RerankingService.rerank` via Cohere Rerank API.   |
+| COHERE_API_KEY     | no  | Enables `reranking` via Cohere Rerank API.   |
 
-Make sure to include `COHERE_API_KEY` in your `.env` configuration:
+You should include `COHERE_API_KEY` in your `.env` configuration:
 
 ```plaintext
 COHERE_API_KEY=your-cohere-api-key-here
 ```
+
+---
+
+## Contributing
+
+We love contributions! Please check out our [Contributing Guide](./docs/community/contributing.md).
+
+---
+
+## License
+
+MIT © [Doctypedev](https://github.com/doctypedev)
