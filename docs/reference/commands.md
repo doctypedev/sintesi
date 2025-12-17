@@ -125,7 +125,7 @@ sintesi documentation
 - Analyzes the project structure and generates documentation files.
 - Skips generation if no relevant code changes are detected.
 - **Diff-reset behavior**: Using `--force` or if the output directory is missing will bypass checks and always regenerate the documentation.
-- **Note**: If the `repository` field is missing in `package.json`, the command will automatically detect and populate the repository URL from the git configuration.
+- **New Behavior**: When using `--force` or `-f`, existing documentation scanning is entirely skipped, ensuring a greenfield generation strategy.
 
 #### Options
 - `--output-dir <path>`: Specifies the output directory for the generated documentation (default is `docs`).
