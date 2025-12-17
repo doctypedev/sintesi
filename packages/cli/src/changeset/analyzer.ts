@@ -12,21 +12,21 @@ export { SymbolChange };
  * Analysis result with git diff and AST changes
  */
 export interface ChangesetAnalysis extends ChangeContext {
-  // Can extend if needed, currently 1:1 map
+    // Can extend if needed, currently 1:1 map
 }
 
 /**
  * Options for changeset analysis
  */
 export interface AnalysisOptions {
-  /** Compare against a specific branch (default: main) */
-  baseBranch?: string;
-  /** Include only staged changes */
-  stagedOnly?: boolean;
-  /** Project root directory */
-  projectRoot?: string;
-  /** Force fetch the base branch from origin before analyzing changes */
-  forceFetch?: boolean;
+    /** Compare against a specific branch (default: main) */
+    baseBranch?: string;
+    /** Include only staged changes */
+    stagedOnly?: boolean;
+    /** Project root directory */
+    projectRoot?: string;
+    /** Force fetch the base branch from origin before analyzing changes */
+    forceFetch?: boolean;
 }
 
 /**
@@ -36,34 +36,35 @@ export interface AnalysisOptions {
  * code changes at a semantic level
  */
 export class ChangesetAnalyzer {
-  private logger: Logger;
-  private service: ChangeAnalysisService;
+    private logger: Logger;
+    private service: ChangeAnalysisService;
 
-  constructor(logger: Logger) {
-    this.logger = logger;
-    this.service = new ChangeAnalysisService(logger);
-  }
+    constructor(logger: Logger) {
+        this.logger = logger;
+        this.service = new ChangeAnalysisService(logger);
+    }
 
-  /**
-   * Analyze changes in the repository
-   */
-  async analyzeChanges(options: AnalysisOptions = {}): Promise<ChangesetAnalysis> {
-    const {
-      baseBranch = 'main',
-      stagedOnly = false,
-      projectRoot = process.cwd(),
-      forceFetch = false,
-    } = options;
+    /**
+     * Analyze changes in the repository
+     */
+    async analyzeChanges(options: AnalysisOptions = {}): Promise<ChangesetAnalysis> {
+        const {
+            baseBranch = 'main',
+            stagedOnly = false,
+            projectRoot = process.cwd(),
+            forceFetch = false,
+        } = options;
 
-    this.logger.debug(`Analyzing changes against ${baseBranch} (delegating to AnalysisService)`);
+        this.logger.debug(
+            `Analyzing changes against ${baseBranch} (delegating to AnalysisService)`,
+        );
 
-    return this.service.analyze({
-      baseBranch,
-      stagedOnly,
-      projectRoot,
-      forceFetch,
-      includeSymbols: true
-    });
-  }
+        return this.service.analyze({
+            baseBranch,
+            stagedOnly,
+            projectRoot,
+            forceFetch,
+            includeSymbols: true,
+        });
+    }
 }
-

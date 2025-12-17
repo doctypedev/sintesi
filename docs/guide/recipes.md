@@ -10,6 +10,7 @@ order: 30
 This document provides practical examples and use cases to demonstrate how to effectively use the CLI tool within the `sintesi-monorepo-root` project. The CLI tool is designed to streamline various development tasks, including building, testing, linting, and generating documentation.
 
 ## Table of Contents
+
 - [Getting Started](#getting-started)
 - [Building Packages](#building-packages)
 - [Running Tests](#running-tests)
@@ -40,6 +41,7 @@ pnpm run build
 This command compiles the code for all packages, ensuring they are ready for production use.
 
 ### Example
+
 If you have made changes to the `core` package, running the build command will compile the latest changes across all packages, including `core`.
 
 ## Running Tests
@@ -53,6 +55,7 @@ pnpm run test
 This command will run the test suites defined in each package, providing a consolidated output of the test results.
 
 ### Example
+
 After implementing a new feature in the `cli` package, run the test command to ensure that all existing and new tests pass.
 
 ## Linting Code
@@ -66,6 +69,7 @@ pnpm run lint
 This command checks the code for stylistic errors and enforces coding standards as defined in your linting configuration.
 
 ### Example
+
 If you want to ensure that your code adheres to the project's coding standards before committing changes, run the lint command to catch any issues early.
 
 ## Cleaning Build Artifacts
@@ -79,6 +83,7 @@ pnpm run clean
 This command removes any generated files, allowing you to start fresh if needed.
 
 ### Example
+
 If you encounter issues with stale build artifacts, running the clean command can help resolve these problems.
 
 ## Generating Documentation
@@ -92,6 +97,7 @@ pnpm run docs:build
 This command triggers the documentation generation process, creating up-to-date documentation based on the current state of the codebase.
 
 ### Example
+
 After adding new features or making significant changes, run the documentation build command to ensure that the documentation reflects the latest updates.
 
 ## Releasing Packages
@@ -105,6 +111,7 @@ pnpm run release
 This command utilizes `changeset` to version and publish the packages, ensuring that all changes are properly documented and released.
 
 ### Example
+
 When you're ready to release a new version of the `core` package after a series of updates, run the release command to publish it to the package registry.
 
 ## Forcing Full Regeneration of README and Docs
@@ -118,9 +125,11 @@ pnpm run docs:build --force
 ```
 
 ### Explanation
+
 When using the `--force` flag, if the documentation directory is empty or the README file does not exist, the command will reset the git diff, ensuring that the documentation is generated based on the full current context rather than relying on previous commits.
 
 ### Example
+
 If you find that the README is missing or outdated, running the command with the `--force` flag will regenerate it completely, ensuring that it reflects the latest state of your project.
 
 ## Conclusion

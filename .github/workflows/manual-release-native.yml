@@ -1,112 +1,112 @@
 name: Release Native Packages
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to publish (e.g. 0.1.0)'
-        required: true
-        type: string
+    workflow_dispatch:
+        inputs:
+            version:
+                description: 'Version to publish (e.g. 0.1.0)'
+                required: true
+                type: string
 
 permissions:
-  contents: read
-  id-token: write
+    contents: read
+    id-token: write
 
 jobs:
-  release-native:
-    name: Release Native (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
-    runs-on: ${{ matrix.settings.host }}
-    strategy:
-      fail-fast: false
-      matrix:
-        settings:
-          - host: macos-latest
-            target: aarch64-apple-darwin
-            platform: darwin
-            arch: arm64
-            npm_dir: darwin-arm64
-          - host: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            platform: linux
-            arch: x64
-            npm_dir: linux-x64-gnu
-          - host: windows-latest
-            target: x86_64-pc-windows-msvc
-            platform: win32
-            arch: x64
-            npm_dir: win32-x64-msvc
+    release-native:
+        name: Release Native (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
+        runs-on: ${{ matrix.settings.host }}
+        strategy:
+            fail-fast: false
+            matrix:
+                settings:
+                    - host: macos-latest
+                      target: aarch64-apple-darwin
+                      platform: darwin
+                      arch: arm64
+                      npm_dir: darwin-arm64
+                    - host: ubuntu-latest
+                      target: x86_64-unknown-linux-gnu
+                      platform: linux
+                      arch: x64
+                      npm_dir: linux-x64-gnu
+                    - host: windows-latest
+                      target: x86_64-pc-windows-msvc
+                      platform: win32
+                      arch: x64
+                      npm_dir: win32-x64-msvc
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 10
+            - uses: pnpm/action-setup@v3
+              with:
+                  version: 10
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org/'
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'pnpm'
+                  registry-url: 'https://registry.npmjs.org/'
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.settings.target }}
+            - name: Setup Rust
+              uses: dtolnay/rust-toolchain@stable
+              with:
+                  targets: ${{ matrix.settings.target }}
 
-      - name: Update npm
-        run: npm install -g npm@latest
+            - name: Update npm
+              run: npm install -g npm@latest
 
-      - name: Pull latest changes
-        run: git pull origin main
+            - name: Pull latest changes
+              run: git pull origin main
 
-      - name: Install dependencies
-        run: pnpm install
+            - name: Install dependencies
+              run: pnpm install
 
-      - name: Set version for native package
-        shell: bash
-        run: |
-          NPM_PACKAGE_DIR="crates/core/npm/${{ matrix.settings.npm_dir }}"
-          echo "Setting version to ${{ inputs.version }} in $NPM_PACKAGE_DIR"
-          cd "$NPM_PACKAGE_DIR"
-          npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version
+            - name: Set version for native package
+              shell: bash
+              run: |
+                  NPM_PACKAGE_DIR="crates/core/npm/${{ matrix.settings.npm_dir }}"
+                  echo "Setting version to ${{ inputs.version }} in $NPM_PACKAGE_DIR"
+                  cd "$NPM_PACKAGE_DIR"
+                  npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version
 
-      - name: Build and Publish Native Package
-        shell: bash
-        env:
-          CARGO_BUILD_TARGET: ${{ matrix.settings.target }}
-        run: |
-          # Build Rust binary
-          cd crates/core
-          pnpm install
-          pnpm run build
-          
-          # Copy binary to npm package location
-          # Copy binary to npm package location
-          NODE_BINARY_NAME="sintesi-core.${{ matrix.settings.npm_dir }}.node"
-          NPM_PACKAGE_DIR="npm/${{ matrix.settings.npm_dir }}"
-          
-          # Ensure directory exists
-          mkdir -p "$NPM_PACKAGE_DIR"
-          
-          cp "$NODE_BINARY_NAME" "$NPM_PACKAGE_DIR/$NODE_BINARY_NAME"
-          
-          # Publish
-          cd "$NPM_PACKAGE_DIR"
-          echo "📦 Publishing native package from $(pwd)"
-          
-          # Check if version exists
-          PACKAGE_NAME="@sintesi/core-${{ matrix.settings.npm_dir }}"
-          VERSION=$(node -p "require('./package.json').version")
-          PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
+            - name: Build and Publish Native Package
+              shell: bash
+              env:
+                  CARGO_BUILD_TARGET: ${{ matrix.settings.target }}
+              run: |
+                  # Build Rust binary
+                  cd crates/core
+                  pnpm install
+                  pnpm run build
 
-          if [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "📦 Version $VERSION already published, skipping"
-          else
-            echo "🚀 Publishing $PACKAGE_NAME@$VERSION..."
-            # Publish with public access using OIDC (provenance)
-            # Note: OIDC requires --provenance
-            npm publish --access public --provenance
-          fi
+                  # Copy binary to npm package location
+                  # Copy binary to npm package location
+                  NODE_BINARY_NAME="sintesi-core.${{ matrix.settings.npm_dir }}.node"
+                  NPM_PACKAGE_DIR="npm/${{ matrix.settings.npm_dir }}"
+
+                  # Ensure directory exists
+                  mkdir -p "$NPM_PACKAGE_DIR"
+
+                  cp "$NODE_BINARY_NAME" "$NPM_PACKAGE_DIR/$NODE_BINARY_NAME"
+
+                  # Publish
+                  cd "$NPM_PACKAGE_DIR"
+                  echo "📦 Publishing native package from $(pwd)"
+
+                  # Check if version exists
+                  PACKAGE_NAME="@sintesi/core-${{ matrix.settings.npm_dir }}"
+                  VERSION=$(node -p "require('./package.json').version")
+                  PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
+
+                  if [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
+                    echo "📦 Version $VERSION already published, skipping"
+                  else
+                    echo "🚀 Publishing $PACKAGE_NAME@$VERSION..."
+                    # Publish with public access using OIDC (provenance)
+                    # Note: OIDC requires --provenance
+                    npm publish --access public --provenance
+                  fi

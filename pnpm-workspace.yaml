@@ -1,5 +1,5 @@
 packages:
-  - '.'
-  - 'packages/*'
-  - 'crates/core'
-  - 'crates/core/npm/*'
+    - '.'
+    - 'packages/*'
+    - 'crates/core'
+    - 'crates/core/npm/*'

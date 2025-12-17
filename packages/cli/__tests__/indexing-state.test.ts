@@ -1,4 +1,3 @@
-
 import { IndexingStateManager } from '../src/services/rag/indexing-state';
 import { Logger } from '../src/utils/logger';
 import { join } from 'path';

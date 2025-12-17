@@ -47,10 +47,10 @@
 ### Minor Changes
 
 - 5b9cc1f: 🚀 **New Architecture & Reviewer Agent**
-  - **New AI Roles**: Added `Reviewer` and `Researcher` agents. The CLI now performs a self-review of generated documentation using the Reviewer agent to fix hallucinations before saving.
-  - **Service Layer**: Introduced `GenerationContextService` for better context awareness (detects CLI binary names, tech stacks, and relevant imports) and `ReviewService`.
-  - **Site Mode**: Added `--site` flag to `documentation` command to generate structured guides ready for VitePress/Starlight.
-  - **Rebranding**: Project updated to "Sintesi".
+    - **New AI Roles**: Added `Reviewer` and `Researcher` agents. The CLI now performs a self-review of generated documentation using the Reviewer agent to fix hallucinations before saving.
+    - **Service Layer**: Introduced `GenerationContextService` for better context awareness (detects CLI binary names, tech stacks, and relevant imports) and `ReviewService`.
+    - **Site Mode**: Added `--site` flag to `documentation` command to generate structured guides ready for VitePress/Starlight.
+    - **Rebranding**: Project updated to "Sintesi".
 
 ## 0.13.0
 
@@ -67,25 +67,25 @@
 ### Minor Changes
 
 - bbcf561: - Rename project from Doctype to Sintesi
-  - Update all references and configurations to reflect the new name
-  - Remove deprecated files and workflows related to Doctype
-  - Introduce new workflows for Sintesi CI/CD processes
+    - Update all references and configurations to reflect the new name
+    - Remove deprecated files and workflows related to Doctype
+    - Introduce new workflows for Sintesi CI/CD processes
 
 ## 0.7.0
 
 ### Minor Changes
 
 - 5c2f805: - Introduce new `sintesi readme` command to generate a README.md based on project context
-  - Add project context analysis capabilities to improve documentation generation
-  - Enhance AI generation logic for README content based on recent code changes
+    - Add project context analysis capabilities to improve documentation generation
+    - Enhance AI generation logic for README content based on recent code changes
 
 ## 0.6.0
 
 ### Minor Changes
 
 - 8f1f8bf: - Introduce interactive main menu for improved user experience
-  - Add new commands for initializing configuration and checking documentation drift
-  - Enhance CLI functionality with additional options for user actions
+    - Add new commands for initializing configuration and checking documentation drift
+    - Enhance CLI functionality with additional options for user actions
 
 ## 0.5.1
 
@@ -103,20 +103,20 @@
 
 - ff5a3db: Update optional dependencies for new native core release
 - 246079e: Remove redundant fields from sintesi-map.json to make it more robust and maintainable
-  - Remove `originalMarkdownContent` - Content is now read from markdown files at runtime
-  - Remove `startLine` and `endLine` from DocRef - Use ID-based anchor lookup instead
-  - Update all TypeScript and Rust type definitions
-  - Update CLI commands (check, fix, init) to use simplified schema
-  - Update ContentInjector and MarkdownAnchorInserter
-  - Update all tests to reflect new schema
-  - Update CLAUDE.md documentation
+    - Remove `originalMarkdownContent` - Content is now read from markdown files at runtime
+    - Remove `startLine` and `endLine` from DocRef - Use ID-based anchor lookup instead
+    - Update all TypeScript and Rust type definitions
+    - Update CLI commands (check, fix, init) to use simplified schema
+    - Update ContentInjector and MarkdownAnchorInserter
+    - Update all tests to reflect new schema
+    - Update CLAUDE.md documentation
 
-  Benefits:
-  - Single source of truth: Markdown files contain the actual content
-  - No content duplication in map file
-  - More resilient to manual markdown edits (no fragile line numbers)
-  - Smaller map file size
-  - Simpler architecture
+    Benefits:
+    - Single source of truth: Markdown files contain the actual content
+    - No content duplication in map file
+    - More resilient to manual markdown edits (no fragile line numbers)
+    - Smaller map file size
+    - Simpler architecture
 
 ## 0.4.3
 
@@ -168,14 +168,14 @@
 ### Patch Changes
 
 - 5043fe7: Replace TypeScript markdown parser with Rust NAPI implementation using pulldown-cmark
-  - Migrate markdown extraction logic from TypeScript to Rust for improved performance
-  - Use pulldown-cmark for proper Markdown AST parsing (best practice, avoids regex fragility)
-  - Automatically ignores HTML comments in code blocks (impossible with regex)
-  - Add `extractAnchors`, `validateMarkdownAnchors`, and `parseCodeRef` functions via NAPI bindings
-  - Remove `@sintesi/core-native` workspace dependency (not needed)
-  - Add type definitions for markdown extraction to native-types.d.ts
-  - Remove old packages/content/markdown-parser.ts file
-  - Maintain 0-indexed line numbers for TypeScript compatibility
+    - Migrate markdown extraction logic from TypeScript to Rust for improved performance
+    - Use pulldown-cmark for proper Markdown AST parsing (best practice, avoids regex fragility)
+    - Automatically ignores HTML comments in code blocks (impossible with regex)
+    - Add `extractAnchors`, `validateMarkdownAnchors`, and `parseCodeRef` functions via NAPI bindings
+    - Remove `@sintesi/core-native` workspace dependency (not needed)
+    - Add type definitions for markdown extraction to native-types.d.ts
+    - Remove old packages/content/markdown-parser.ts file
+    - Maintain 0-indexed line numbers for TypeScript compatibility
 
 ## 0.3.27
 

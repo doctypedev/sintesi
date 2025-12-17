@@ -2,23 +2,23 @@
 layout: home
 title: Home
 hero:
-  name: Sintesi
-  text: Intelligent Documentation Generator
-  tagline: Keep your docs in sync with your code automatically.
-  actions:
-    - theme: brand
-      text: Get Started
-      link: /guide/configuration
-    - theme: alt
-      text: View Commands
-      link: /reference/commands
+    name: Sintesi
+    text: Intelligent Documentation Generator
+    tagline: Keep your docs in sync with your code automatically.
+    actions:
+        - theme: brand
+          text: Get Started
+          link: /guide/configuration
+        - theme: alt
+          text: View Commands
+          link: /reference/commands
 features:
-  - title: Smart Drift Detection
-    details: Automatically detects when your documentation is out of sync with your code.
-  - title: AI-Powered Updates
-    details: Uses advanced LLMs to intelligently update documentation based on code changes.
-  - title: Zero Config
-    details: Works out of the box with sensible defaults, but fully configurable when needed.
+    - title: Smart Drift Detection
+      details: Automatically detects when your documentation is out of sync with your code.
+    - title: AI-Powered Updates
+      details: Uses advanced LLMs to intelligently update documentation based on code changes.
+    - title: Zero Config
+      details: Works out of the box with sensible defaults, but fully configurable when needed.
 ---
 
 ## Introduction
@@ -41,9 +41,9 @@ Sintesi includes several verified commands that enhance its functionality:
 
 - **Purpose**: Verifies that documentation is in sync with the code.
 - **Flags**:
-  - `--verbose`: Enables verbose output.
-  - `--smart`: Uses smart checks to detect drift.
-  - `--base <branch>`: Specifies the base branch for comparison (default is `main`).
+    - `--verbose`: Enables verbose output.
+    - `--smart`: Uses smart checks to detect drift.
+    - `--base <branch>`: Specifies the base branch for comparison (default is `main`).
 
 ### `sintesi readme`
 
@@ -54,8 +54,8 @@ Sintesi includes several verified commands that enhance its functionality:
 
 - **Purpose**: Generates changesets from code changes using AI.
 - **Flags**:
-  - `--baseBranch <branch>`: Specifies the base branch for changeset generation (default is `main`).
-  - `--forceFetch`: Forces fetching from the specified base branch.
+    - `--baseBranch <branch>`: Specifies the base branch for changeset generation (default is `main`).
+    - `--forceFetch`: Forces fetching from the specified base branch.
 
 ### `sintesi documentation`
 

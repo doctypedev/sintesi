@@ -11,14 +11,19 @@ vi.mock('../src/services/analysis-service');
 vi.mock('fs');
 vi.mock('path');
 vi.mock('@sintesi/core', () => ({
-    ASTAnalyzer: class { },
+    ASTAnalyzer: class {},
     GitBinding: class {
         static checkMeaningfulChanges(diff: string) {
             // Simple mock logic: returns true if diff contains "meaningful" or "export"
-            if (diff.includes('meaningful') || diff.includes('export') || diff.includes('dependencies')) return true;
+            if (
+                diff.includes('meaningful') ||
+                diff.includes('export') ||
+                diff.includes('dependencies')
+            )
+                return true;
             return false;
         }
-    }
+    },
 }));
 
 // Global mock for '../../ai' - just mock the function, implementation will be in beforeEach
@@ -65,7 +70,9 @@ describe('SmartChecker', () => {
         smartChecker = new SmartChecker(logger, '/mock/root');
 
         // Mock fs functions - default is no README
-        vi.mocked(fs.existsSync).mockImplementation((p: string) => p.includes('README.md') ? true : false);
+        vi.mocked(fs.existsSync).mockImplementation((p: string) =>
+            p.includes('README.md') ? true : false,
+        );
         vi.mocked(fs.readFileSync).mockReturnValue(''); // Default to empty content
 
         // Mock path.resolve
@@ -78,7 +85,9 @@ describe('SmartChecker', () => {
     });
 
     it('should return no drift if README does not exist', async () => {
-        vi.mocked(fs.existsSync).mockImplementation((p: string) => p.includes('README.md') ? false : false); // Explicitly ensure README doesn't exist
+        vi.mocked(fs.existsSync).mockImplementation((p: string) =>
+            p.includes('README.md') ? false : false,
+        ); // Explicitly ensure README doesn't exist
 
         const result = await smartChecker.checkReadme();
 
@@ -94,8 +103,8 @@ describe('SmartChecker', () => {
                 gitDiff: '',
                 changedFiles: [],
                 symbolChanges: [],
-                totalChanges: 0
-            })
+                totalChanges: 0,
+            }),
         };
         vi.mocked(ChangeAnalysisService).mockImplementation(() => mockAnalysisService);
 
@@ -109,26 +118,31 @@ describe('SmartChecker', () => {
     });
 
     it('should detect drift if AI says so', async () => {
-        vi.mocked(fs.existsSync).mockImplementation((p: string) => p.includes('README.md') ? true : false); // README exists
+        vi.mocked(fs.existsSync).mockImplementation((p: string) =>
+            p.includes('README.md') ? true : false,
+        ); // README exists
         vi.mocked(fs.readFileSync).mockReturnValue('# Readme Content');
 
         // Mock AnalysisService
         const mockAnalysisService = {
             analyze: vi.fn().mockResolvedValue({
-                gitDiff: 'diff --git a/src/code.ts b/src/code.ts\nindex abc..def 100644\n--- a/src/code.ts\n+++ b/src/code.ts\n@@ -1,1 +1,1 @@\n+export class NewFeature {}',
+                gitDiff:
+                    'diff --git a/src/code.ts b/src/code.ts\nindex abc..def 100644\n--- a/src/code.ts\n+++ b/src/code.ts\n@@ -1,1 +1,1 @@\n+export class NewFeature {}',
                 changedFiles: ['src/code.ts'],
                 symbolChanges: [],
-                totalChanges: 1
-            })
+                totalChanges: 1,
+            }),
         };
         vi.mocked(ChangeAnalysisService).mockImplementation(() => mockAnalysisService);
 
         // Explicitly set the mock return value for generateText here, specific to this test
-        vi.mocked(mockPlannerAgent.generateText).mockResolvedValue(JSON.stringify({
-            hasDrift: true,
-            reason: 'Missing docs',
-            suggestion: 'Add docs'
-        }));
+        vi.mocked(mockPlannerAgent.generateText).mockResolvedValue(
+            JSON.stringify({
+                hasDrift: true,
+                reason: 'Missing docs',
+                suggestion: 'Add docs',
+            }),
+        );
 
         smartChecker = new SmartChecker(logger, '/mock/root'); // Re-instantiate to get fresh mocks for analysisService
         const result = await smartChecker.checkReadme();
@@ -141,7 +155,9 @@ describe('SmartChecker', () => {
     });
 
     it('should ignore changes to README.md itself (self-trigger prevention)', async () => {
-        vi.mocked(fs.existsSync).mockImplementation((p: string) => p.includes('README.md') ? true : false);
+        vi.mocked(fs.existsSync).mockImplementation((p: string) =>
+            p.includes('README.md') ? true : false,
+        );
 
         // Mock AnalysisService to return diff ONLY in README.md
         const mockAnalysisService = {
@@ -149,8 +165,8 @@ describe('SmartChecker', () => {
                 gitDiff: 'diff --git a/README.md b/README.md\n+ New text',
                 changedFiles: ['README.md'],
                 symbolChanges: [],
-                totalChanges: 1
-            })
+                totalChanges: 1,
+            }),
         };
         vi.mocked(ChangeAnalysisService).mockImplementation(() => mockAnalysisService);
 
@@ -164,16 +180,19 @@ describe('SmartChecker', () => {
     });
 
     it('should ignore README changes even if they contain meaningful keywords (pre-filtering check)', async () => {
-        vi.mocked(fs.existsSync).mockImplementation((p: string) => p.includes('README.md') ? true : false);
+        vi.mocked(fs.existsSync).mockImplementation((p: string) =>
+            p.includes('README.md') ? true : false,
+        );
 
         // Mock AnalysisService to return diff in README.md with keyword "dependencies" which is a trigger word
         const mockAnalysisService = {
             analyze: vi.fn().mockResolvedValue({
-                gitDiff: 'diff --git a/README.md b/README.md\n+ Check your "dependencies" in package.json',
+                gitDiff:
+                    'diff --git a/README.md b/README.md\n+ Check your "dependencies" in package.json',
                 changedFiles: ['README.md'],
                 symbolChanges: [],
-                totalChanges: 1
-            })
+                totalChanges: 1,
+            }),
         };
         vi.mocked(ChangeAnalysisService).mockImplementation(() => mockAnalysisService);
 

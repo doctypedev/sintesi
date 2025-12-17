@@ -7,7 +7,7 @@ This directory contains platform-specific npm packages for the Sintesi Rust core
 Each subdirectory represents a platform-specific package:
 
 - `darwin-arm64/` - macOS ARM64 (Apple Silicon: M1, M2, M3, etc.)
-- *(More platforms will be added in the future)*
+- _(More platforms will be added in the future)_
 
 ## Package Naming
 
@@ -18,6 +18,7 @@ Native packages follow this naming convention:
 ```
 
 Examples:
+
 - `@sintesi/sintesi-darwin-arm64`
 - `@sintesi/sintesi-linux-x64`
 - `@sintesi/sintesi-win32-x64`
@@ -32,8 +33,6 @@ Examples:
 ## Version Synchronization
 
 This directory contains the native npm packages for the different platforms.
-
-
 
 ## Binary Format
 

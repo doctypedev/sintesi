@@ -1,95 +1,98 @@
 name: Sintesi
 
 on:
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
+    check:
+        runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-      pull-requests: write
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        permissions:
+            contents: write
+            pull-requests: write
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+            - name: Setup Rust
+              uses: dtolnay/rust-toolchain@stable
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v3
+              with:
+                  version: 9
 
-      # Build crates/core explicitly to generate the necessary .node binary and types
-      - name: Build Rust Core
-        working-directory: crates/core
-        run: pnpm build
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
 
-      # Copy generated types to packages/core so it can build
-      - name: Prepare Core Native Types
-        run: cp crates/core/index.d.ts packages/core/native-types.d.ts
+            # Build crates/core explicitly to generate the necessary .node binary and types
+            - name: Build Rust Core
+              working-directory: crates/core
+              run: pnpm build
 
-      # Build the entire monorepo (includes packages/cli, packages/core, etc.)
-      - name: Build packages
-        run: pnpm build
+            # Copy generated types to packages/core so it can build
+            - name: Prepare Core Native Types
+              run: cp crates/core/index.d.ts packages/core/native-types.d.ts
 
-      - name: Run Sintesi Check (README)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          # Check specifically for README drift
-          node packages/cli/dist/cli/src/index.js check --readme --no-strict --verbose
+            # Build the entire monorepo (includes packages/cli, packages/core, etc.)
+            - name: Build packages
+              run: pnpm build
 
-      - name: Run Sintesi Check (Documentation)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          # Check specifically for Documentation drift
-          node packages/cli/dist/cli/src/index.js check --doc --no-strict --verbose
+            - name: Run Sintesi Check (README)
+              env:
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+              run: |
+                  # Check specifically for README drift
+                  node packages/cli/dist/cli/src/index.js check --readme --no-strict --verbose
 
-      - name: Run Sintesi README command
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
-        run: |
-          # Runs internally a smart check. If no changes, it skips generation.
-          node packages/cli/dist/cli/src/index.js readme --output README.md --verbose
+            - name: Run Sintesi Check (Documentation)
+              env:
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+              run: |
+                  # Check specifically for Documentation drift
+                  node packages/cli/dist/cli/src/index.js check --doc --no-strict --verbose
 
-      - name: Run Sintesi Documentation command
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
-        run: |
-          # Runs internally a smart check. If no changes, it skips generation.
-          node packages/cli/dist/cli/src/index.js documentation --output-dir docs --verbose
+            - name: Run Sintesi README command
+              env:
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+              run: |
+                  # Runs internally a smart check. If no changes, it skips generation.
+                  node packages/cli/dist/cli/src/index.js readme --output README.md --verbose
 
-      - name: Check for any changes
-        id: git_status
-        run: echo "changes=$(git status --porcelain | wc -l)" >> "$GITHUB_OUTPUT"
+            - name: Run Sintesi Documentation command
+              env:
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+              run: |
+                  # Runs internally a smart check. If no changes, it skips generation.
+                  node packages/cli/dist/cli/src/index.js documentation --output-dir docs --verbose
 
-      - name: Create Pull Request if documentation changed
-        if: steps.git_status.outputs.changes > 0
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "🤖 Sintesi: Update documentation and README [skip ci]"
-          title: "🤖 Sintesi: Automated Documentation Update"
-          body: "This PR was automatically generated by Sintesi. It updates the README.md (if drift was detected) and regenerates the documentation site based on the latest code changes."
-          branch: "sintesi/docs-update"
-          base: "main"
-          labels: "documentation, automated"
+            - name: Format generated code
+              run: pnpm run format
+
+            - name: Check for any changes
+              id: git_status
+              run: echo "changes=$(git status --porcelain | wc -l)" >> "$GITHUB_OUTPUT"
+
+            - name: Create Pull Request if documentation changed
+              if: steps.git_status.outputs.changes > 0
+              uses: peter-evans/create-pull-request@v5
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  commit-message: '🤖 Sintesi: Update documentation and README [skip ci]'
+                  title: '🤖 Sintesi: Automated Documentation Update'
+                  body: 'This PR was automatically generated by Sintesi. It updates the README.md (if drift was detected) and regenerates the documentation site based on the latest code changes.'
+                  branch: 'sintesi/docs-update'
+                  base: 'main'
+                  labels: 'documentation, automated'

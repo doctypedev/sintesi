@@ -19,7 +19,10 @@ export class VectorStoreService {
     private db: lancedb.Connection | null = null;
     private tableName = 'code_chunks';
 
-    constructor(private logger: Logger, projectRoot: string) {
+    constructor(
+        private logger: Logger,
+        projectRoot: string,
+    ) {
         this.dbPath = join(projectRoot, '.sintesi', 'lancedb');
     }
 
@@ -51,7 +54,7 @@ export class VectorStoreService {
 
         if (chunks.length === 0) return [];
 
-        const chunksWithIds = chunks.map(chunk => ({
+        const chunksWithIds = chunks.map((chunk) => ({
             id: uuidv4(),
             ...chunk,
             functionName: chunk.functionName || '',
@@ -71,7 +74,7 @@ export class VectorStoreService {
             }
 
             this.logger.debug(`Added ${chunks.length} chunks to Vector DB.`);
-            return chunksWithIds.map(c => c.id);
+            return chunksWithIds.map((c) => c.id);
         } catch (error: any) {
             this.logger.error(`Failed to add chunks: ${error.message}`);
             throw error;
@@ -100,12 +103,11 @@ export class VectorStoreService {
             const BATCH_SIZE = 50;
             for (let i = 0; i < ids.length; i += BATCH_SIZE) {
                 const batch = ids.slice(i, i + BATCH_SIZE);
-                const idsString = batch.map(id => `'${id}'`).join(', ');
+                const idsString = batch.map((id) => `'${id}'`).join(', ');
                 await table.delete(`id IN (${idsString})`);
             }
 
             this.logger.debug(`Deleted ${ids.length} chunks from Vector DB.`);
-
         } catch (error: any) {
             this.logger.error(`Failed to delete chunks: ${error.message}`);
             throw error;
@@ -129,9 +131,7 @@ export class VectorStoreService {
             }
 
             const table = await this.db.openTable(this.tableName);
-            const results = await table.vectorSearch(queryVector)
-                .limit(limit)
-                .toArray();
+            const results = await table.vectorSearch(queryVector).limit(limit).toArray();
 
             // Map back to CodeChunk interface
             return results.map((row: any) => ({
@@ -141,9 +141,8 @@ export class VectorStoreService {
                 startLine: row.startLine,
                 endLine: row.endLine,
                 functionName: row.functionName,
-                vector: row.vector // Usually not needed in return but good for completeness
+                vector: row.vector, // Usually not needed in return but good for completeness
             }));
-
         } catch (error: any) {
             this.logger.error(`Vector search failed: ${error.message}`);
             return [];

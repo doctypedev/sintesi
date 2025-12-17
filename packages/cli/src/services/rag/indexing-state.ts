@@ -15,7 +15,10 @@ export class IndexingStateManager {
     private statePath: string;
     private state: IndexState = { files: {} };
 
-    constructor(private logger: Logger, projectRoot: string) {
+    constructor(
+        private logger: Logger,
+        projectRoot: string,
+    ) {
         this.statePath = join(projectRoot, '.sintesi', 'rag-state.json');
     }
 
@@ -57,7 +60,7 @@ export class IndexingStateManager {
     updateFileState(filePath: string, lastModified: number, chunkIds: string[]): void {
         this.state.files[filePath] = {
             lastModified,
-            chunkIds
+            chunkIds,
         };
     }
 

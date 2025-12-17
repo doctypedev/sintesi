@@ -1,15 +1,14 @@
-
 import { SHARED_SAFETY_RULES } from './shared';
 
 export const DOC_PLANNING_PROMPT = (
-  packageJsonSummary: string,
-  fileSummary: string,
-  specificContext: string,
-  outputDir: string,
-  existingDocsSummary: string,
-  strategyInstructions: string,
-  existingDocsList: string[],
-  recentChanges: string
+    packageJsonSummary: string,
+    fileSummary: string,
+    specificContext: string,
+    outputDir: string,
+    existingDocsSummary: string,
+    strategyInstructions: string,
+    existingDocsList: string[],
+    recentChanges: string,
 ) => `
 You are an expert Product Manager and Technical Writer.
 Your goal is to design a documentation structure for the End User / Developer who uses this software.
@@ -45,7 +44,7 @@ ${strategyInstructions}
 - **Index**: Ensure there is a 'index.md' or 'intro.md' as entry point.
 
 ## Existing Flat Documentation for Reorganization
-${existingDocsList.map(p => `- ${p}`).join('\n')}
+${existingDocsList.map((p) => `- ${p}`).join('\n')}
 
 **Instruction for MIGRATION:**
 When creating the 'Output' JSON, if a proposed file path (e.g., 'guide/installation.md') is conceptually similar or a direct migration of an existing flat file (e.g., 'installation.md'), include the 'originalPath' field in the JSON object like this:
@@ -76,14 +75,14 @@ Return ONLY a valid JSON array.
 `;
 
 export const DOC_GENERATION_PROMPT = (
-  projectName: string,
-  path: string,
-  description: string,
-  sourceContext: string,
-  packageJsonSummary: string,
-  repoInstructions: string,
-  gitDiff: string,
-  currentContent: string
+    projectName: string,
+    path: string,
+    description: string,
+    sourceContext: string,
+    packageJsonSummary: string,
+    repoInstructions: string,
+    gitDiff: string,
+    currentContent: string,
 ) => `
 You are writing technical documentation.
 Project Name: ${projectName}
@@ -110,7 +109,9 @@ Recent Changes (Git Diff):
 ${gitDiff || 'None'}
 
 
-${currentContent ? `## Existing Content (UPDATE THIS)
+${
+    currentContent
+        ? `## Existing Content (UPDATE THIS)
 ${currentContent}
 
 User Instruction: Update this content to reflect recent changes/source code.
@@ -120,7 +121,9 @@ IMPORTANT:
 3. **USAGE EXAMPLES**: Do NOT modify "Usage Examples" code blocks unless the CLI command signature has changed in a way that breaks them.
     - **BOOLEAN FLAGS**: If a boolean flag \`--foo\` exists in the source, the CLI likely supports \`--no-foo\` for negation. DO NOT remove \`--no-foo\` from examples just because you only see \`foo\` in the interface.
     - **FLAGS**: Do NOT hallucinate new flags. Only use flags found in the Source Code Context.
-4. **NO HALLUCINATIONS**: If the "Recent Changes" are unrelated to this file's topic, make NO CHANGES or only minimal stylistic fixes.` : 'User Instruction: Write this file from scratch. Be comprehensive and professional.'}
+4. **NO HALLUCINATIONS**: If the "Recent Changes" are unrelated to this file's topic, make NO CHANGES or only minimal stylistic fixes.`
+        : 'User Instruction: Write this file from scratch. Be comprehensive and professional.'
+}
 
 ${SHARED_SAFETY_RULES}
 
@@ -131,10 +134,10 @@ ${SHARED_SAFETY_RULES}
 `;
 
 export const DOC_RESEARCH_PROMPT = (
-  path: string,
-  description: string,
-  sourceContext: string,
-  packageJsonSummary: string
+    path: string,
+    description: string,
+    sourceContext: string,
+    packageJsonSummary: string,
 ) => `
 You are the **Researcher** (The Scout).
 Your goal is to analyze the raw source code and extract ONLY the technical facts, API signatures, and configuration options required to write the documentation page: "${path}".
@@ -177,9 +180,9 @@ The Writer is lazy and will blindly trust your specific details. Do NOT provide 
 `;
 
 export const DOC_QUERY_PROMPT = (
-  path: string,
-  description: string,
-  existingFileSummary: string
+    path: string,
+    description: string,
+    existingFileSummary: string,
 ) => `
 You are the **Researcher**.
 You need to search the project codebase to find information for writing the documentation page: "${path}".

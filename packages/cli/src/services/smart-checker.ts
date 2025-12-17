@@ -30,34 +30,43 @@ export class SmartChecker {
      */
     private shouldAnalyzeWithAI(changedFiles: string[], gitDiff: string): boolean {
         // 1. File Name Filtering
-        const relevantFiles = changedFiles.filter(file => {
+        const relevantFiles = changedFiles.filter((file) => {
             // Ignore test files
-            if (file.match(/\.(test|spec)\.(ts|js|rs)$/) || file.includes('__tests__') || file.includes('tests/')) return false;
+            if (
+                file.match(/\.(test|spec)\.(ts|js|rs)$/) ||
+                file.includes('__tests__') ||
+                file.includes('tests/')
+            )
+                return false;
             // Ignore lockfiles and internal configs
-            if (file.includes('lock.yaml') || file.includes('lock.json') || file.includes('lock')) return false;
+            if (file.includes('lock.yaml') || file.includes('lock.json') || file.includes('lock'))
+                return false;
             if (file.includes('.gitignore') || file.includes('.editorconfig')) return false;
             // Ignore Changelogs and Changesets (Version bumps)
             if (file.includes('CHANGELOG.md') || file.includes('.changeset/')) return false;
 
             // Focus on source code (TS/JS/Rust) and existing docs and configs
-            return file.endsWith('.ts') ||
+            return (
+                file.endsWith('.ts') ||
                 file.endsWith('.js') ||
                 file.endsWith('.rs') ||
                 file.endsWith('package.json') ||
-                file.endsWith('Cargo.toml');
+                file.endsWith('Cargo.toml')
+            );
         });
 
         // 2. Critical Path "Always Check"
         // If the file is in a critical directory (like commands or routes), we analyze it regardless of specific keywords.
-        // NOTE: We removed package.json/Cargo.toml from here to avoid triggering on simple version bumps. 
+        // NOTE: We removed package.json/Cargo.toml from here to avoid triggering on simple version bumps.
         // We rely on content heuristics (below) to catch "dependencies" or "scripts" changes.
-        const isCriticalChange = relevantFiles.some(file =>
-            file.includes('/commands/') ||
-            file.includes('/routes/')
+        const isCriticalChange = relevantFiles.some(
+            (file) => file.includes('/commands/') || file.includes('/routes/'),
         );
 
         if (isCriticalChange) {
-            this.logger.debug('Critical file changed (commands/routes). Skipping keyword heuristics and forcing AI check.');
+            this.logger.debug(
+                'Critical file changed (commands/routes). Skipping keyword heuristics and forcing AI check.',
+            );
             return true;
         }
 
@@ -91,7 +100,9 @@ export class SmartChecker {
             const hasMeaningful = GitBinding.checkMeaningfulChanges(gitDiff);
 
             if (!hasMeaningful) {
-                this.logger.debug('Changes detected but no meaningful keywords found (processed by Rust). Skipping AI check.');
+                this.logger.debug(
+                    'Changes detected but no meaningful keywords found (processed by Rust). Skipping AI check.',
+                );
                 return false;
             }
 
@@ -116,7 +127,7 @@ export class SmartChecker {
                 projectRoot: this.projectRoot,
                 fallbackToLastCommit: true,
                 includeSymbols: false,
-                stagedOnly: false
+                stagedOnly: false,
             });
 
             if (!context.gitDiff) {
@@ -133,7 +144,10 @@ export class SmartChecker {
     /**
      * Check if the README needs to be updated based on recent code changes
      */
-    async checkReadme(options?: { baseBranch?: string, readmePath?: string }): Promise<SmartCheckResult> {
+    async checkReadme(options?: {
+        baseBranch?: string;
+        readmePath?: string;
+    }): Promise<SmartCheckResult> {
         const readmePath = options?.readmePath || resolve(this.projectRoot, 'README.md');
         const baseBranch = options?.baseBranch || 'origin/main';
 
@@ -151,7 +165,7 @@ export class SmartChecker {
                 projectRoot: this.projectRoot,
                 fallbackToLastCommit: true,
                 includeSymbols: false, // We don't need semantic symbol analysis for this, just diffs + files
-                stagedOnly: false
+                stagedOnly: false,
             });
 
             gitDiff = context.gitDiff;
@@ -195,7 +209,7 @@ export class SmartChecker {
             const aiAgents: AIAgents = createAIAgentsFromEnv({ debug: this.logger.getVerbose() });
             const plannerAgent = aiAgents.planner;
 
-            if (!await plannerAgent.validateConnection()) {
+            if (!(await plannerAgent.validateConnection())) {
                 this.logger.warn('AI connection failed. Skipping smart check.');
                 return { hasDrift: false };
             }
@@ -203,14 +217,17 @@ export class SmartChecker {
             const prompt = getSmartCheckReadmePrompt(readmeContent, gitDiff);
 
             const response = await plannerAgent.generateText(prompt, {
-                temperature: 0
+                temperature: 0,
             });
 
             // Parse JSON response
             let result;
             try {
                 // Strip markdown code blocks if present
-                const cleanJson = response.replace(/^```json\s*/, '').replace(/```$/, '').trim();
+                const cleanJson = response
+                    .replace(/^```json\s*/, '')
+                    .replace(/```$/, '')
+                    .trim();
                 result = JSON.parse(cleanJson);
             } catch (e) {
                 this.logger.debug('Failed to parse AI response as JSON: ' + response);
@@ -221,10 +238,9 @@ export class SmartChecker {
                 return {
                     hasDrift: true,
                     reason: result.reason,
-                    suggestion: result.suggestion
+                    suggestion: result.suggestion,
                 };
             }
-
         } catch (error) {
             this.logger.warn('Smart check failed: ' + error);
         }

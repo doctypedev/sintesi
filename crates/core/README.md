@@ -6,9 +6,9 @@ High-performance Rust implementation of Sintesi's core functionality using **nap
 
 This crate provides native Node.js bindings for CPU-intensive operations:
 
-- **AST Analysis**: Parse and analyze TypeScript/JavaScript code *(placeholder)*
-- **Signature Hashing**: Generate deterministic SHA256 hashes *(future)*
-- **Drift Detection**: Compare code signatures *(future)*
+- **AST Analysis**: Parse and analyze TypeScript/JavaScript code _(placeholder)_
+- **Signature Hashing**: Generate deterministic SHA256 hashes _(future)_
+- **Drift Detection**: Compare code signatures _(future)_
 
 ## Quick Start
 
@@ -33,6 +33,7 @@ node example.js
 ```
 
 **Expected output:**
+
 ```
 🦀 Sintesi Rust Core - Example
 
@@ -57,10 +58,10 @@ node example.js
 const { helloWorld, getVersion, AstAnalyzer } = require('@sintesi/sintesi-darwin-arm64');
 
 // Simple hello world
-helloWorld() // => "Hello from Sintesi Rust Core! 🦀"
+helloWorld(); // => "Hello from Sintesi Rust Core! 🦀"
 
 // Get version
-getVersion() // => "0.1.0"
+getVersion(); // => "0.1.0"
 ```
 
 ### AstAnalyzer Class
@@ -69,17 +70,18 @@ getVersion() // => "0.1.0"
 const analyzer = new AstAnalyzer();
 
 // Analyze a file (placeholder)
-analyzer.analyzeFile('src/index.ts')
+analyzer.analyzeFile('src/index.ts');
 // => "Hello from Rust! Analyzing file: src/index.ts"
 
 // Get symbols (placeholder)
-analyzer.getSymbols('src/index.ts')
+analyzer.getSymbols('src/index.ts');
 // => ['function1', 'function2', 'MyClass']
 ```
 
 ## Architecture
 
 Built with [napi-rs](https://napi.rs/), providing:
+
 - ✅ **Type-safe** Node.js bindings
 - ✅ **Zero-copy** data transfer where possible
 - ✅ **Async support** for long-running operations
@@ -106,6 +108,7 @@ crates/core/
 To add new functions or classes:
 
 1. **Add Rust code** in `src/lib.rs`:
+
 ```rust
 #[napi]
 pub fn my_function(input: String) -> String {
@@ -114,14 +117,16 @@ pub fn my_function(input: String) -> String {
 ```
 
 2. **Rebuild**:
+
 ```bash
 npm run build
 ```
 
 3. **Use in JavaScript**:
+
 ```javascript
 const { myFunction } = require('@sintesi/sintesi-darwin-arm64');
-myFunction('hello') // => "Processed: hello"
+myFunction('hello'); // => "Processed: hello"
 ```
 
 ## Publishing

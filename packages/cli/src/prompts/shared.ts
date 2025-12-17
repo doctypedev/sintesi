@@ -1,4 +1,3 @@
-
 /**
  * Shared prompt rules and constants for Sintesi AI Agents.
  */

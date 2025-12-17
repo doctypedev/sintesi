@@ -1,6 +1,6 @@
 ---
 title: Architecture Overview
-description: 
+description:
 icon: 🚀
 order: 10
 ---

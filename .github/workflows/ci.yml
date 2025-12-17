@@ -1,57 +1,60 @@
 name: 'CI: Build & Test'
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 10
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v3
+              with:
+                  version: 10
 
-      - name: Setup Node.js (pnpm cache)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
+            - name: Setup Node.js (pnpm cache)
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install
+            - name: Install dependencies
+              run: pnpm install
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+            - name: Setup Rust
+              uses: dtolnay/rust-toolchain@stable
 
-      - name: Build Rust core types (in crates/core)
-        run: |
-          cd crates/core
-          pnpm install
-          pnpm run build
+            - name: Build Rust core types (in crates/core)
+              run: |
+                  cd crates/core
+                  pnpm install
+                  pnpm run build
 
-      - name: Prepare Core Native Types (for packages/core build)
-        run: cp crates/core/index.d.ts packages/core/native-types.d.ts
+            - name: Prepare Core Native Types (for packages/core build)
+              run: cp crates/core/index.d.ts packages/core/native-types.d.ts
 
-      - name: Build all packages
-        run: pnpm run build
+            - name: Build all packages
+              run: pnpm run build
 
-      - name: Lint code
-        run: pnpm run lint
+            - name: Check code formatting
+              run: pnpm run format:check
 
-      - name: Run tests
-        run: pnpm test
+            - name: Lint code
+              run: pnpm run lint
+
+            - name: Run tests
+              run: pnpm test

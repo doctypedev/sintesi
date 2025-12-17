@@ -1,28 +1,32 @@
 {
-  "name": "@sintesi/core-darwin-arm64",
-  "version": "0.10.0",
-  "description": "Sintesi native core for macOS ARM64",
-  "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/doctypedev/sintesi.git"
-  },
-  "keywords": [
-    "sintesi",
-    "ast",
-    "native",
-    "rust",
-    "macos"
-  ],
-  "author": "sintesi",
-  "license": "MIT",
-  "os": ["darwin"],
-  "cpu": ["arm64"],
-  "publishConfig": {
-    "access": "public"
-  },
-  "files": [
-    "index.js",
-    "sintesi-core.darwin-arm64.node"
-  ]
+    "name": "@sintesi/core-darwin-arm64",
+    "version": "0.10.0",
+    "description": "Sintesi native core for macOS ARM64",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/doctypedev/sintesi.git"
+    },
+    "keywords": [
+        "sintesi",
+        "ast",
+        "native",
+        "rust",
+        "macos"
+    ],
+    "author": "sintesi",
+    "license": "MIT",
+    "os": [
+        "darwin"
+    ],
+    "cpu": [
+        "arm64"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "files": [
+        "index.js",
+        "sintesi-core.darwin-arm64.node"
+    ]
 }

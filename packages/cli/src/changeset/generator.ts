@@ -19,43 +19,43 @@ export type VersionType = 'major' | 'minor' | 'patch';
  * Changeset generation result
  */
 export interface ChangesetResult {
-  /** Whether the changeset was generated successfully */
-  success: boolean;
-  /** Path to the generated changeset file */
-  filePath?: string;
-  /** Version type determined */
-  versionType?: VersionType;
-  /** Generated description */
-  description?: string;
-  /** Error message if failed */
-  error?: string;
+    /** Whether the changeset was generated successfully */
+    success: boolean;
+    /** Path to the generated changeset file */
+    filePath?: string;
+    /** Version type determined */
+    versionType?: VersionType;
+    /** Generated description */
+    description?: string;
+    /** Error message if failed */
+    error?: string;
 }
 
 /**
  * Options for changeset generation
  */
 export interface GenerateOptions {
-  /** Package names (default: ['package']) */
-  packageNames?: string[];
-  /** Output directory (default: .changeset) */
-  outputDir?: string;
-  /** Skip AI analysis and use defaults */
-  noAI?: boolean;
-  /** Manually specify version type */
-  versionType?: VersionType;
-  /** Manually specify description */
-  description?: string;
-  /** Verbose logging */
-  verbose?: boolean;
+    /** Package names (default: ['package']) */
+    packageNames?: string[];
+    /** Output directory (default: .changeset) */
+    outputDir?: string;
+    /** Skip AI analysis and use defaults */
+    noAI?: boolean;
+    /** Manually specify version type */
+    versionType?: VersionType;
+    /** Manually specify description */
+    description?: string;
+    /** Verbose logging */
+    verbose?: boolean;
 }
 
 /**
  * AI response for changeset analysis
  */
 interface ChangesetAIResponse {
-  versionType: VersionType;
-  description: string;
-  reasoning: string;
+    versionType: VersionType;
+    description: string;
+    reasoning: string;
 }
 
 /**
@@ -64,253 +64,314 @@ interface ChangesetAIResponse {
  * Uses AI to analyze code changes and generate appropriate changeset files
  */
 export class ChangesetGenerator {
-  private logger: Logger;
+    private logger: Logger;
 
-  constructor(logger: Logger) {
-    this.logger = logger;
-  }
-
-  /**
-   * Generate a changeset file from analyzed changes
-   */
-  /**
-   * Generate a changeset file from analyzed changes
-   */
-  async generateChangeset(
-    analysis: ChangesetAnalysis,
-    options: GenerateOptions = {}
-  ): Promise<ChangesetResult> {
-    const {
-      packageNames = ['package'],
-      outputDir = '.changeset',
-      noAI = false,
-      versionType: manualVersionType,
-      description: manualDescription,
-      verbose = false,
-    } = options;
-
-    // Check if there are any changes
-    if (analysis.totalChanges === 0 && !analysis.gitDiff) {
-      return {
-        success: false,
-        error: 'No changes detected to generate changeset',
-      };
+    constructor(logger: Logger) {
+        this.logger = logger;
     }
 
-    let versionType: VersionType | undefined = manualVersionType;
-    let description: string | undefined = manualDescription;
+    /**
+     * Generate a changeset file from analyzed changes
+     */
+    /**
+     * Generate a changeset file from analyzed changes
+     */
+    async generateChangeset(
+        analysis: ChangesetAnalysis,
+        options: GenerateOptions = {},
+    ): Promise<ChangesetResult> {
+        const {
+            packageNames = ['package'],
+            outputDir = '.changeset',
+            noAI = false,
+            versionType: manualVersionType,
+            description: manualDescription,
+            verbose = false,
+        } = options;
 
-    // Logic to determine Version Type and Description
-    // Priority: Manual > AI > Auto-detect
-
-    // 1. If we have both, we are done
-    if (versionType && description) {
-      this.logger.info(`Using manual version type: ${versionType}`);
-    } 
-    // 2. If no AI allowed, try auto-detect for missing fields
-    else if (noAI) {
-      const detector = new VersionTypeDetector(this.logger);
-      const detection = detector.detect(analysis);
-
-      if (!versionType) {
-        versionType = detection.versionType;
-        this.logger.info(`Auto-detected version type: ${versionType} (${detection.confidence} confidence)`);
-      }
-      if (!description) {
-        description = detection.reasoning;
-      }
-      if (verbose) {
-        this.logger.debug(`Detection reasoning: ${detection.reasoning}`);
-      }
-    } 
-    // 3. Use AI to fill missing fields
-    else {
-      try {
-        const aiResponse = await this.analyzeWithAI(analysis, verbose);
-        
-        if (!versionType) {
-          versionType = aiResponse.versionType;
-          this.logger.info(`AI determined version type: ${versionType}`);
-        } else {
-           this.logger.info(`Using manual version type: ${versionType}`);
+        // Check if there are any changes
+        if (analysis.totalChanges === 0 && !analysis.gitDiff) {
+            return {
+                success: false,
+                error: 'No changes detected to generate changeset',
+            };
         }
 
-        if (!description) {
-          description = aiResponse.description;
+        let versionType: VersionType | undefined = manualVersionType;
+        let description: string | undefined = manualDescription;
+
+        // Logic to determine Version Type and Description
+        // Priority: Manual > AI > Auto-detect
+
+        // 1. If we have both, we are done
+        if (versionType && description) {
+            this.logger.info(`Using manual version type: ${versionType}`);
         }
+        // 2. If no AI allowed, try auto-detect for missing fields
+        else if (noAI) {
+            const detector = new VersionTypeDetector(this.logger);
+            const detection = detector.detect(analysis);
+
+            if (!versionType) {
+                versionType = detection.versionType;
+                this.logger.info(
+                    `Auto-detected version type: ${versionType} (${detection.confidence} confidence)`,
+                );
+            }
+            if (!description) {
+                description = detection.reasoning;
+            }
+            if (verbose) {
+                this.logger.debug(`Detection reasoning: ${detection.reasoning}`);
+            }
+        }
+        // 3. Use AI to fill missing fields
+        else {
+            try {
+                const aiResponse = await this.analyzeWithAI(analysis, verbose);
+
+                if (!versionType) {
+                    versionType = aiResponse.versionType;
+                    this.logger.info(`AI determined version type: ${versionType}`);
+                } else {
+                    this.logger.info(`Using manual version type: ${versionType}`);
+                }
+
+                if (!description) {
+                    description = aiResponse.description;
+                }
+
+                if (verbose) {
+                    this.logger.debug(`AI reasoning: ${aiResponse.reasoning}`);
+                }
+            } catch (error) {
+                this.logger.error(
+                    'AI analysis failed, falling back to automatic detection:',
+                    error,
+                );
+
+                // Fallback to automatic detection if AI fails
+                const detector = new VersionTypeDetector(this.logger);
+                const detection = detector.detect(analysis);
+
+                if (!versionType) versionType = detection.versionType;
+                if (!description) description = detection.reasoning;
+
+                this.logger.info(`Auto-detected version type: ${versionType} (fallback)`);
+            }
+        }
+
+        // Ensure we have values (typescript check, though logic ensures it mostly)
+        if (!versionType) versionType = 'patch'; // Safe default
+        if (!description) description = 'No description provided';
+
+        // Generate changeset file
+        try {
+            const filePath = await this.writeChangesetFile(
+                packageNames,
+                versionType,
+                description,
+                outputDir,
+            );
+
+            this.logger.success(`Generated changeset: ${filePath}`);
+
+            return {
+                success: true,
+                filePath,
+                versionType,
+                description,
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+
+    /**
+     * Analyze changes with AI to determine version type and description
+     */
+    private async analyzeWithAI(
+        analysis: ChangesetAnalysis,
+        verbose: boolean,
+    ): Promise<ChangesetAIResponse> {
+        const aiAgents: AIAgents = createAIAgentsFromEnv({ debug: verbose });
+        const plannerAgent = aiAgents.planner;
+
+        // Build prompt for AI
+        const prompt = ChangesetPrompt.buildAnalysisPrompt(analysis);
 
         if (verbose) {
-          this.logger.debug(`AI reasoning: ${aiResponse.reasoning}`);
+            this.logger.debug('Sending analysis to AI...');
         }
-      } catch (error) {
-        this.logger.error('AI analysis failed, falling back to automatic detection:', error);
 
-        // Fallback to automatic detection if AI fails
-        const detector = new VersionTypeDetector(this.logger);
-        const detection = detector.detect(analysis);
+        try {
+            // Use the planner agent's direct text generation capability
+            const response = await plannerAgent.generateText(prompt, {
+                temperature: 0.3, // Lower temperature for more deterministic results
+            });
 
-        if (!versionType) versionType = detection.versionType;
-        if (!description) description = detection.reasoning;
+            // Parse AI response
+            return this.parseAIResponse(response);
+        } catch (error) {
+            this.logger.error('Failed to get AI response:', error);
+            throw error;
+        }
+    }
+    // buildAnalysisPrompt logic moved to ./prompts/changeset-prompt.ts
 
-        this.logger.info(`Auto-detected version type: ${versionType} (fallback)`);
-      }
+    /**
+     * Parse AI response to extract version type and description
+     */
+    private parseAIResponse(response: string): ChangesetAIResponse {
+        try {
+            // Try to extract JSON from response
+            const jsonMatch = response.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
+                throw new Error('No JSON found in AI response');
+            }
+
+            const parsed = JSON.parse(jsonMatch[0]);
+
+            // Validate response
+            if (!parsed.versionType || !parsed.description) {
+                throw new Error('Invalid AI response structure');
+            }
+
+            // Validate version type
+            if (!['major', 'minor', 'patch'].includes(parsed.versionType)) {
+                throw new Error(`Invalid version type: ${parsed.versionType}`);
+            }
+
+            return {
+                versionType: parsed.versionType as VersionType,
+                description: parsed.description,
+                reasoning: parsed.reasoning || 'No reasoning provided',
+            };
+        } catch (error) {
+            this.logger.error('Failed to parse AI response:', error);
+            this.logger.debug('Raw response:', response);
+            throw new Error('Failed to parse AI response');
+        }
     }
 
-    // Ensure we have values (typescript check, though logic ensures it mostly)
-    if (!versionType) versionType = 'patch'; // Safe default
-    if (!description) description = 'No description provided';
+    /**
+     * Write changeset file to disk
+     */
+    private async writeChangesetFile(
+        packageNames: string[],
+        versionType: VersionType,
+        description: string,
+        outputDir: string,
+    ): Promise<string> {
+        // Ensure output directory exists
+        await fs.mkdir(outputDir, { recursive: true });
 
-    // Generate changeset file
-    try {
-      const filePath = await this.writeChangesetFile(
-        packageNames,
-        versionType,
-        description,
-        outputDir
-      );
+        // Generate random filename (similar to changesets CLI)
+        const filename = this.generateFilename();
+        const filePath = path.join(outputDir, `${filename}.md`);
 
-      this.logger.success(`Generated changeset: ${filePath}`);
+        // Generate changeset frontmatter
+        let frontmatter = '---\n';
+        for (const pkgName of packageNames) {
+            frontmatter += `"${pkgName}": ${versionType}\n`;
+        }
+        frontmatter += '---\n';
 
-      return {
-        success: true,
-        filePath,
-        versionType,
-        description,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      };
-    }
-  }
-
-  /**
-   * Analyze changes with AI to determine version type and description
-   */
-      private async analyzeWithAI(
-      analysis: ChangesetAnalysis,
-      verbose: boolean
-    ): Promise<ChangesetAIResponse> {
-      const aiAgents: AIAgents = createAIAgentsFromEnv({ debug: verbose });
-      const plannerAgent = aiAgents.planner;
-  
-      // Build prompt for AI
-      const prompt = ChangesetPrompt.buildAnalysisPrompt(analysis);
-  
-      if (verbose) {
-        this.logger.debug('Sending analysis to AI...');
-      }
-  
-      try {
-        // Use the planner agent's direct text generation capability
-        const response = await plannerAgent.generateText(prompt, {
-          temperature: 0.3, // Lower temperature for more deterministic results
-        });
-  
-        // Parse AI response
-        return this.parseAIResponse(response);
-      } catch (error) {
-        this.logger.error('Failed to get AI response:', error);
-        throw error;
-      }
-    }
-  // buildAnalysisPrompt logic moved to ./prompts/changeset-prompt.ts
-
-  /**
-   * Parse AI response to extract version type and description
-   */
-  private parseAIResponse(response: string): ChangesetAIResponse {
-    try {
-      // Try to extract JSON from response
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('No JSON found in AI response');
-      }
-
-      const parsed = JSON.parse(jsonMatch[0]);
-
-      // Validate response
-      if (!parsed.versionType || !parsed.description) {
-        throw new Error('Invalid AI response structure');
-      }
-
-      // Validate version type
-      if (!['major', 'minor', 'patch'].includes(parsed.versionType)) {
-        throw new Error(`Invalid version type: ${parsed.versionType}`);
-      }
-
-      return {
-        versionType: parsed.versionType as VersionType,
-        description: parsed.description,
-        reasoning: parsed.reasoning || 'No reasoning provided',
-      };
-    } catch (error) {
-      this.logger.error('Failed to parse AI response:', error);
-      this.logger.debug('Raw response:', response);
-      throw new Error('Failed to parse AI response');
-    }
-  }
-
-  /**
-   * Write changeset file to disk
-   */
-  private async writeChangesetFile(
-    packageNames: string[],
-    versionType: VersionType,
-    description: string,
-    outputDir: string
-  ): Promise<string> {
-    // Ensure output directory exists
-    await fs.mkdir(outputDir, { recursive: true });
-
-    // Generate random filename (similar to changesets CLI)
-    const filename = this.generateFilename();
-    const filePath = path.join(outputDir, `${filename}.md`);
-
-    // Generate changeset frontmatter
-    let frontmatter = '---\n';
-    for (const pkgName of packageNames) {
-      frontmatter += `"${pkgName}": ${versionType}\n`;
-    }
-    frontmatter += '---\n';
-
-    // Generate changeset content
-    const content = `${frontmatter}
+        // Generate changeset content
+        const content = `${frontmatter}
 ${description}
 `;
 
-    // Write file
-    await fs.writeFile(filePath, content, 'utf-8');
+        // Write file
+        await fs.writeFile(filePath, content, 'utf-8');
 
-    return filePath;
-  }
+        return filePath;
+    }
 
-  /**
-   * Generate random filename for changeset
-   */
-  private generateFilename(): string {
-    const adjectives = [
-      'happy', 'brave', 'calm', 'bright', 'clever', 'cool', 'fair', 'fancy',
-      'gentle', 'jolly', 'kind', 'lively', 'nice', 'proud', 'quiet', 'swift',
-      'wise', 'young', 'zealous', 'new', 'old', 'big', 'small', 'fast', 'slow',
-    ];
+    /**
+     * Generate random filename for changeset
+     */
+    private generateFilename(): string {
+        const adjectives = [
+            'happy',
+            'brave',
+            'calm',
+            'bright',
+            'clever',
+            'cool',
+            'fair',
+            'fancy',
+            'gentle',
+            'jolly',
+            'kind',
+            'lively',
+            'nice',
+            'proud',
+            'quiet',
+            'swift',
+            'wise',
+            'young',
+            'zealous',
+            'new',
+            'old',
+            'big',
+            'small',
+            'fast',
+            'slow',
+        ];
 
-    const nouns = [
-      'pandas', 'tigers', 'eagles', 'dolphins', 'wolves', 'foxes', 'bears',
-      'lions', 'owls', 'hawks', 'whales', 'sharks', 'cats', 'dogs', 'birds',
-      'fish', 'trees', 'flowers', 'stars', 'moons', 'suns', 'clouds', 'rivers',
-    ];
+        const nouns = [
+            'pandas',
+            'tigers',
+            'eagles',
+            'dolphins',
+            'wolves',
+            'foxes',
+            'bears',
+            'lions',
+            'owls',
+            'hawks',
+            'whales',
+            'sharks',
+            'cats',
+            'dogs',
+            'birds',
+            'fish',
+            'trees',
+            'flowers',
+            'stars',
+            'moons',
+            'suns',
+            'clouds',
+            'rivers',
+        ];
 
-    const verbs = [
-      'walk', 'run', 'jump', 'fly', 'swim', 'dance', 'sing', 'play',
-      'sleep', 'eat', 'drink', 'laugh', 'cry', 'smile', 'talk', 'listen',
-    ];
+        const verbs = [
+            'walk',
+            'run',
+            'jump',
+            'fly',
+            'swim',
+            'dance',
+            'sing',
+            'play',
+            'sleep',
+            'eat',
+            'drink',
+            'laugh',
+            'cry',
+            'smile',
+            'talk',
+            'listen',
+        ];
 
-    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
-    const verb = verbs[Math.floor(Math.random() * verbs.length)];
+        const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+        const noun = nouns[Math.floor(Math.random() * nouns.length)];
+        const verb = verbs[Math.floor(Math.random() * verbs.length)];
 
-    return `${adj}-${noun}-${verb}`;
-  }
+        return `${adj}-${noun}-${verb}`;
+    }
 }

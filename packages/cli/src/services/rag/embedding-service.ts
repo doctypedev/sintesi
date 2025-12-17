@@ -26,7 +26,9 @@ export class EmbeddingService {
         if (!texts.length) return [];
 
         try {
-            this.logger.debug(`Generating embeddings for ${texts.length} chunks using ${this.modelId}...`);
+            this.logger.debug(
+                `Generating embeddings for ${texts.length} chunks using ${this.modelId}...`,
+            );
 
             // embedMany handles batching automatically to some extent, but strict API limits might apply.
             // For very large arrays, we might need manual chunking, but for typical project size (sliced by files) it might be fine.

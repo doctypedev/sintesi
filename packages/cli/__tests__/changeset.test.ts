@@ -6,192 +6,192 @@ import { join } from 'path';
 
 // Mock child_process.execSync
 const { mockResolve } = vi.hoisted(() => {
-  return { mockResolve: vi.fn() };
+    return { mockResolve: vi.fn() };
 });
 
 vi.mock('module', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('module')>();
-  return {
-    ...actual,
-    createRequire: vi.fn().mockReturnValue({ resolve: mockResolve }),
-  };
+    const actual = await importOriginal<typeof import('module')>();
+    return {
+        ...actual,
+        createRequire: vi.fn().mockReturnValue({ resolve: mockResolve }),
+    };
 });
 
 vi.mock('child_process', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('child_process')>();
-  return {
-    ...actual,
-    execSync: vi.fn(),
-  };
+    const actual = await importOriginal<typeof import('child_process')>();
+    return {
+        ...actual,
+        execSync: vi.fn(),
+    };
 });
 
 // Mock @sintesi/core to avoid native binding issues
 vi.mock('@sintesi/core', () => {
-  return {
-    ASTAnalyzer: vi.fn().mockImplementation(() => ({
-      analyzeFile: vi.fn().mockResolvedValue([]),
-    })),
-    GitBinding: class {
-      constructor() { }
-      analyzeChanges() {
-        return { git_diff: '', changed_files: [], has_meaningful_changes: false };
-      }
-    },
-  };
+    return {
+        ASTAnalyzer: vi.fn().mockImplementation(() => ({
+            analyzeFile: vi.fn().mockResolvedValue([]),
+        })),
+        GitBinding: class {
+            constructor() {}
+            analyzeChanges() {
+                return { git_diff: '', changed_files: [], has_meaningful_changes: false };
+            }
+        },
+    };
 });
 
 describe('CLI: changeset command', () => {
-  let originalCwd: string;
-  let testDir: string;
+    let originalCwd: string;
+    let testDir: string;
 
-  beforeEach(() => {
-    originalCwd = process.cwd();
-    testDir = join(originalCwd, 'test-changeset-repo');
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
-    // Mock process.cwd
-    vi.spyOn(process, 'cwd').mockReturnValue(testDir);
-    // process.chdir(testDir); // Not supported in workers
+    beforeEach(() => {
+        originalCwd = process.cwd();
+        testDir = join(originalCwd, 'test-changeset-repo');
+        if (existsSync(testDir)) {
+            rmSync(testDir, { recursive: true, force: true });
+        }
+        mkdirSync(testDir, { recursive: true });
+        // Mock process.cwd
+        vi.spyOn(process, 'cwd').mockReturnValue(testDir);
+        // process.chdir(testDir); // Not supported in workers
 
-    // Initialize a dummy git repository
-    (execSync as vi.Mock).mockClear(); // Clear mocks before setting up git
-    (execSync as vi.Mock).mockImplementation((command: string) => {
-      if (command.startsWith('git init')) {
-        return '';
-      }
-      if (command.startsWith('git config')) {
-        return '';
-      }
-      if (command.startsWith('git add')) {
-        return '';
-      }
-      if (command.startsWith('git commit')) {
-        return '';
-      }
-      if (command.startsWith('git rev-parse --git-dir')) {
-        return '.git';
-      }
-      // Mock git merge-base and diff to return empty/no changes
-      if (command.startsWith('git merge-base')) {
-        return '';
-      }
-      if (command.startsWith('git diff')) {
-        return '';
-      }
-      if (command.startsWith('git show')) {
-        return ''; // No content
-      }
-      if (command.startsWith('git fetch')) {
-        console.log(`Mocking git fetch: ${command}`); // For debugging
-        return '';
-      }
-      return actualExecSync(command); // Use actual for other commands if needed
+        // Initialize a dummy git repository
+        (execSync as vi.Mock).mockClear(); // Clear mocks before setting up git
+        (execSync as vi.Mock).mockImplementation((command: string) => {
+            if (command.startsWith('git init')) {
+                return '';
+            }
+            if (command.startsWith('git config')) {
+                return '';
+            }
+            if (command.startsWith('git add')) {
+                return '';
+            }
+            if (command.startsWith('git commit')) {
+                return '';
+            }
+            if (command.startsWith('git rev-parse --git-dir')) {
+                return '.git';
+            }
+            // Mock git merge-base and diff to return empty/no changes
+            if (command.startsWith('git merge-base')) {
+                return '';
+            }
+            if (command.startsWith('git diff')) {
+                return '';
+            }
+            if (command.startsWith('git show')) {
+                return ''; // No content
+            }
+            if (command.startsWith('git fetch')) {
+                console.log(`Mocking git fetch: ${command}`); // For debugging
+                return '';
+            }
+            return actualExecSync(command); // Use actual for other commands if needed
+        });
+
+        // Need a real execSync reference for commands not mocked
+        const actualExecSync = vi.fn((cmd: string) => {
+            try {
+                return originalExecSync(cmd);
+            } catch (e: any) {
+                throw new Error(`Command failed: ${cmd}\n${e.message}`);
+            }
+        });
+
+        // Mock git init
+        execSync('git init -b main');
+        execSync('git config user.email "test@example.com"');
+        execSync('git config user.name "Test User"');
+        writeFileSync(join(testDir, 'test.ts'), 'export function foo() {}');
+        execSync('git add .');
+        execSync('git add .');
+        execSync('git commit -m "initial commit"');
+
+        // Create dummy package.json
+        writeFileSync(join(testDir, 'package.json'), '{}');
+
+        // Default mockResolve behavior: successfully resolve
+        mockResolve.mockReset();
+        mockResolve.mockReturnValue('/mock/path/to/changeset');
     });
 
-    // Need a real execSync reference for commands not mocked
-    const actualExecSync = vi.fn((cmd: string) => {
-      try {
-        return originalExecSync(cmd);
-      } catch (e: any) {
-        throw new Error(`Command failed: ${cmd}\n${e.message}`);
-      }
+    afterEach(() => {
+        // process.chdir(originalCwd);
+        if (existsSync(testDir)) {
+            rmSync(testDir, { recursive: true, force: true });
+        }
+        vi.clearAllMocks(); // Use clear instead of restore to preserve manual mocks
     });
 
-    // Mock git init
-    execSync('git init -b main');
-    execSync('git config user.email "test@example.com"');
-    execSync('git config user.name "Test User"');
-    writeFileSync(join(testDir, 'test.ts'), 'export function foo() {}');
-    execSync('git add .');
-    execSync('git add .');
-    execSync('git commit -m "initial commit"');
+    it('should not fetch from origin/main by default', async () => {
+        (execSync as vi.Mock).mockClear(); // Clear mocks again to only count calls within the test
 
-    // Create dummy package.json
-    writeFileSync(join(testDir, 'package.json'), '{}');
+        await changesetCommand({
+            baseBranch: 'main',
+            noAI: true, // Speed up test by skipping AI
+        });
 
-    // Default mockResolve behavior: successfully resolve
-    mockResolve.mockReset();
-    mockResolve.mockReturnValue('/mock/path/to/changeset');
-  });
-
-  afterEach(() => {
-    // process.chdir(originalCwd);
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    vi.clearAllMocks(); // Use clear instead of restore to preserve manual mocks
-  });
-
-  it('should not fetch from origin/main by default', async () => {
-    (execSync as vi.Mock).mockClear(); // Clear mocks again to only count calls within the test
-
-    await changesetCommand({
-      baseBranch: 'main',
-      noAI: true, // Speed up test by skipping AI
+        const fetchCalls = (execSync as vi.Mock).mock.calls.filter((call) =>
+            (call[0] as string).includes('git fetch origin main'),
+        );
+        expect(fetchCalls).toHaveLength(0);
     });
 
-    const fetchCalls = (execSync as vi.Mock).mock.calls.filter(call =>
-      (call[0] as string).includes('git fetch origin main')
-    );
-    expect(fetchCalls).toHaveLength(0);
-  });
+    it('should fetch from origin/main when forceFetch is true', async () => {
+        (execSync as vi.Mock).mockClear(); // Clear mocks again to only count calls within the test
 
-  it('should fetch from origin/main when forceFetch is true', async () => {
-    (execSync as vi.Mock).mockClear(); // Clear mocks again to only count calls within the test
+        await changesetCommand({
+            baseBranch: 'main',
+            noAI: true,
+            forceFetch: true,
+        });
 
-    await changesetCommand({
-      baseBranch: 'main',
-      noAI: true,
-      forceFetch: true,
+        const fetchCalls = (execSync as vi.Mock).mock.calls.filter((call) =>
+            (call[0] as string).includes('git fetch origin main'),
+        );
+        expect(fetchCalls).toHaveLength(1);
+        expect(fetchCalls[0][0]).toBe('git fetch origin main');
+
+        // Verify GitBinding was used with correct base branch
+        // Since we can't easily access the mock instance from here without refactoring the mock setup extensively,
+        // and we know execSync is NO LONGER called for diff, we just remove the execSync expectation.
+        // If we want to verify GitBinding usage, we would need to spy on it.
+        // For now, ensuring no execSync error and correct flow is enough, plus we can check fetch calls.
+        expect(fetchCalls).toHaveLength(1);
+
+        // We can't check diffCalls on execSync anymore.
+        // expect(diffCalls.length).toBeGreaterThan(0);
     });
 
-    const fetchCalls = (execSync as vi.Mock).mock.calls.filter(call =>
-      (call[0] as string).includes('git fetch origin main')
-    );
-    expect(fetchCalls).toHaveLength(1);
-    expect(fetchCalls[0][0]).toBe('git fetch origin main');
+    it('should fetch from specified base branch when forceFetch is true', async () => {
+        (execSync as vi.Mock).mockClear();
 
-    // Verify GitBinding was used with correct base branch
-    // Since we can't easily access the mock instance from here without refactoring the mock setup extensively,
-    // and we know execSync is NO LONGER called for diff, we just remove the execSync expectation.
-    // If we want to verify GitBinding usage, we would need to spy on it.
-    // For now, ensuring no execSync error and correct flow is enough, plus we can check fetch calls.
-    expect(fetchCalls).toHaveLength(1);
+        await changesetCommand({
+            baseBranch: 'develop',
+            noAI: true,
+            forceFetch: true,
+        });
 
-    // We can't check diffCalls on execSync anymore.
-    // expect(diffCalls.length).toBeGreaterThan(0);
-  });
-
-  it('should fetch from specified base branch when forceFetch is true', async () => {
-    (execSync as vi.Mock).mockClear();
-
-    await changesetCommand({
-      baseBranch: 'develop',
-      noAI: true,
-      forceFetch: true,
+        const fetchCalls = (execSync as vi.Mock).mock.calls.filter((call) =>
+            (call[0] as string).includes('git fetch origin develop'),
+        );
+        expect(fetchCalls).toHaveLength(1);
+        expect(fetchCalls[0][0]).toBe('git fetch origin develop');
     });
 
-    const fetchCalls = (execSync as vi.Mock).mock.calls.filter(call =>
-      (call[0] as string).includes('git fetch origin develop')
-    );
-    expect(fetchCalls).toHaveLength(1);
-    expect(fetchCalls[0][0]).toBe('git fetch origin develop');
-  });
+    it('should fail if @changesets/cli is not installed', async () => {
+        mockResolve.mockImplementation(() => {
+            throw new Error('Cannot find module');
+        });
 
-  it('should fail if @changesets/cli is not installed', async () => {
-    mockResolve.mockImplementation(() => {
-      throw new Error('Cannot find module');
+        const result = await changesetCommand({
+            noAI: true,
+        });
+
+        expect(result.success).toBe(false);
+        expect(result.error).toContain('@changesets/cli not installed');
     });
-
-    const result = await changesetCommand({
-      noAI: true,
-    });
-
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('@changesets/cli not installed');
-  });
 });
 
 // Store original execSync to be able to call it if needed for git setup

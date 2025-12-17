@@ -1,6 +1,6 @@
 /**
  * Change Analysis Service
- * 
+ *
  * Central service for analyzing code changes, providing a unified way to get
  * git diffs, changed files, and AST symbol changes across all commands.
  */
@@ -59,7 +59,7 @@ export class ChangeAnalysisService {
             stagedOnly = false,
             projectRoot = process.cwd(),
             forceFetch = false,
-            includeSymbols = true
+            includeSymbols = true,
         } = options;
 
         let effectiveBase = baseBranch;
@@ -79,12 +79,20 @@ export class ChangeAnalysisService {
         // we must compare against the PREVIOUS commit to see what changed.
         try {
             if (!stagedOnly) {
-                const headSha = execSync('git rev-parse HEAD', { encoding: 'utf-8', cwd: projectRoot }).trim();
+                const headSha = execSync('git rev-parse HEAD', {
+                    encoding: 'utf-8',
+                    cwd: projectRoot,
+                }).trim();
                 // Ensure effectiveBase is resolved to a SHA or valid ref for comparison
-                const baseSha = execSync(`git rev-parse ${effectiveBase}`, { encoding: 'utf-8', cwd: projectRoot }).trim();
+                const baseSha = execSync(`git rev-parse ${effectiveBase}`, {
+                    encoding: 'utf-8',
+                    cwd: projectRoot,
+                }).trim();
 
                 if (headSha === baseSha) {
-                    this.logger.info(`ℹ HEAD is identical to ${effectiveBase}. Switching to ${effectiveBase}~1 to detect recent changes.`);
+                    this.logger.info(
+                        `ℹ HEAD is identical to ${effectiveBase}. Switching to ${effectiveBase}~1 to detect recent changes.`,
+                    );
                     effectiveBase = `${effectiveBase}~1`;
                 }
             }
@@ -97,7 +105,6 @@ export class ChangeAnalysisService {
         // This replaces the old slow execSync/regex approach
         let gitDiff = '';
         let changedFiles: string[] = [];
-
 
         let summary; // Capture Rust summary
         try {
@@ -116,7 +123,7 @@ export class ChangeAnalysisService {
                 changedFiles: [],
                 symbolChanges: [],
                 totalChanges: 0,
-                hasMeaningfulChanges: false
+                hasMeaningfulChanges: false,
             };
         }
 
@@ -125,20 +132,24 @@ export class ChangeAnalysisService {
                 gitDiff: '',
                 changedFiles: [],
                 symbolChanges: [],
-                totalChanges: 0
+                totalChanges: 0,
             };
         }
 
         // 3. Get Changed Files
         // Filter to relevant files (TS/RS/etc) and make absolute
         changedFiles = changedFiles
-            .filter(f => this.isRelevantFile(f))
-            .map(f => path.resolve(projectRoot, f));
+            .filter((f) => this.isRelevantFile(f))
+            .map((f) => path.resolve(projectRoot, f));
 
         // 4. Symbol Analysis (if requested)
         let symbolChanges: SymbolChange[] = [];
         if (includeSymbols && changedFiles.length > 0) {
-            symbolChanges = await this.analyzeSymbolChanges(changedFiles, effectiveBase, projectRoot);
+            symbolChanges = await this.analyzeSymbolChanges(
+                changedFiles,
+                effectiveBase,
+                projectRoot,
+            );
         }
 
         return {
@@ -146,13 +157,19 @@ export class ChangeAnalysisService {
             changedFiles,
             symbolChanges,
             totalChanges: symbolChanges.length > 0 ? symbolChanges.length : changedFiles.length,
-            hasMeaningfulChanges: (typeof summary !== 'undefined' && summary) ? summary.hasMeaningfulChanges : undefined
+            hasMeaningfulChanges:
+                typeof summary !== 'undefined' && summary
+                    ? summary.hasMeaningfulChanges
+                    : undefined,
         };
     }
 
     private isRelevantFile(file: string): boolean {
         return (
-            (file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.rs') || file.endsWith('.js')) &&
+            (file.endsWith('.ts') ||
+                file.endsWith('.tsx') ||
+                file.endsWith('.rs') ||
+                file.endsWith('.js')) &&
             !file.includes('.test.') &&
             !file.includes('.spec.') &&
             !file.includes('node_modules')
@@ -162,7 +179,7 @@ export class ChangeAnalysisService {
     private async analyzeSymbolChanges(
         files: string[],
         baseBranch: string,
-        projectRoot: string
+        projectRoot: string,
     ): Promise<SymbolChange[]> {
         const changes: SymbolChange[] = [];
 
@@ -192,7 +209,6 @@ export class ChangeAnalysisService {
                 }
 
                 changes.push(...this.compareSymbols(oldSymbols, currentSymbols, filePath));
-
             } catch (e) {
                 this.logger.debug(`Failed to analyze symbols for ${filePath}: ${e}`);
             }
@@ -201,7 +217,11 @@ export class ChangeAnalysisService {
         return changes;
     }
 
-    private getFileContentFromBranch(filePath: string, branch: string, root: string): string | null {
+    private getFileContentFromBranch(
+        filePath: string,
+        branch: string,
+        root: string,
+    ): string | null {
         // TODO: Move this to Rust binding as well "get_file_content(path, revision)"
         // For now, keep as is or use GitBinding if exposed?
         // I haven't exposed "get_file_content" in GitBinding.
@@ -214,23 +234,43 @@ export class ChangeAnalysisService {
         }
     }
 
-    private compareSymbols(oldS: CodeSignature[], newS: CodeSignature[], filePath: string): SymbolChange[] {
+    private compareSymbols(
+        oldS: CodeSignature[],
+        newS: CodeSignature[],
+        filePath: string,
+    ): SymbolChange[] {
         const changes: SymbolChange[] = [];
-        const oldMap = new Map(oldS.map(s => [s.symbolName, s]));
-        const newMap = new Map(newS.map(s => [s.symbolName, s]));
+        const oldMap = new Map(oldS.map((s) => [s.symbolName, s]));
+        const newMap = new Map(newS.map((s) => [s.symbolName, s]));
 
         for (const [name, newSig] of newMap) {
             const oldSig = oldMap.get(name);
             if (!oldSig) {
-                changes.push({ symbolName: name, filePath, changeType: 'added', newSignature: newSig });
+                changes.push({
+                    symbolName: name,
+                    filePath,
+                    changeType: 'added',
+                    newSignature: newSig,
+                });
             } else if (oldSig.hash !== newSig.hash) {
-                changes.push({ symbolName: name, filePath, changeType: 'modified', oldSignature: oldSig, newSignature: newSig });
+                changes.push({
+                    symbolName: name,
+                    filePath,
+                    changeType: 'modified',
+                    oldSignature: oldSig,
+                    newSignature: newSig,
+                });
             }
         }
 
         for (const [name, oldSig] of oldMap) {
             if (!newMap.has(name)) {
-                changes.push({ symbolName: name, filePath, changeType: 'deleted', oldSignature: oldSig });
+                changes.push({
+                    symbolName: name,
+                    filePath,
+                    changeType: 'deleted',
+                    oldSignature: oldSig,
+                });
             }
         }
 

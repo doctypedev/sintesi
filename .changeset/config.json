@@ -1,14 +1,11 @@
 {
-  "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
-  "changelog": "@changesets/cli/changelog",
-  "commit": false,
-  "fixed": [[
-    "@sintesi/sintesi",
-    "@sintesi/core"
-  ]],
-  "linked": [],
-  "access": "public",
-  "baseBranch": "main",
-  "updateInternalDependencies": "patch",
-  "ignore": ["@sintesi/core-native", "sintesi-monorepo-root"]
+    "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
+    "changelog": "@changesets/cli/changelog",
+    "commit": false,
+    "fixed": [["@sintesi/sintesi", "@sintesi/core"]],
+    "linked": [],
+    "access": "public",
+    "baseBranch": "main",
+    "updateInternalDependencies": "patch",
+    "ignore": ["@sintesi/core-native", "sintesi-monorepo-root"]
 }

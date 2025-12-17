@@ -1,4 +1,3 @@
-
 import { Logger } from '../utils/logger';
 import { ProjectContext } from '@sintesi/core';
 import { AIAgents } from '../../../ai';
@@ -18,8 +17,8 @@ export class ReadmeBuilder {
     constructor(
         private logger: Logger,
         private reviewService: ReviewService,
-        private contextService: GenerationContextService
-    ) { }
+        private contextService: GenerationContextService,
+    ) {}
 
     async buildReadme(
         options: ReadmeOptions,
@@ -27,7 +26,7 @@ export class ReadmeBuilder {
         gitDiff: string,
         outputPath: string,
         aiAgents: AIAgents,
-        smartSuggestion: string = ''
+        smartSuggestion: string = '',
     ): Promise<void> {
         let existingContent = '';
         let isUpdate = false;
@@ -41,7 +40,9 @@ export class ReadmeBuilder {
                 this.logger.warn('Could not read existing README: ' + e);
             }
         } else if (options.force) {
-            this.logger.info('Force flag detected: ignoring existing README and regenerating from scratch.');
+            this.logger.info(
+                'Force flag detected: ignoring existing README and regenerating from scratch.',
+            );
             existingContent = '';
             isUpdate = false;
         }
@@ -52,7 +53,8 @@ export class ReadmeBuilder {
         // Format context for AI
         const fileSummary = context.files
             .map(function (f) {
-                const importInfo = f.importedBy.length > 0 ? ` (imported by ${f.importedBy.length} files)` : '';
+                const importInfo =
+                    f.importedBy.length > 0 ? ` (imported by ${f.importedBy.length} files)` : '';
                 return '- ' + f.path + importInfo;
             })
             .join('\n');
@@ -62,20 +64,25 @@ export class ReadmeBuilder {
 
         // Use Service to generate context prompt (centralized)
         // This includes the Repository URL logic internally via generateContextPrompt -> getSafeRepoInstructions
-        const sharedContextPrompt = this.contextService.generateContextPrompt(context, gitDiff, projectConfig, techStack);
+        const sharedContextPrompt = this.contextService.generateContextPrompt(
+            context,
+            gitDiff,
+            projectConfig,
+            techStack,
+        );
 
         const prompt = README_GENERATION_PROMPT(
             isUpdate,
             sharedContextPrompt,
             smartSuggestion,
             fileSummary,
-            existingContent
+            existingContent,
         );
 
         try {
             let readmeContent = await aiAgents.writer.generateText(prompt, {
                 maxTokens: 4000,
-                temperature: 0.1
+                temperature: 0.1,
             });
 
             // Cleanup
@@ -90,7 +97,13 @@ export class ReadmeBuilder {
             // Review
             if (aiAgents.reviewer) {
                 // We use sharedContextPrompt as the source of truth for the reviewer
-                readmeContent = await this.reviewService.reviewAndRefine(readmeContent, outputPath, 'Project README', sharedContextPrompt, aiAgents);
+                readmeContent = await this.reviewService.reviewAndRefine(
+                    readmeContent,
+                    outputPath,
+                    'Project README',
+                    sharedContextPrompt,
+                    aiAgents,
+                );
             }
 
             s.stop(isUpdate ? 'Update complete' : 'Generation complete');
@@ -101,7 +114,6 @@ export class ReadmeBuilder {
             } else {
                 this.logger.success('README generated at ' + Logger.path(outputPath));
             }
-
         } catch (error: any) {
             s.stop('Generation failed');
             const msg = error instanceof Error ? error.message : String(error);

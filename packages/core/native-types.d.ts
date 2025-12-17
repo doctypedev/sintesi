@@ -12,55 +12,55 @@
 
  */
 export interface CodeRef {
-  /** Absolute path to the source file */
-  filePath: string;
-  /** Name of the symbol (function, class, interface, etc.) */
-  symbolName: string;
+    /** Absolute path to the source file */
+    filePath: string;
+    /** Name of the symbol (function, class, interface, etc.) */
+    symbolName: string;
 }
 /**
  * Signature information extracted from code
  */
 export interface CodeSignature {
-  /** Name of the symbol */
-  symbolName: string;
-  /** Type of the symbol (function, class, interface, type, etc.) */
-  symbolType: SymbolType;
-  /** The actual signature text (normalized) */
-  signatureText: string;
-  /** Whether the symbol is exported */
-  isExported: boolean;
-  /** SHA256 hash of the signature (computed by Rust analyzer) */
-  hash?: string;
+    /** Name of the symbol */
+    symbolName: string;
+    /** Type of the symbol (function, class, interface, type, etc.) */
+    symbolType: SymbolType;
+    /** The actual signature text (normalized) */
+    signatureText: string;
+    /** Whether the symbol is exported */
+    isExported: boolean;
+    /** SHA256 hash of the signature (computed by Rust analyzer) */
+    hash?: string;
 }
 /**
  * Types of symbols we track
  */
 export const enum SymbolType {
-  Function = "Function",
-  Class = "Class",
-  Interface = "Interface",
-  TypeAlias = "TypeAlias",
-  Enum = "Enum",
-  Variable = "Variable",
-  Const = "Const",
+    Function = 'Function',
+    Class = 'Class',
+    Interface = 'Interface',
+    TypeAlias = 'TypeAlias',
+    Enum = 'Enum',
+    Variable = 'Variable',
+    Const = 'Const',
 }
 /**
  * Hash information for a code signature
  */
 export interface SignatureHash {
-  /** SHA256 hash of the signature */
-  hash: string;
-  /** Original signature that was hashed */
-  signature: CodeSignature;
-  /** Timestamp when hash was generated (milliseconds since Unix epoch) */
-  timestamp: number;
+    /** SHA256 hash of the signature */
+    hash: string;
+    /** Original signature that was hashed */
+    signature: CodeSignature;
+    /** Timestamp when hash was generated (milliseconds since Unix epoch) */
+    timestamp: number;
 }
 /**
  * Reference to documentation location
  */
 export interface DocRef {
-  /** Path to the markdown file */
-  filePath: string;
+    /** Path to the markdown file */
+    filePath: string;
 }
 /**
  * Complete mapping entry in sintesi-map.json
@@ -70,54 +70,54 @@ export interface DocRef {
  * Use the anchor ID to locate content between sintesi:start and sintesi:end tags.
  */
 export interface SintesiMapEntry {
-  /** Unique identifier for this anchor */
-  id: string;
-  /** Reference to the code */
-  codeRef: CodeRef;
-  /** Hash of the code signature */
-  codeSignatureHash: string;
-  /** The signature text (for AI context) */
-  codeSignatureText?: string;
-  /** Reference to the documentation */
-  docRef: DocRef;
-  /** Last updated timestamp */
-  lastUpdated: number;
+    /** Unique identifier for this anchor */
+    id: string;
+    /** Reference to the code */
+    codeRef: CodeRef;
+    /** Hash of the code signature */
+    codeSignatureHash: string;
+    /** The signature text (for AI context) */
+    codeSignatureText?: string;
+    /** Reference to the documentation */
+    docRef: DocRef;
+    /** Last updated timestamp */
+    lastUpdated: number;
 }
 /**
  * The complete sintesi-map.json structure
  */
 export interface SintesiMap {
-  /** Schema version for future compatibility */
-  version: string;
-  /** All tracked documentation anchors */
-  entries: Array<SintesiMapEntry>;
+    /** Schema version for future compatibility */
+    version: string;
+    /** All tracked documentation anchors */
+    entries: Array<SintesiMapEntry>;
 }
 /** Analysis result including errors (for NAPI) */
 export interface AnalysisResultJs {
-  /** All code signatures found */
-  signatures: Array<CodeSignature>;
-  /** Errors encountered during parsing */
-  errors: Array<string>;
+    /** All code signatures found */
+    signatures: Array<CodeSignature>;
+    /** Errors encountered during parsing */
+    errors: Array<string>;
 }
 /** NAPI-compatible result structure for file discovery */
 export interface FileDiscoveryResult {
-  /** List of markdown file paths found */
-  markdownFiles: Array<string>;
-  /** List of source file paths found */
-  sourceFiles: Array<string>;
-  /** Total number of files found */
-  totalFiles: number;
-  /** Number of errors encountered */
-  errors: number;
+    /** List of markdown file paths found */
+    markdownFiles: Array<string>;
+    /** List of source file paths found */
+    sourceFiles: Array<string>;
+    /** Total number of files found */
+    totalFiles: number;
+    /** Number of errors encountered */
+    errors: number;
 }
 /** NAPI-compatible options for file discovery */
 export interface FileDiscoveryOptions {
-  /** Respect .gitignore rules (default: true) */
-  respectGitignore?: boolean;
-  /** Include hidden files (default: false) */
-  includeHidden?: boolean;
-  /** Maximum depth to traverse (default: unlimited) */
-  maxDepth?: number;
+    /** Respect .gitignore rules (default: true) */
+    respectGitignore?: boolean;
+    /** Include hidden files (default: false) */
+    includeHidden?: boolean;
+    /** Maximum depth to traverse (default: unlimited) */
+    maxDepth?: number;
 }
 /**
  * Discover files in a directory (NAPI binding for Node.js)
@@ -145,32 +145,32 @@ export interface FileDiscoveryOptions {
  * ```
  */
 export declare function discoverFiles(
-  rootPath: string,
-  options?: FileDiscoveryOptions | undefined | null,
+    rootPath: string,
+    options?: FileDiscoveryOptions | undefined | null,
 ): FileDiscoveryResult;
 /** NAPI-compatible Sintesi anchor structure */
 export interface SintesiAnchor {
-  /** Unique anchor ID */
-  id: string;
-  /** Code reference (e.g., "src/auth.ts#login") */
-  codeRef?: string;
-  /** File path where anchor was found */
-  filePath: string;
-  /** Start line number (0-indexed) */
-  startLine: number;
-  /** End line number (0-indexed) */
-  endLine: number;
-  /** Content between anchor tags */
-  content: string;
+    /** Unique anchor ID */
+    id: string;
+    /** Code reference (e.g., "src/auth.ts#login") */
+    codeRef?: string;
+    /** File path where anchor was found */
+    filePath: string;
+    /** Start line number (0-indexed) */
+    startLine: number;
+    /** End line number (0-indexed) */
+    endLine: number;
+    /** Content between anchor tags */
+    content: string;
 }
 /** NAPI-compatible extraction result */
 export interface ExtractionResult {
-  /** Map of anchor ID to anchor data (as a flat array for NAPI compatibility) */
-  anchors: Array<SintesiAnchor>;
-  /** Number of anchors found */
-  anchorCount: number;
-  /** Errors encountered during extraction */
-  errors: Array<string>;
+    /** Map of anchor ID to anchor data (as a flat array for NAPI compatibility) */
+    anchors: Array<SintesiAnchor>;
+    /** Number of anchors found */
+    anchorCount: number;
+    /** Errors encountered during extraction */
+    errors: Array<string>;
 }
 /**
  * Extract Sintesi anchors from markdown content
@@ -202,10 +202,7 @@ export interface ExtractionResult {
  * }
  * ```
  */
-export declare function extractAnchors(
-  filePath: string,
-  content: string,
-): ExtractionResult;
+export declare function extractAnchors(filePath: string, content: string): ExtractionResult;
 /**
  * Validate markdown content for Sintesi anchors
  *
@@ -256,37 +253,37 @@ export declare function validateMarkdownAnchors(content: string): Array<string>;
  * ```
  */
 export interface CodeRefParts {
-  filePath: string;
-  symbolName: string;
+    filePath: string;
+    symbolName: string;
 }
 export declare function parseCodeRef(codeRef: string): CodeRefParts;
 export interface PackageJson {
-  name?: string;
-  version?: string;
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-  scripts?: Record<string, string>;
+    name?: string;
+    version?: string;
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+    scripts?: Record<string, string>;
 }
 export interface FileContext {
-  path: string;
-  extension?: string;
-  imports: Array<string>;
-  importedBy: Array<string>;
+    path: string;
+    extension?: string;
+    imports: Array<string>;
+    importedBy: Array<string>;
 }
 export interface ProjectContext {
-  files: Array<FileContext>;
-  packageJson?: PackageJson;
+    files: Array<FileContext>;
+    packageJson?: PackageJson;
 }
 export declare function getProjectContext(rootPath: string): ProjectContext;
 export interface NapiFileInfo {
-  path: string;
-  extension?: string;
+    path: string;
+    extension?: string;
 }
 export declare function getProjectFiles(rootPath: string): Array<NapiFileInfo>;
 export interface ChangeSummary {
-  gitDiff: string;
-  changedFiles: Array<string>;
-  hasMeaningfulChanges: boolean;
+    gitDiff: string;
+    changedFiles: Array<string>;
+    hasMeaningfulChanges: boolean;
 }
 /** Simple hello world function to test the napi binding */
 export declare function helloWorld(): string;
@@ -294,47 +291,47 @@ export declare function helloWorld(): string;
 export declare function getVersion(): string;
 /** AST Analyzer for TypeScript/JavaScript code */
 export declare class AstAnalyzer {
-  /** Create a new AST analyzer instance */
-  constructor();
-  /**
-   * Analyze a TypeScript/JavaScript file and return code signatures
-   *
-   * This method reads the file, parses it using Oxc, and extracts all
-   * exported symbols with their signatures. Hashes are computed automatically.
-   *
-   * @param filePath - Absolute path to the TypeScript/JavaScript file
-   * @returns Array of code signatures found in the file (with hashes)
-   */
-  analyzeFile(filePath: string): Array<CodeSignature>;
-  /**
-   * Analyze TypeScript/JavaScript source code directly (without file)
-   *
-   * This method parses the provided code string using Oxc and extracts all
-   * exported symbols with their signatures. Hashes are computed automatically.
-   *
-   * @param code - TypeScript/JavaScript source code
-   * @returns Array of code signatures found in the code (with hashes)
-   */
-  analyzeCode(code: string): Array<CodeSignature>;
-  /**
-   * Get detailed analysis result including errors
-   *
-   * @param code - TypeScript/JavaScript source code
-   * @returns Detailed analysis result with symbols and errors (with hashes)
-   */
-  analyzeWithErrors(code: string): AnalysisResultJs;
+    /** Create a new AST analyzer instance */
+    constructor();
+    /**
+     * Analyze a TypeScript/JavaScript file and return code signatures
+     *
+     * This method reads the file, parses it using Oxc, and extracts all
+     * exported symbols with their signatures. Hashes are computed automatically.
+     *
+     * @param filePath - Absolute path to the TypeScript/JavaScript file
+     * @returns Array of code signatures found in the file (with hashes)
+     */
+    analyzeFile(filePath: string): Array<CodeSignature>;
+    /**
+     * Analyze TypeScript/JavaScript source code directly (without file)
+     *
+     * This method parses the provided code string using Oxc and extracts all
+     * exported symbols with their signatures. Hashes are computed automatically.
+     *
+     * @param code - TypeScript/JavaScript source code
+     * @returns Array of code signatures found in the code (with hashes)
+     */
+    analyzeCode(code: string): Array<CodeSignature>;
+    /**
+     * Get detailed analysis result including errors
+     *
+     * @param code - TypeScript/JavaScript source code
+     * @returns Detailed analysis result with symbols and errors (with hashes)
+     */
+    analyzeWithErrors(code: string): AnalysisResultJs;
 }
 export declare class GitBinding {
-  constructor(rootPath: string);
-  analyzeChanges(
-    baseBranch?: string | undefined | null,
-    staged?: boolean | undefined | null,
-  ): ChangeSummary;
-  static checkMeaningfulChanges(diff: string): boolean;
+    constructor(rootPath: string);
+    analyzeChanges(
+        baseBranch?: string | undefined | null,
+        staged?: boolean | undefined | null,
+    ): ChangeSummary;
+    static checkMeaningfulChanges(diff: string): boolean;
 }
 export declare class GraphAnalyzer {
-  constructor(rootPath: string);
-  /** Build the dependency graph and return dependents of a given file */
-  getDependents(filePath: string, allFiles: Array<string>): Array<string>;
-  getDependencies(filePath: string, allFiles: Array<string>): Array<string>;
+    constructor(rootPath: string);
+    /** Build the dependency graph and return dependents of a given file */
+    getDependents(filePath: string, allFiles: Array<string>): Array<string>;
+    getDependencies(filePath: string, allFiles: Array<string>): Array<string>;
 }

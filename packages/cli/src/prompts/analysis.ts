@@ -83,7 +83,7 @@ export function getContextPrompt(
     context: ProjectContext,
     gitDiff: string,
     projectConfig: ProjectConfig,
-    techStack?: TechStack
+    techStack?: TechStack,
 ): string {
     const packageJsonSummary = context.packageJson
         ? JSON.stringify(context.packageJson, null, 2)
@@ -93,10 +93,14 @@ export function getContextPrompt(
 
     if (techStack) {
         prompt += `## Detected Tech Stack\n`;
-        if (techStack.frameworks.length) prompt += `- **Frameworks**: ${techStack.frameworks.join(', ')}\n`;
-        if (techStack.languages.length) prompt += `- **Languages**: ${techStack.languages.join(', ')}\n`;
-        if (techStack.libraries.length) prompt += `- **Libraries**: ${techStack.libraries.join(', ')}\n`;
-        if (techStack.infrastructure.length) prompt += `- **Tools/Infra**: ${techStack.infrastructure.join(', ')}\n`;
+        if (techStack.frameworks.length)
+            prompt += `- **Frameworks**: ${techStack.frameworks.join(', ')}\n`;
+        if (techStack.languages.length)
+            prompt += `- **Languages**: ${techStack.languages.join(', ')}\n`;
+        if (techStack.libraries.length)
+            prompt += `- **Libraries**: ${techStack.libraries.join(', ')}\n`;
+        if (techStack.infrastructure.length)
+            prompt += `- **Tools/Infra**: ${techStack.infrastructure.join(', ')}\n`;
         prompt += `> **INSTRUCTION**: Strictly adhere to the detected stack. Do not suggest libraries not listed here (like React if this is Vue) unless explicitly asked.\n\n`;
     }
 
@@ -111,9 +115,7 @@ export function getContextPrompt(
 
     // Repo Info - Prevent Hallucination
     const pkg = context.packageJson as any;
-    const repoUrl = typeof pkg?.repository === 'string'
-        ? pkg.repository
-        : pkg?.repository?.url;
+    const repoUrl = typeof pkg?.repository === 'string' ? pkg.repository : pkg?.repository?.url;
 
     if (repoUrl) {
         prompt += `> **REPOSITORY**: The git repository is defined as "${repoUrl}". Use this URL for any clone instructions.\n\n`;
@@ -125,7 +127,10 @@ export function getContextPrompt(
         prompt += `> NOTE: The CLI binary command is "${projectConfig.binName}". Use this for usage examples (e.g. ${projectConfig.binName} <command>).\n\n`;
     }
 
-    prompt += "## Recent Code Changes (Git Diff)\nUse this to understand what features were recently added or modified.\n```diff\n" + (gitDiff || 'No recent uncommitted changes detected.') + "\n```\n\n";
+    prompt +=
+        '## Recent Code Changes (Git Diff)\nUse this to understand what features were recently added or modified.\n```diff\n' +
+        (gitDiff || 'No recent uncommitted changes detected.') +
+        '\n```\n\n';
 
     return prompt;
 }

@@ -30,11 +30,29 @@ describe('PackageSelector', () => {
             isMonorepo: true,
             root: '/root',
             packages: [
-                { name: 'pkg-a', path: '/root/pkg-a', relativePath: 'pkg-a', version: '1.0.0', hasChanges: false },
-                { name: 'pkg-b', path: '/root/pkg-b', relativePath: 'pkg-b', version: '1.0.0', hasChanges: true },
+                {
+                    name: 'pkg-a',
+                    path: '/root/pkg-a',
+                    relativePath: 'pkg-a',
+                    version: '1.0.0',
+                    hasChanges: false,
+                },
+                {
+                    name: 'pkg-b',
+                    path: '/root/pkg-b',
+                    relativePath: 'pkg-b',
+                    version: '1.0.0',
+                    hasChanges: true,
+                },
             ],
             changedPackages: [
-                { name: 'pkg-b', path: '/root/pkg-b', relativePath: 'pkg-b', version: '1.0.0', hasChanges: true },
+                {
+                    name: 'pkg-b',
+                    path: '/root/pkg-b',
+                    relativePath: 'pkg-b',
+                    version: '1.0.0',
+                    hasChanges: true,
+                },
             ],
         };
 
@@ -54,11 +72,29 @@ describe('PackageSelector', () => {
             isMonorepo: true,
             root: '/root',
             packages: [
-                { name: 'pkg-a', path: '/root/pkg-a', relativePath: 'pkg-a', version: '1.0.0', hasChanges: false },
-                { name: 'pkg-b', path: '/root/pkg-b', relativePath: 'pkg-b', version: '1.0.0', hasChanges: true },
+                {
+                    name: 'pkg-a',
+                    path: '/root/pkg-a',
+                    relativePath: 'pkg-a',
+                    version: '1.0.0',
+                    hasChanges: false,
+                },
+                {
+                    name: 'pkg-b',
+                    path: '/root/pkg-b',
+                    relativePath: 'pkg-b',
+                    version: '1.0.0',
+                    hasChanges: true,
+                },
             ],
             changedPackages: [
-                { name: 'pkg-b', path: '/root/pkg-b', relativePath: 'pkg-b', version: '1.0.0', hasChanges: true },
+                {
+                    name: 'pkg-b',
+                    path: '/root/pkg-b',
+                    relativePath: 'pkg-b',
+                    version: '1.0.0',
+                    hasChanges: true,
+                },
             ],
         };
 

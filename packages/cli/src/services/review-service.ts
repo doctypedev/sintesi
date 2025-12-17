@@ -1,9 +1,8 @@
-
 import { Logger } from '../utils/logger';
 import { AIAgents } from '../../../ai';
 
 export class ReviewService {
-    constructor(private logger: Logger) { }
+    constructor(private logger: Logger) {}
 
     /**
      * Reviews and refines content using the Reviewer and Writer agents.
@@ -14,7 +13,7 @@ export class ReviewService {
         itemPath: string,
         itemDescription: string,
         sourceContext: string,
-        agents: AIAgents
+        agents: AIAgents,
     ): Promise<string> {
         if (!agents.reviewer) {
             return content;
@@ -56,12 +55,20 @@ export class ReviewService {
     `;
 
         try {
-            let reviewRaw = await agents.reviewer.generateText(reviewPrompt, { maxTokens: 1000, temperature: 0.1 });
-            reviewRaw = reviewRaw.replace(/```json/g, '').replace(/```/g, '').trim();
+            let reviewRaw = await agents.reviewer.generateText(reviewPrompt, {
+                maxTokens: 1000,
+                temperature: 0.1,
+            });
+            reviewRaw = reviewRaw
+                .replace(/```json/g, '')
+                .replace(/```/g, '')
+                .trim();
             const review = JSON.parse(reviewRaw);
 
             if (review.score < 4 || review.critical_issues) {
-                this.logger.warn(`⚠ Reviewer flagged ${itemPath} (Score: ${review.score}/5): ${review.critique.substring(0, 100)}... Refining...`);
+                this.logger.warn(
+                    `⚠ Reviewer flagged ${itemPath} (Score: ${review.score}/5): ${review.critique.substring(0, 100)}... Refining...`,
+                );
 
                 const refinePrompt = `
         The previous draft of "${itemPath}" received the following CRITIQUE from the Reviewer:
@@ -79,12 +86,19 @@ export class ReviewService {
         `;
 
                 // Use Writer to refine
-                let refinedContent = await agents.writer.generateText(refinePrompt, { maxTokens: 4000, temperature: 0.1 });
+                let refinedContent = await agents.writer.generateText(refinePrompt, {
+                    maxTokens: 4000,
+                    temperature: 0.1,
+                });
 
                 // Clean content again
                 refinedContent = refinedContent.trim();
-                if (refinedContent.startsWith('```markdown')) refinedContent = refinedContent.replace(/^```markdown\s*/, '').replace(/```$/, '');
-                else if (refinedContent.startsWith('```')) refinedContent = refinedContent.replace(/^```\s*/, '').replace(/```$/, '');
+                if (refinedContent.startsWith('```markdown'))
+                    refinedContent = refinedContent
+                        .replace(/^```markdown\s*/, '')
+                        .replace(/```$/, '');
+                else if (refinedContent.startsWith('```'))
+                    refinedContent = refinedContent.replace(/^```\s*/, '').replace(/```$/, '');
 
                 this.logger.success(`✔ Refined ${itemPath} based on feedback.`);
                 return refinedContent;
@@ -93,7 +107,9 @@ export class ReviewService {
                 return content;
             }
         } catch (e) {
-            this.logger.warn('Review failed (using unknown/custom JSON?), keeping original draft: ' + e);
+            this.logger.warn(
+                'Review failed (using unknown/custom JSON?), keeping original draft: ' + e,
+            );
             return content;
         }
     }
