@@ -17,6 +17,7 @@ This document provides practical examples and use cases to demonstrate how to ef
 - [Cleaning Build Artifacts](#cleaning-build-artifacts)
 - [Generating Documentation](#generating-documentation)
 - [Releasing Packages](#releasing-packages)
+- [Forcing Full Regeneration of README and Docs](#forcing-full-regeneration-of-readme-and-docs)
 
 ## Getting Started
 
@@ -105,6 +106,22 @@ This command utilizes `changeset` to version and publish the packages, ensuring 
 
 ### Example
 When you're ready to release a new version of the `core` package after a series of updates, run the release command to publish it to the package registry.
+
+## Forcing Full Regeneration of README and Docs
+
+To force a full regeneration of the README and documentation, you can use the `--force` flag. This clears the diff and rebuilds from the current context when the output is missing.
+
+### Command
+
+```bash
+pnpm run docs:build --force
+```
+
+### Explanation
+When using the `--force` flag, if the documentation directory is empty or the README file does not exist, the command will reset the git diff, ensuring that the documentation is generated based on the full current context rather than relying on previous commits.
+
+### Example
+If you find that the README is missing or outdated, running the command with the `--force` flag will regenerate it completely, ensuring that it reflects the latest state of your project.
 
 ## Conclusion
 
