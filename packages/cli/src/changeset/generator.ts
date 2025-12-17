@@ -97,34 +97,48 @@ export class ChangesetGenerator {
       };
     }
 
-    let versionType: VersionType;
-    let description: string;
+    let versionType: VersionType | undefined = manualVersionType;
+    let description: string | undefined = manualDescription;
 
-    // Use manual values if provided
-    if (manualVersionType && manualDescription) {
-      versionType = manualVersionType;
-      description = manualDescription;
+    // Logic to determine Version Type and Description
+    // Priority: Manual > AI > Auto-detect
+
+    // 1. If we have both, we are done
+    if (versionType && description) {
       this.logger.info(`Using manual version type: ${versionType}`);
-    } else if (noAI) {
-      // Use automatic detection without AI
+    } 
+    // 2. If no AI allowed, try auto-detect for missing fields
+    else if (noAI) {
       const detector = new VersionTypeDetector(this.logger);
       const detection = detector.detect(analysis);
 
-      versionType = detection.versionType;
-      description = detection.reasoning;
-
-      this.logger.info(`Auto-detected version type: ${versionType} (${detection.confidence} confidence)`);
+      if (!versionType) {
+        versionType = detection.versionType;
+        this.logger.info(`Auto-detected version type: ${versionType} (${detection.confidence} confidence)`);
+      }
+      if (!description) {
+        description = detection.reasoning;
+      }
       if (verbose) {
         this.logger.debug(`Detection reasoning: ${detection.reasoning}`);
       }
-    } else {
-      // Use AI to determine version type and description
+    } 
+    // 3. Use AI to fill missing fields
+    else {
       try {
         const aiResponse = await this.analyzeWithAI(analysis, verbose);
-        versionType = aiResponse.versionType;
-        description = aiResponse.description;
+        
+        if (!versionType) {
+          versionType = aiResponse.versionType;
+          this.logger.info(`AI determined version type: ${versionType}`);
+        } else {
+           this.logger.info(`Using manual version type: ${versionType}`);
+        }
 
-        this.logger.info(`AI determined version type: ${versionType}`);
+        if (!description) {
+          description = aiResponse.description;
+        }
+
         if (verbose) {
           this.logger.debug(`AI reasoning: ${aiResponse.reasoning}`);
         }
@@ -135,12 +149,16 @@ export class ChangesetGenerator {
         const detector = new VersionTypeDetector(this.logger);
         const detection = detector.detect(analysis);
 
-        versionType = detection.versionType;
-        description = detection.reasoning;
+        if (!versionType) versionType = detection.versionType;
+        if (!description) description = detection.reasoning;
 
         this.logger.info(`Auto-detected version type: ${versionType} (fallback)`);
       }
     }
+
+    // Ensure we have values (typescript check, though logic ensures it mostly)
+    if (!versionType) versionType = 'patch'; // Safe default
+    if (!description) description = 'No description provided';
 
     // Generate changeset file
     try {

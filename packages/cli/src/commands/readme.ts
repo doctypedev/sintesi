@@ -90,19 +90,26 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
 
   let context;
   let gitDiff = '';
+  const outputPath = resolve(cwd, options.output || 'README.md');
 
   try {
     const analysis = await contextService.analyzeProject();
     context = analysis.context;
     gitDiff = analysis.gitDiff;
     spinnerLogger.stop('Analyzed ' + context.files.length + ' files');
+
+    // 2.1 RESET DIFF IF FORCE OR MISSING
+    // If we are forcing, or if the README doesn't exist, we don't want to rely on the "last commit" diff.
+    // We want to generate based on the FULL current context.
+    if (options.force || !existsSync(outputPath)) {
+      gitDiff = '';
+    }
+
   } catch (error) {
     spinnerLogger.stop('Analysis failed');
     logger.error('Failed to analyze project: ' + error);
     return;
   }
-
-  const outputPath = resolve(cwd, options.output || 'README.md');
 
   // Semantic Impact Analysis (Optional but recommended to match logic)
   if (gitDiff && !options.force) {
