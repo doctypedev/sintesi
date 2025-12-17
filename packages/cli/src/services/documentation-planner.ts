@@ -121,18 +121,22 @@ export class DocumentationPlanner {
             : 'No package.json found';
 
         let existingDocsList: string[] = [];
-        try {
-            const allFiles = this.recursiveGetAllFiles(outputDir);
-            existingDocsList = allFiles.map(f => relative(outputDir, f));
-        } catch (e) {
-            // Ignore error if docs folder doesn't exist or is empty
+        let existingDocsSummary = 'No existing documentation found.';
+        let hasExistingDocs = false;
+
+        if (!force) { // Only read existing docs if not in force mode
+            try {
+                const allFiles = this.recursiveGetAllFiles(outputDir);
+                existingDocsList = allFiles.map(f => relative(outputDir, f));
+                if (existingDocsList.length > 0) {
+                    existingDocsSummary = existingDocsList.join('\n');
+                    hasExistingDocs = true;
+                }
+            } catch (e) {
+                // Ignore error if docs folder doesn't exist or is empty
+            }
         }
-
-        const existingDocsSummary = existingDocsList.length > 0
-            ? existingDocsList.join('\n')
-            : 'No existing documentation found.';
-
-        const hasExistingDocs = existingDocsList.length > 0;
+        
         let strategyInstructions = '';
 
         if (hasExistingDocs && !force) {
@@ -152,7 +156,6 @@ export class DocumentationPlanner {
 - **Library / SDK**: Suggest "usage.md", "api-reference.md".
 `;
         }
-
 
         const planPrompt = DOC_PLANNING_PROMPT(
             packageJsonSummary,
