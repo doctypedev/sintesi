@@ -288,6 +288,15 @@ export interface ChangeSummary {
   changedFiles: Array<string>;
   hasMeaningfulChanges: boolean;
 }
+export interface SearchResult {
+  filePath: string;
+  lineNumber: number;
+  lineText: string;
+}
+export declare function searchProject(
+  rootPath: string,
+  pattern: string,
+): Array<SearchResult>;
 /** Simple hello world function to test the napi binding */
 export declare function helloWorld(): string;
 /** Get version information */
@@ -338,12 +347,3 @@ export declare class GraphAnalyzer {
   getDependents(filePath: string, allFiles: Array<string>): Array<string>;
   getDependencies(filePath: string, allFiles: Array<string>): Array<string>;
 }
-export interface SearchResult {
-  filePath: string;
-  lineNumber: number;
-  lineText: string;
-}
-export declare function searchProject(
-  rootPath: string,
-  pattern: string,
-): Array<SearchResult>;
