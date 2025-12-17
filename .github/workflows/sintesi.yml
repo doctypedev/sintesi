@@ -80,6 +80,7 @@ jobs:
 
             - name: Format generated code
               run: pnpm run format
+
             - name: Check for any changes
               id: git_status
               run: echo "changes=$(git status --porcelain | wc -l)" >> "$GITHUB_OUTPUT"
