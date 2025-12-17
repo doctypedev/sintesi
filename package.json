@@ -14,7 +14,13 @@
         "docs:build": "pnpm run generate:sidebar && vitepress build docs",
         "docs:preview": "pnpm run generate:sidebar && vitepress preview docs",
         "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
-        "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\""
+        "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+        "prepare": "husky"
+    },
+    "lint-staged": {
+        "**/*.{ts,tsx,js,jsx,json,md,yml,yaml}": [
+            "prettier --write"
+        ]
     },
     "pnpm": {
         "supportedArchitectures": {
@@ -34,6 +40,8 @@
         "@types/vue": "^1.0.31",
         "eslint-config-prettier": "^10.1.8",
         "glob": "^13.0.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.7",
         "prettier": "^3.0.0",
         "tsx": "^4.19.2",
         "vite": "^5.0.10",
