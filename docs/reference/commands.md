@@ -126,11 +126,12 @@ sintesi documentation
 - Skips generation if no relevant code changes are detected.
 - **Diff-reset behavior**: Using `--force` or if the output directory is missing will bypass checks and always regenerate the documentation.
 - **Note**: If the `repository` field is missing in `package.json`, the command will automatically detect and populate the repository URL from the git configuration.
+- **New Behavior**: As of version **0.18.4**, when `--force` is passed, the existing docs scan is skipped, treating the run as a greenfield rebuild.
 
 #### Options
 - `--output-dir <path>`: Specifies the output directory for the generated documentation (default is `docs`).
 - `--verbose`: Provides detailed output during the documentation process.
-- `--force`: Forces a regeneration of documentation, bypassing existing checks.
+- `--force`: Forces a regeneration of documentation, bypassing existing checks and skipping the docs scan.
 
 #### Usage Examples
 ```bash
