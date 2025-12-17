@@ -4,7 +4,7 @@
   "private": true,
   "description": "Root package for the Sintesi monorepo",
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm -r build && if [ $? -eq 0 ]; then echo \"✅ Build Completed. Run: $(pwd)/packages/cli/dist/cli/src/index.js\"; else echo \"❌ Build Failed! Please check the errors above.\"; fi",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
     "clean": "pnpm -r clean",

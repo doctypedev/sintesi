@@ -99,11 +99,18 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     gitDiff = analysis.gitDiff;
     spinnerLogger.stop('Analyzed ' + context.files.length + ' files');
 
+    // 2.1 RESET DIFF IF FORCE OR MISSING
+    // If we are forcing, or if the docs don't exist, we don't want to rely on the "last commit" diff.
+    const docsDirNotEmpty = existsSync(outputDir) && readdirSync(outputDir).length > 0;
+    if (options.force || !docsDirNotEmpty) {
+      gitDiff = '';
+    }
+
     // Impact Analysis (Semantic Check)
     if (gitDiff && !options.force) {
       const { ImpactAnalyzer } = await import('../services/impact-analyzer');
       const impactAnalyzer = new ImpactAnalyzer(logger);
-      const docsDirNotEmpty = existsSync(outputDir) && readdirSync(outputDir).length > 0;
+      // const docsDirNotEmpty = existsSync(outputDir) && readdirSync(outputDir).length > 0; // Already defined above
 
       const impactResult = await impactAnalyzer.checkWithLogging({
         gitDiff,
