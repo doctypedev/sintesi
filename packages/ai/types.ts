@@ -189,7 +189,12 @@ export interface IAIProvider {
    */
   generateText?(
     prompt: string,
-    options?: { temperature?: number; maxTokens?: number }
+    options?: { 
+        temperature?: number; 
+        maxTokens?: number;
+        tools?: any; // Vercel AI SDK tools
+        maxSteps?: number;
+    }
   ): Promise<string>;
 }
 

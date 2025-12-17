@@ -191,7 +191,7 @@ export class VercelAIProvider implements IAIProvider {
 
   async validateConnection(): Promise<boolean> {
     const model = this.getModel();
-    const isO1Model = this.modelConfig.modelId.startsWith('o1-');
+    const isReasoningModel = this.modelConfig.modelId.startsWith('o4-');
 
     try {
       // Simple ping to validate key
@@ -201,7 +201,7 @@ export class VercelAIProvider implements IAIProvider {
       };
 
       // o1 models do not support maxTokens in the same way (or might reject small values)
-      if (!isO1Model) {
+      if (!isReasoningModel) {
         options.maxTokens = 5;
       }
 
@@ -220,10 +220,10 @@ export class VercelAIProvider implements IAIProvider {
    */
   async generateText(
     prompt: string,
-    options: { temperature?: number; maxTokens?: number } = {}
+    options: { temperature?: number; maxTokens?: number; tools?: any; maxSteps?: number } = {}
   ): Promise<string> {
     const model = this.getModel();
-    const isO1Model = this.modelConfig.modelId.startsWith('o1-');
+    const isReasoningModel = this.modelConfig.modelId.startsWith('o4-');
 
     try {
       const genOptions: any = {
@@ -232,18 +232,54 @@ export class VercelAIProvider implements IAIProvider {
       };
 
       // Only add parameters if not o1 model (which has strict parameter validation)
-      if (!isO1Model) {
+      if (!isReasoningModel) {
         genOptions.temperature = options.temperature ?? this.modelConfig.temperature;
         genOptions.maxTokens = options.maxTokens ?? this.modelConfig.maxTokens ?? 1000;
-      } else {
-        // For o1, we might use maxCompletionTokens if provided, but Vercel AI SDK mapping might handle it.
-        // Safer to just omit temperature/maxTokens for now if using standard o1 reasoning.
-        // If user explicitly requests maxTokens, we could map it to maxCompletionTokens but let's keep it simple.
+      }
+
+      if (options.tools) {
+        genOptions.tools = options.tools;
+      }
+      if (options.maxSteps) {
+        genOptions.maxSteps = options.maxSteps;
+      }
+
+      if (this.debug) {
+        genOptions.onStepFinish = (step: any) => {
+          try {
+            console.log(`\n[AI-STEP] RAW STEP:`, JSON.stringify(step, null, 2));
+            console.log(`\n[AI-STEP] Finish reason: ${step.finishReason}`);
+
+            if (step.text && step.text.trim()) {
+              console.log(`\n[AI-STEP] Thought: ${step.text.trim()}`);
+            }
+
+            if (step.toolCalls && step.toolCalls.length > 0) {
+              step.toolCalls.forEach((tc: any) => {
+                console.log(`[AI-STEP] 🛠️  Calling tool: ${tc.toolName}`);
+                console.log(`[AI-STEP]    Args: ${JSON.stringify(tc.args || {})}`);
+              });
+            }
+
+            if (step.toolResults && step.toolResults.length > 0) {
+              step.toolResults.forEach((tr: any) => {
+                let resultStr = 'undefined';
+                if (tr.result !== undefined && tr.result !== null) {
+                  resultStr = typeof tr.result === 'string' ? tr.result : JSON.stringify(tr.result);
+                }
+                console.log(`[AI-STEP] ✅ Tool Result (${tr.toolName}): ${resultStr.length > 200 ? resultStr.slice(0, 200) + '... (truncated)' : resultStr}`);
+              });
+            }
+          } catch (logError) {
+            console.error('[AI-STEP] Error in log handler:', logError);
+          }
+        };
       }
 
       const result = await generateText(genOptions);
       return result.text;
     } catch (error) {
+      console.error('[VercelAIProvider] Text generation error DETAILS:', error);
       const err = error as any;
       throw new AIProviderError(
         'GENERATION_FAILED',
