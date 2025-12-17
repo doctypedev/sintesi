@@ -54,6 +54,7 @@ jobs:
         uses: doctypedev/action@v0
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          cohere_api_key: ${{ secrets.COHERE_API_KEY }} # Add COHERE_API_KEY for semantic retrieval
           github_token: ${{ secrets.GITHUB_TOKEN }}
           targets: 'readme,docs' # Documentation targets to generate (comma-separated). Options: readme, docs
           docs_output: 'docs' # Optional: Directory for the output documentation - Default: docs
@@ -131,3 +132,23 @@ MIT © [Doctypedev](https://github.com/doctypedev)
 ### What is Multi-Agent AI?
 
 **Multi-Agent AI** refers to the use of multiple specialized agents that work collaboratively to achieve a common goal. In the context of Sintesi, these agents (Planner, Writer, Reviewer, and Researcher) each have distinct roles that enhance the quality and accuracy of the documentation process. This approach allows for a more nuanced understanding of the codebase, resulting in documentation that is not only comprehensive but also contextually relevant.
+
+---
+
+## New Feature: Retrieval-Augmented Generation (RAG)
+
+Sintesi now includes a **Retrieval-Augmented Generation (RAG)** pipeline that enhances the documentation generation process. This feature allows for semantic context retrieval, improving the accuracy and relevance of generated documentation.
+
+### Environment Variables
+
+To utilize the RAG feature, you can set the following environment variable:
+
+| Name               | Required? | Purpose                                                      |
+|--------------------|-----------|--------------------------------------------------------------|
+| COHERE_API_KEY     | optional  | Enables `RerankingService.rerank` via Cohere Rerank API.   |
+
+Make sure to include `COHERE_API_KEY` in your `.env` configuration:
+
+```plaintext
+COHERE_API_KEY=your-cohere-api-key-here
+```
