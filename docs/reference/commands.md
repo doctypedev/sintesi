@@ -55,6 +55,7 @@ sintesi readme
 - Creates or updates the README file based on the current project context.
 - Integrates recent code changes and suggestions from previous checks.
 - Skips generation if no relevant code changes are detected, unless forced.
+- **Diff-reset behavior**: Using `--force` or if the output file is missing will bypass checks and always regenerate the README.
 
 #### Options
 - `--output <path>`: Specifies the output path for the README file (default is `README.md`).
@@ -82,6 +83,11 @@ sintesi changeset
 - Uses AI to determine version type (major/minor/patch) and description.
 - Generates a changeset file in the `.changeset` directory.
 - **Pre-flight Check**: Verifies if `@changesets/cli` is installed before proceeding.
+- **Changeset generation priority**:
+  1. Manual flags (`--version-type`, `--description`) override AI.
+  2. `--skip-ai` disables AI entirely, falling back to default bump (patch) and generic description.
+  3. Default (no manual flags, AI enabled): AI determines version bump and description.
+  4. `--interactive` enforces interactive package selection regardless of detection.
 
 #### Options
 - `--base-branch <branch>`: Specifies the base branch for comparison (default is `main`).
@@ -118,6 +124,7 @@ sintesi documentation
 #### Description
 - Analyzes the project structure and generates documentation files.
 - Skips generation if no relevant code changes are detected.
+- **Diff-reset behavior**: Using `--force` or if the output directory is missing will bypass checks and always regenerate the documentation.
 - **Note**: If the `repository` field is missing in `package.json`, the command will automatically detect and populate the repository URL from the git configuration.
 
 #### Options
