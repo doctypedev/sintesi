@@ -175,3 +175,29 @@ The Writer is lazy and will blindly trust your specific details. Do NOT provide 
 
 **Constraint**: If the raw context contains NO relevant information for this page, explicitly state: "NO RELEVANT CONTEXT FOUND."
 `;
+
+export const DOC_QUERY_PROMPT = (
+  path: string,
+  description: string,
+  existingFileSummary: string
+) => `
+You are the **Researcher**.
+You need to search the project codebase to find information for writing the documentation page: "${path}".
+
+## Target
+- Path: ${path}
+- Description: ${description}
+
+## Existing File Context
+${existingFileSummary}
+
+## Task
+Generate 3-5 distinct, targeted search queries to retrieve relevant code chunks from the vector database.
+Focus on:
+1. High-level concepts (e.g., "Authentication flow").
+2. Specific class/function names implied by the description.
+3. Configuration files or schemas.
+
+Provide the output as a JSON array of strings.
+Example: ["Authentication logic in user controller", "JWT configuration", "login function signature"]
+`;

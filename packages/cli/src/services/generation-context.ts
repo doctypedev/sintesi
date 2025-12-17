@@ -1,4 +1,3 @@
-
 import { Logger } from '../utils/logger';
 import { getProjectContext, ProjectContext } from '@sintesi/core';
 import { resolve, relative, dirname, join } from 'path';
@@ -8,6 +7,7 @@ import { SmartChecker } from './smart-checker';
 import { ChangeAnalysisService } from './analysis-service';
 import { createAIAgentsFromEnv, AIAgents, AIAgentRoleConfig } from '../../../ai';
 import { getContextPrompt } from '../prompts/analysis';
+import { RetrievalService } from './rag';
 
 export interface ProjectConfig {
     binName?: string;
@@ -27,7 +27,37 @@ export interface TechStack {
 }
 
 export class GenerationContextService {
-    constructor(private logger: Logger, private cwd: string) { }
+    private retrievalService: RetrievalService;
+
+    constructor(private logger: Logger, private cwd: string) {
+        this.retrievalService = new RetrievalService(logger, cwd);
+    }
+
+    /**
+     * Initializes the RAG index if not already present.
+     * Should be called explicitly before generation starts.
+     */
+    async ensureRAGIndex(): Promise<void> {
+        // We could verify if table exists, or just run index.
+        // For now, let's just expose indexing.
+        try {
+            await this.retrievalService.indexProject();
+        } catch (e) {
+            this.logger.warn('Failed to index project for RAG. Continuing without semantic search.');
+        }
+    }
+
+    /**
+     * Retrieve semantic context using RAG.
+     */
+    async retrieveContext(query: string): Promise<string> {
+        try {
+            return await this.retrievalService.retrieveContext(query);
+        } catch (e) {
+            this.logger.debug('RAG retrieval failed: ' + e);
+            return '';
+        }
+    }
 
     /**
      * Performs a smart check to see if generation is necessary based on code changes.
@@ -178,14 +208,14 @@ export class GenerationContextService {
                 try {
                     const pkgContent = JSON.parse(readFileSync(resolve(this.cwd, pkgFile.path), 'utf-8'));
                     if (pkgContent.bin && pkgContent.name) {
-                                                // Prioritize packages in "cli" folder
-                                                // to avoid sticking with "monorepo-root" or secondary tools.
-                                                const isCliFolder = pkgFile.path.includes('/cli/') || pkgFile.path.includes('\\cli\\');
-                                                
-                                                // Prefer "cli" packages over generic ones
-                                                if (!binName || isCliFolder || pkgContent.name.includes('cli')) {
-                                                    packageName = pkgContent.name;
-                                                    if (typeof pkgContent.bin === 'string') {
+                        // Prioritize packages in "cli" folder
+                        // to avoid sticking with "monorepo-root" or secondary tools.
+                        const isCliFolder = pkgFile.path.includes('/cli/') || pkgFile.path.includes('\\cli\\');
+
+                        // Prefer "cli" packages over generic ones
+                        if (!binName || isCliFolder || pkgContent.name.includes('cli')) {
+                            packageName = pkgContent.name;
+                            if (typeof pkgContent.bin === 'string') {
                                 const pName = pkgContent.name;
                                 binName = pName.startsWith('@') ? pName.split('/')[1] : pName;
                             } else if (typeof pkgContent.bin === 'object') {
