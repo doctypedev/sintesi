@@ -83,6 +83,25 @@ await generationContextService.ensureRAGIndex();
 const ragContext = await generationContextService.retrieveContext("How does auth work?");
 ```
 
+## CLI Initialization of the RAG Index
+
+The RAG index can be initialized through the CLI using the `documentation` command. This command ensures that the RAG index is built before generating documentation.
+
+### CLI Command
+
+```
+sintesi documentation [options]
+```
+
+#### Options
+
+- `--output-dir`, `-o`  string  default: `"docs"`  
+  Output directory.
+- `--force`, `-f`       boolean default: `false`  
+  Force full regeneration (ignores existing state).
+- `--verbose`           boolean default: `false`  
+  Enable verbose logging.
+
 ## Troubleshooting Tips
 
 - **Missing API Keys**: Ensure that both `OPENAI_API_KEY` and `COHERE_API_KEY` are set in your environment. The `EmbeddingService` will warn if the `OPENAI_API_KEY` is missing.
