@@ -1,5 +1,13 @@
 # @sintesi/sintesi
 
+## 0.18.4
+
+### Patch Changes
+
+- 938e451: - Only load and summarize existing documentation when not in force mode
+  - Improve CLI behavior by skipping docs scan in force mode
+  - @sintesi/core@0.18.4
+
 ## 0.18.3
 
 ### Patch Changes
