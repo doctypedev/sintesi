@@ -26,16 +26,17 @@ sintesi check
 
 #### Options
 - `--verbose`: Provides detailed output of the checks performed.
-- `--base <branch>`: Specifies the base branch for comparison (default is `main`).
+- `--base <branch>`: Specifies the base branch for comparison (default is `origin/main`).
 - `--readme`: Checks only for README drift.
 - `--documentation`: Checks only for documentation drift.
 - `--strict`: Exit with error code if drift detected (default: true).
+- `--smart`: Use AI high-level drift detection (default: true).
 - `--output <path>`: Specifies the output file path for README check (default is `README.md`).
 - `--output-dir <path>`: Specifies the output directory for documentation check (default is `docs`).
 
 #### Usage Examples
 ```bash
-sintesi check -- --verbose --base main
+sintesi check -- --verbose --base origin/main
 sintesi check -- --readme --no-strict --verbose
 sintesi check -- --documentation --no-strict --verbose
 ```
@@ -135,6 +136,21 @@ sintesi documentation
 #### Usage Examples
 ```bash
 sintesi documentation -- --output-dir docs --verbose --force
+```
+
+---
+
+## Environment Variables
+
+To utilize the RAG feature, you can set the following environment variable:
+
+| Name               | Required? | Purpose                                                      |
+|--------------------|-----------|--------------------------------------------------------------|
+| COHERE_API_KEY     | optional  | Enables `RerankingService.rerank` via Cohere Rerank API.   |
+
+Make sure to include `COHERE_API_KEY` in your `.env` configuration:
+```plaintext
+COHERE_API_KEY=your-cohere-api-key-here
 ```
 
 ---
