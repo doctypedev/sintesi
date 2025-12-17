@@ -338,3 +338,12 @@ export declare class GraphAnalyzer {
   getDependents(filePath: string, allFiles: Array<string>): Array<string>;
   getDependencies(filePath: string, allFiles: Array<string>): Array<string>;
 }
+export interface SearchResult {
+  filePath: string;
+  lineNumber: number;
+  lineText: string;
+}
+export declare function searchProject(
+  rootPath: string,
+  pattern: string,
+): Array<SearchResult>;

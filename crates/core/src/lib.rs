@@ -56,6 +56,7 @@ pub mod crawler;
 pub mod graph;
 pub mod context;
 pub mod git; // [NEW] Git module
+pub mod search;
 
 /// Gen AI agent for documentation generation
 pub mod genai;

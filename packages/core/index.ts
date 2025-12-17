@@ -27,6 +27,7 @@ export {
   getProjectContext,
   GitBinding,
   GraphAnalyzer,
+  searchProject,
 } from './native-loader';
 
 export type {
@@ -50,4 +51,5 @@ export type {
   GitBinding as GitBindingType,
   GraphAnalyzer as GraphAnalyzerType,
   ChangeSummary,
+  SearchResult,
 } from './native-loader';

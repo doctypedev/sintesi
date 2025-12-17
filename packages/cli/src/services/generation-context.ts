@@ -29,6 +29,10 @@ export interface TechStack {
 export class GenerationContextService {
     constructor(private logger: Logger, private cwd: string) { }
 
+    public getCwd(): string {
+        return this.cwd;
+    }
+
     /**
      * Performs a smart check to see if generation is necessary based on code changes.
      */

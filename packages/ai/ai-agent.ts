@@ -117,9 +117,9 @@ export class AIAgent {
    */
   async generateText(
     prompt: string,
-    options: { temperature?: number; maxTokens?: number } = {}
+    options: { temperature?: number; maxTokens?: number; tools?: any; maxSteps?: number } = {}
   ): Promise<string> {
-    this.log('Generating text', { promptLength: prompt.length, model: this.config.model.modelId });
+    this.log('Generating text', { promptLength: prompt.length, model: this.config.model.modelId, tools: !!options.tools });
 
     if (this.provider.generateText) {
       return this.executeWithRetry(() =>
@@ -204,6 +204,13 @@ export class AIAgent {
    */
   getProvider(): AIProvider { // Use AIProvider type
     return this.config.model.provider;
+  }
+
+  /**
+   * Get the debug flag state
+   */
+  public get debug(): boolean {
+    return !!this.config.debug;
   }
 
   /**

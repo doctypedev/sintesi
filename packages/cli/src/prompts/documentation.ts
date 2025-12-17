@@ -33,8 +33,8 @@ Analyze the project "DNA" to determine its TYPE.
 Then, propose a list of documentation files tailored SPECIFICALLY to that type.
 
 > **IMPORTANT**:
-> - **ONLY** propose files that need creation or updates based on the "Recent Changes" and "Impact Analysis Summary".
-> - **DO NOT** feel matched to propose 3-6 files. If only 1 file needs update, propose 1 file.
+> - **COMPREHENSIVE COVERAGE**: You are responsible for the COMPLETE documentation suite. Do NOT be shy. If a project has CLI commands, you MUST propose a file for them. If it has a library, you MUST propose API definitions.
+> - **DO NOT SIMPLIFY**: The user expects professional-grade documentation, not a quick summary.
 > - **DO NOT** halluncinate features. If the git diff is about a "typo fix", do not propose "New Feature Guide".
 
 
@@ -120,13 +120,16 @@ IMPORTANT:
 3. **USAGE EXAMPLES**: Do NOT modify "Usage Examples" code blocks unless the CLI command signature has changed in a way that breaks them.
     - **BOOLEAN FLAGS**: If a boolean flag \`--foo\` exists in the source, the CLI likely supports \`--no-foo\` for negation. DO NOT remove \`--no-foo\` from examples just because you only see \`foo\` in the interface.
     - **FLAGS**: Do NOT hallucinate new flags. Only use flags found in the Source Code Context.
-4. **NO HALLUCINATIONS**: If the "Recent Changes" are unrelated to this file's topic, make NO CHANGES or only minimal stylistic fixes.` : 'User Instruction: Write this file from scratch. Be comprehensive and professional.'}
+4. **NO HALLUCINATIONS**: 
+    - **CLI INVOCATION**: Detect how the CLI is invoked. If the package defines a binary (e.g., "bin": { "sintesi": "./dist/index.js" }), ALWAYS use \`npx sintesi <command>\` in examples.
+    - **DO NOT** use generic \`pnpm run <script>\` or \`npm run <script>\` unless it is strictly a script execution guide. 
+    - If the "Recent Changes" are unrelated to this file's topic, make NO CHANGES or only minimal stylistic fixes.` : 'User Instruction: Write this file from scratch. Be comprehensive and professional.'}
 
 ${SHARED_SAFETY_RULES}
 
 ## SITE STRUCTURE MODE specific rules:
-1. **Frontmatter**: Start with YAML frontmatter containing 'title', 'description', 'icon' (emoji), and 'order' (number).
-2. **Mermaid**: If explaining a flow/process, use a \`\`\`mermaid\`\`\` block.
+1. ** Frontmatter **: Start with YAML frontmatter containing 'title', 'description', 'icon'(emoji), and 'order'(number).
+2. ** Mermaid **: If explaining a flow / process, use a \`\`\`mermaid\`\`\` block.
 3. **Components**: Use <Callout type="info"> text </Callout> for notes if appropriate.
 `;
 
@@ -174,4 +177,43 @@ The Writer is lazy and will blindly trust your specific details. Do NOT provide 
 - Note any new features that seem recently added (based on "New" comments or distinct lack of legacy patterns).
 
 **Constraint**: If the raw context contains NO relevant information for this page, explicitly state: "NO RELEVANT CONTEXT FOUND."
+`;
+
+export const DOC_RESEARCH_AGENT_PROMPT = (
+  path: string,
+  description: string,
+  packageJsonSummary: string,
+  hintPaths: string[] = [],
+  initialContext: string = ''
+) => `
+You are an **Autonomous Technical Researcher**.
+Your goal is to explore the codebase to gather ALL information needed to write the documentation page: "${path}" (${description}).
+
+You have access to tools to Search, Read Files, and List Directories.
+
+## Project Context
+${packageJsonSummary}
+
+## Preliminary Context (Starting Point)
+The following context was automatically gathered based on file tracking. 
+**USE THIS AS A BASE**, but do NOT rely on it exclusively if it looks incomplete.
+${initialContext ? initialContext : '(No initial context available)'}
+
+## Hints (Start here)
+${hintPaths.length > 0 ? `The system suggests looking at these files first:\n${hintPaths.map(p => `- ${p}`).join('\n')}` : 'No specific starting files provided. Use search.'}
+
+## Instructions
+1.  **Explore**: Use \`search\` to find relevant symbols (classes, functions, commands) related to "${path}".
+2.  **Verify**: Use \`readFile\` to inspect the implementation details. check imports to find related configurations.
+3.  **Trace**: If a class inherits or imports from another, read that file too to understand the full picture.
+4.  **Output**: Produce a detailed **Technical Brief** containing:
+    *   **Core Concepts**: What is this feature?
+    *   **API/CLI Details**: Exact signatures, flags, types. **CRITICAL**: If this is a CLI command, you MUST extract ALL flags (alias, type, description) and subcommands.
+    *   **Usage Examples**: Real code usage found in tests or examples.
+
+## STRICT RULES
+- **NO FLUFF**: Do not provide high-level summaries. Provide raw technical facts.
+- **DEEP DIVE**: If you see a Class name, you MUST read its definition to find its methods. Do NOT guess.
+- **CLI COMMANDS**: If documenting a CLI command, find the actual code defining the command (e.g. yargs, commander) and list EVERY flag.
+- **INVOCATION**: Explicitly explicitly identify the binary name. If it's a CLI tool, state: "User invokes via: npx <binName>".
 `;

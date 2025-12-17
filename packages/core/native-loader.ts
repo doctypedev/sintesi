@@ -144,6 +144,7 @@ const {
   getProjectContext: getProjectContextVal,
   GitBinding: GitBindingVal,
   GraphAnalyzer: GraphAnalyzerVal,
+  searchProject: searchProjectVal,
 } = nativeModule;
 
 export const SymbolType = SymbolTypeVal;
@@ -157,6 +158,7 @@ export const parseCodeRef = parseCodeRefVal as typeof CoreTypes.parseCodeRef;
 export const getProjectContext = getProjectContextVal as typeof CoreTypes.getProjectContext;
 export const GitBinding = GitBindingVal as typeof CoreTypes.GitBinding;
 export const GraphAnalyzer = GraphAnalyzerVal as typeof CoreTypes.GraphAnalyzer;
+export const searchProject = searchProjectVal as typeof CoreTypes.searchProject;
 
 export type AstAnalyzer = CoreTypes.AstAnalyzer;
 
@@ -181,6 +183,8 @@ export type PackageJson = CoreTypes.PackageJson;
 export type GitBinding = CoreTypes.GitBinding;
 export type GraphAnalyzer = CoreTypes.GraphAnalyzer;
 export type ChangeSummary = CoreTypes.ChangeSummary;
+
+export type SearchResult = CoreTypes.SearchResult;
 
 // Export SymbolType as a type (it's a const enum in the .d.ts)
 export type { SymbolType as SymbolTypeValue } from './native-types';
