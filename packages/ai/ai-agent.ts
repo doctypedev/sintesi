@@ -126,7 +126,6 @@ export class AIAgent {
         options: {
             temperature?: number;
             maxTokens?: number;
-            metadata?: Record<string, string>;
         } = {},
     ): Promise<string> {
         this.log('Generating text', {
@@ -247,6 +246,22 @@ export class AIAgent {
             timeout: this.config.timeout || 30000,
         };
     }
+}
+
+/**
+ * Helper to normalize logging calls (fallback to console if no logger)
+ */
+function getLogger(logger?: ILogger) {
+    return {
+        debug: (msg: string, ...args: unknown[]) =>
+            logger ? logger.debug(msg, ...args) : console.log(msg, ...args),
+        info: (msg: string, ...args: unknown[]) =>
+            logger ? logger.info(msg, ...args) : console.log(msg, ...args),
+        warn: (msg: string, ...args: unknown[]) =>
+            logger ? logger.warn(msg, ...args) : console.warn(msg, ...args),
+        error: (msg: string, ...args: unknown[]) =>
+            logger ? logger.error(msg, ...args) : console.error(msg, ...args),
+    };
 }
 
 /**
@@ -414,28 +429,16 @@ export function createAIAgentsFromEnv(
             };
 
             const agent = _createSingleAgentFromEnv(options, globalOptions);
-            if (globalOptions.logger) {
-                globalOptions.logger.debug(
-                    `[AIAgentManager] ${role.charAt(0).toUpperCase() + role.slice(1)} initialized with ${agent.getModelId()} (${agent.getProvider()})`,
-                );
-            } else {
-                console.log(
-                    `[AIAgentManager] ${role.charAt(0).toUpperCase() + role.slice(1)} initialized with ${agent.getModelId()} (${agent.getProvider()})`,
-                );
-            }
+            const log = getLogger(globalOptions.logger);
+            log.debug(
+                `[AIAgentManager] ${role.charAt(0).toUpperCase() + role.slice(1)} initialized with ${agent.getModelId()} (${agent.getProvider()})`,
+            );
             return agent;
         } catch (e: any) {
             if (required) throw e;
             // For optional agents, just log warning and return undefined
-            if (globalOptions.logger) {
-                globalOptions.logger.warn(
-                    `[AIAgentManager] Optional agent ${role} failed to initialize: ${e.message}`,
-                );
-            } else {
-                console.warn(
-                    `[AIAgentManager] Optional agent ${role} failed to initialize: ${e.message}`,
-                );
-            }
+            const log = getLogger(globalOptions.logger);
+            log.warn(`[AIAgentManager] Optional agent ${role} failed to initialize: ${e.message}`);
             return undefined;
         }
     };
@@ -444,13 +447,8 @@ export function createAIAgentsFromEnv(
         plannerAgent = createAgent('planner')!;
     } catch (e) {
         // Fallback: try using writer config for planner if planner fails
-        if (globalOptions.logger) {
-            globalOptions.logger.warn(
-                'Planner failed to init, trying writer config as fallback...',
-            );
-        } else {
-            console.warn('Planner failed to init, trying writer config as fallback...');
-        }
+        const log = getLogger(globalOptions.logger);
+        log.warn('Planner failed to init, trying writer config as fallback...');
         plannerAgent = createAgent('writer')!;
     }
 
@@ -463,13 +461,8 @@ export function createAIAgentsFromEnv(
     // Use writer as fallback for researcher if it failed
     if (!researcherAgent && writerAgent) {
         researcherAgent = writerAgent;
-        if (globalOptions.logger) {
-            globalOptions.logger.info(
-                `[AIAgentManager] Researcher using Writer agent as fallback.`,
-            );
-        } else {
-            console.log(`[AIAgentManager] Researcher using Writer agent as fallback.`);
-        }
+        const log = getLogger(globalOptions.logger);
+        log.info(`[AIAgentManager] Researcher using Writer agent as fallback.`);
     }
 
     // Ensure both agents are initialized

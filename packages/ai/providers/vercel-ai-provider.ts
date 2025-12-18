@@ -162,9 +162,15 @@ export class VercelAIProvider implements IAIProvider {
                     const markdown = buildMarkdownFromStructure(doc);
 
                     if (this.debug) {
-                        this.logger?.debug(
-                            `[VercelAIProvider] Generated markdown for ${doc.symbolName}`,
-                        );
+                        if (this.logger) {
+                            this.logger.debug(
+                                `[VercelAIProvider] Generated markdown for ${doc.symbolName}`,
+                            );
+                        } else {
+                            console.log(
+                                `[VercelAIProvider] Generated markdown for ${doc.symbolName}`,
+                            );
+                        }
                     }
 
                     return {
@@ -185,9 +191,15 @@ export class VercelAIProvider implements IAIProvider {
         } catch (error) {
             const err = error as any;
             // Complete batch failure (network, API error, etc.)
-            this.logger?.warn(
-                `[VercelAIProvider] Batch generation failed completely: ${err.message}`,
-            );
+            if (this.logger) {
+                this.logger.warn(
+                    `[VercelAIProvider] Batch generation failed completely: ${err.message}`,
+                );
+            } else {
+                console.warn(
+                    `[VercelAIProvider] Batch generation failed completely: ${err.message}`,
+                );
+            }
 
             // Return empty result with all items marked as failures
             return {
@@ -225,7 +237,11 @@ export class VercelAIProvider implements IAIProvider {
             return true;
         } catch (error) {
             if (this.debug) {
-                this.logger?.error('Connection validation failed:', error);
+                if (this.logger) {
+                    this.logger.error('Connection validation failed:', error);
+                } else {
+                    console.error('Connection validation failed:', error);
+                }
             }
             return false;
         }

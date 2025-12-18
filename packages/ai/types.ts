@@ -55,7 +55,6 @@ export interface AIAgentRoleConfig {
     /** Override default maxTokens for this role */
     maxTokens?: number;
     /** Override default temperature for this role */
-    /** Override default temperature for this role */
     temperature?: number;
 }
 
