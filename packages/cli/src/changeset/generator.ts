@@ -214,6 +214,10 @@ export class ChangesetGenerator {
             // Use the planner agent's direct text generation capability
             const response = await plannerAgent.generateText(prompt, {
                 temperature: 0.3, // Lower temperature for more deterministic results
+                metadata: {
+                    step: 'changeset-analysis',
+                    'x-step-name': 'Changeset Analysis',
+                },
             });
 
             // Parse AI response

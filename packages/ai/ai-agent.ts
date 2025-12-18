@@ -123,7 +123,11 @@ export class AIAgent {
      */
     async generateText(
         prompt: string,
-        options: { temperature?: number; maxTokens?: number } = {},
+        options: {
+            temperature?: number;
+            maxTokens?: number;
+            metadata?: Record<string, string>;
+        } = {},
     ): Promise<string> {
         this.log('Generating text', {
             promptLength: prompt.length,

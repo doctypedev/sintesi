@@ -34,32 +34,36 @@ export class VercelAIProvider implements IAIProvider {
         this.logger = logger;
     }
 
-    private getModel() {
+    private getModel(callHeaders?: Record<string, string>) {
+        const headers = { ...this.modelConfig.headers, ...callHeaders };
         switch (this.provider) {
             case 'openai': {
                 // Use createOpenAI for explicit configuration without env vars
                 const provider = createOpenAI({
                     apiKey: this.modelConfig.apiKey,
                     baseURL: this.modelConfig.endpoint, // Custom endpoint if provided
-                    headers: this.modelConfig.headers, // Custom headers
+                    headers, // Custom headers merged
                 });
                 return provider(this.modelConfig.modelId);
             }
             case 'gemini': {
                 const provider = createGoogleGenerativeAI({
                     apiKey: this.modelConfig.apiKey,
+                    headers,
                 });
                 return provider(this.modelConfig.modelId);
             }
             case 'anthropic': {
                 const provider = createAnthropic({
                     apiKey: this.modelConfig.apiKey,
+                    headers,
                 });
                 return provider(this.modelConfig.modelId);
             }
             case 'mistral': {
                 const provider = createMistral({
                     apiKey: this.modelConfig.apiKey,
+                    headers,
                 });
                 return provider(this.modelConfig.modelId);
             }
@@ -69,7 +73,7 @@ export class VercelAIProvider implements IAIProvider {
     }
 
     async generateDocumentation(request: DocumentationRequest): Promise<DocumentationResponse> {
-        const model = this.getModel();
+        const model = this.getModel(request.metadata);
 
         // Use structured prompt from request
         const prompt = request.prompt;
@@ -237,9 +241,13 @@ export class VercelAIProvider implements IAIProvider {
      */
     async generateText(
         prompt: string,
-        options: { temperature?: number; maxTokens?: number } = {},
+        options: {
+            temperature?: number;
+            maxTokens?: number;
+            metadata?: Record<string, string>;
+        } = {},
     ): Promise<string> {
-        const model = this.getModel();
+        const model = this.getModel(options.metadata);
         const isO1Model = this.modelConfig.modelId.startsWith('o1-');
 
         try {

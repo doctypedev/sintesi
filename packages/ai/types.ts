@@ -97,6 +97,9 @@ export interface DocumentationRequest {
 
     /** The system prompt to use */
     systemPrompt: string;
+
+    /** Additional metadata for the request (e.g. step name) */
+    metadata?: Record<string, string>;
 }
 
 /**
@@ -205,7 +208,11 @@ export interface IAIProvider {
      */
     generateText?(
         prompt: string,
-        options?: { temperature?: number; maxTokens?: number },
+        options?: {
+            temperature?: number;
+            maxTokens?: number;
+            metadata?: Record<string, string>;
+        },
     ): Promise<string>;
 }
 
@@ -250,4 +257,7 @@ export interface GenerateOptions {
 
     /** Documentation style (concise, detailed, tutorial) */
     style?: 'concise' | 'detailed' | 'tutorial';
+
+    /** Additional metadata for the request (e.g. step name) */
+    metadata?: Record<string, string>;
 }

@@ -93,6 +93,10 @@ export class DocumentationBuilder {
                         const queriesJson = await aiAgents.researcher.generateText(queryPrompt, {
                             maxTokens: 500,
                             temperature: 0.2, // Slightly creative to find synonyms
+                            metadata: {
+                                step: 'rag-query-generation',
+                                'x-step-name': 'RAG Query Generation',
+                            },
                         });
 
                         let queries: string[] = [];
@@ -164,6 +168,10 @@ export class DocumentationBuilder {
                             {
                                 maxTokens: 4000,
                                 temperature: 0.0,
+                                metadata: {
+                                    step: 'source-research',
+                                    'x-step-name': 'Source Code Research',
+                                },
                             },
                         );
 
@@ -195,6 +203,10 @@ export class DocumentationBuilder {
                     let content = await aiAgents.writer.generateText(genPrompt, {
                         maxTokens: 4000,
                         temperature: 0.1,
+                        metadata: {
+                            step: 'content-writing',
+                            'x-step-name': 'Content Writing',
+                        },
                     });
 
                     content = content.trim();
