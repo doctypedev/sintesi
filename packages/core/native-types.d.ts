@@ -8,17 +8,8 @@
  * Core type definitions for Sintesi
 
  *
- * Reference to a code symbol in the source code
-
- */
-export interface CodeRef {
-    /** Absolute path to the source file */
-    filePath: string;
-    /** Name of the symbol (function, class, interface, etc.) */
-    symbolName: string;
-}
-/**
  * Signature information extracted from code
+
  */
 export interface CodeSignature {
     /** Name of the symbol */
@@ -43,54 +34,6 @@ export const enum SymbolType {
     Enum = 'Enum',
     Variable = 'Variable',
     Const = 'Const',
-}
-/**
- * Hash information for a code signature
- */
-export interface SignatureHash {
-    /** SHA256 hash of the signature */
-    hash: string;
-    /** Original signature that was hashed */
-    signature: CodeSignature;
-    /** Timestamp when hash was generated (milliseconds since Unix epoch) */
-    timestamp: number;
-}
-/**
- * Reference to documentation location
- */
-export interface DocRef {
-    /** Path to the markdown file */
-    filePath: string;
-}
-/**
- * Complete mapping entry in sintesi-map.json
- *
- * Note: Content is not stored here to avoid duplication.
- * The markdown file is the single source of truth for content.
- * Use the anchor ID to locate content between sintesi:start and sintesi:end tags.
- */
-export interface SintesiMapEntry {
-    /** Unique identifier for this anchor */
-    id: string;
-    /** Reference to the code */
-    codeRef: CodeRef;
-    /** Hash of the code signature */
-    codeSignatureHash: string;
-    /** The signature text (for AI context) */
-    codeSignatureText?: string;
-    /** Reference to the documentation */
-    docRef: DocRef;
-    /** Last updated timestamp */
-    lastUpdated: number;
-}
-/**
- * The complete sintesi-map.json structure
- */
-export interface SintesiMap {
-    /** Schema version for future compatibility */
-    version: string;
-    /** All tracked documentation anchors */
-    entries: Array<SintesiMapEntry>;
 }
 /** Analysis result including errors (for NAPI) */
 export interface AnalysisResultJs {

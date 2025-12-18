@@ -157,6 +157,30 @@ sintesi documentation -- --output-dir docs --verbose --force
 
 ---
 
+## Global Logging Flag
+
+All commands support a global `--verbose` flag to enable detailed logging output. When this flag is set, the `Logger` class will print debug messages, allowing for better insight into the command execution process.
+
+### Enabling Debug Output
+
+To enable debug output, simply append the `--verbose` flag to any command:
+
+```bash
+sintesi check --verbose
+```
+
+### Interpreting Log Messages
+
+Log messages from AI operations will be prefixed with the relevant context, such as the agent type or operation being performed. For example:
+
+```
+[DEBUG] [AIAgent planner] Generating text...
+```
+
+This indicates that the debug message is coming from the planner AI agent during a text generation operation.
+
+---
+
 ## Environment Variables
 
 To utilize the RAG feature, you can set the following environment variable:
