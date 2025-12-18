@@ -39,19 +39,42 @@ export class RetrievalService {
 
         // Detect current commit SHA
         let currentSha = '';
+        let isDirty = false;
+
         try {
             currentSha = execSync('git rev-parse HEAD', {
                 encoding: 'utf-8',
                 cwd: this.projectRoot,
                 stdio: 'pipe',
             }).trim();
+
+            const status = execSync('git status --porcelain', {
+                encoding: 'utf-8',
+                cwd: this.projectRoot,
+                stdio: 'pipe',
+            }).trim();
+
+            isDirty = status.length > 0;
+            if (isDirty) {
+                this.logger.debug('[RAG] Indexing - Detected dirty working directory.');
+            }
         } catch (e) {
-            this.logger.debug('Could not determine current git SHA: ' + e);
+            this.logger.debug('Could not determine current git SHA or status: ' + e);
         }
 
         const lastSha = this.stateManager.getLastCommitSha();
         let useGitDiff = false;
         let changedFilesFromGit: Set<string> | null = null;
+
+        // If we have a SHAs match AND the workspace is clean, we can skip.
+        // If workspace is dirty, we MUST proceed to check timestamps/content because
+        // the SHA doesn't reflect the current state of files on disk.
+        if (currentSha && lastSha && currentSha === lastSha && !isDirty) {
+            this.logger.success(
+                '✅ [RAG] Index is already up to date (SHA matches & clean workspace).',
+            );
+            return;
+        }
 
         if (currentSha && lastSha && currentSha !== lastSha) {
             try {
@@ -77,9 +100,6 @@ export class RetrievalService {
                     `[RAG] Failed to compute git diff using Rust binding. Falling back to timestamp check: ${e}`,
                 );
             }
-        } else if (currentSha && currentSha === lastSha) {
-            this.logger.success('✅ [RAG] Index is already up to date (SHA matches).');
-            return;
         }
 
         // 1. Find Files
@@ -104,7 +124,8 @@ export class RetrievalService {
             try {
                 // If using git diff, purely check membership
                 if (useGitDiff && changedFilesFromGit) {
-                    if (changedFilesFromGit.has(file)) {
+                    const absoluteFile = resolve(this.projectRoot, file);
+                    if (changedFilesFromGit.has(absoluteFile)) {
                         filesToProcess.push(file);
                         const fileState = this.stateManager.getFileState(file);
                         if (fileState) {
