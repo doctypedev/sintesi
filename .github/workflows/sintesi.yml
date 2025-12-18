@@ -9,6 +9,11 @@ jobs:
     check:
         runs-on: ubuntu-latest
 
+        env:
+            OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+            COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+            HELICONE_API_KEY: ${{ secrets.HELICONE_API_KEY }}
+
         permissions:
             contents: write
             pull-requests: write
@@ -72,25 +77,18 @@ jobs:
 
             - name: Run Sintesi Check (README)
               if: steps.check_skip.outputs.should_skip != 'true'
-              env:
-                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
               run: |
                   # Check specifically for README drift
                   node packages/cli/dist/cli/src/index.js check --readme --no-strict --verbose
 
             - name: Run Sintesi Check (Documentation)
               if: steps.check_skip.outputs.should_skip != 'true'
-              env:
-                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
               run: |
                   # Check specifically for Documentation drift
                   node packages/cli/dist/cli/src/index.js check --doc --no-strict --verbose
 
             - name: Run Sintesi README command
               if: steps.check_skip.outputs.should_skip != 'true'
-              env:
-                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-                  COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
               run: |
                   # Runs internally a smart check. If no changes, it skips generation.
                   node packages/cli/dist/cli/src/index.js readme --output README.md --verbose
@@ -106,9 +104,6 @@ jobs:
 
             - name: Run Sintesi Documentation command
               if: steps.check_skip.outputs.should_skip != 'true'
-              env:
-                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-                  COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
               run: |
                   # Runs internally a smart check. If no changes, it skips generation.
                   node packages/cli/dist/cli/src/index.js documentation --output-dir docs --verbose
