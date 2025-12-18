@@ -83,6 +83,10 @@ export class ReadmeBuilder {
             let readmeContent = await aiAgents.writer.generateText(prompt, {
                 maxTokens: 4000,
                 temperature: 0.1,
+                metadata: {
+                    step: 'readme-generation',
+                    'x-step-name': 'README Generation',
+                },
             });
 
             // Cleanup
