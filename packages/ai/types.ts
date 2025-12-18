@@ -30,6 +30,21 @@ export interface AIModel {
 
     /** API endpoint (optional, for custom endpoints) */
     endpoint?: string;
+
+    /** Custom headers to send with requests (e.g., for observability) */
+    headers?: Record<string, string>;
+}
+
+/**
+ * Interface for a logger to be injected into the AI module
+ */
+export interface ILogger {
+    debug(message: string, ...args: unknown[]): void;
+    info(message: string, ...args: unknown[]): void;
+    warn(message: string, ...args: unknown[]): void;
+    error(message: string, ...args: unknown[]): void;
+    success?(message: string, ...args: unknown[]): void;
+    log?(message: string, ...args: unknown[]): void;
 }
 
 /**
@@ -43,7 +58,10 @@ export interface AIAgentRoleConfig {
     /** Override default maxTokens for this role */
     maxTokens?: number;
     /** Override default temperature for this role */
+    /** Override default temperature for this role */
     temperature?: number;
+    /** Custom headers for this agent's model */
+    headers?: Record<string, string>;
 }
 
 /**
@@ -145,6 +163,9 @@ export interface AIAgentConfig {
         maxAttempts: number;
         delayMs: number;
     };
+
+    /** Logger instance */
+    logger?: ILogger;
 }
 
 /**

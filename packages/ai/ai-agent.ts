@@ -11,6 +11,7 @@ import {
     AIProviderError,
     AIAgentRoleConfig,
     AIProvider, // Import AIProvider type here
+    ILogger,
 } from './types';
 import { VercelAIProvider } from './providers/vercel-ai-provider';
 
@@ -33,10 +34,12 @@ export class AIAgent {
     private provider: IAIProvider;
     private config: AIAgentConfig;
     private retryConfig: { maxAttempts: number; delayMs: number };
+    private logger?: ILogger;
 
     constructor(config: AIAgentConfig) {
         this.config = config;
         this.retryConfig = config.retry || { maxAttempts: 3, delayMs: 1000 };
+        this.logger = config.logger;
 
         // Initialize the appropriate provider
         this.provider = this.createProvider();
@@ -49,7 +52,7 @@ export class AIAgent {
         const { model, debug } = this.config;
 
         // Use Vercel AI SDK for all supported providers
-        return new VercelAIProvider(model, debug);
+        return new VercelAIProvider(model, debug, this.logger);
     }
 
     /**
@@ -201,9 +204,16 @@ export class AIAgent {
     /**
      * Log debug messages
      */
+    /**
+     * Log debug messages
+     */
     private log(message: string, ...args: unknown[]): void {
         if (this.config.debug) {
-            console.log(`[AIAgent ${this.config.model.modelId}]`, message, ...args);
+            if (this.logger) {
+                this.logger.debug(`[AIAgent ${this.config.model.modelId}] ${message}`, ...args);
+            } else {
+                console.log(`[AIAgent ${this.config.model.modelId}]`, message, ...args);
+            }
         }
     }
 
@@ -242,7 +252,7 @@ export class AIAgent {
  */
 function _createSingleAgentFromEnv(
     roleOptions: AIAgentRoleConfig,
-    globalOptions: { debug?: boolean; timeout?: number },
+    globalOptions: { debug?: boolean; timeout?: number; logger?: ILogger },
 ): AIAgent {
     const providers: Array<{ env: string; provider: AIProvider; defaultModel: string }> = [
         { env: 'OPENAI_API_KEY', provider: 'openai', defaultModel: 'gpt-4o' },
@@ -280,9 +290,11 @@ function _createSingleAgentFromEnv(
                 apiKey: process.env[selectedProvider.env]!,
                 maxTokens: roleOptions.maxTokens,
                 temperature: roleOptions.temperature,
+                headers: roleOptions.headers,
             },
             timeout: globalOptions.timeout,
             debug: globalOptions.debug,
+            logger: globalOptions.logger,
         });
     }
 
@@ -306,13 +318,14 @@ export function createAIAgentsFromEnv(
         timeout?: number;
         maxTokens?: number;
         temperature?: number;
+        logger?: ILogger;
     } = {},
-    roleConfigs?: {
+    roleConfigs: {
         planner?: AIAgentRoleConfig;
         writer?: AIAgentRoleConfig;
         researcher?: AIAgentRoleConfig;
         reviewer?: AIAgentRoleConfig;
-    },
+    } = {},
 ): AIAgents {
     const defaultPlannerModel = 'gpt-4o'; // OpenAI default
     const defaultWriterModel = 'gpt-4o-mini'; // OpenAI default
@@ -398,16 +411,28 @@ export function createAIAgentsFromEnv(
             };
 
             const agent = _createSingleAgentFromEnv(options, globalOptions);
-            console.log(
-                `[AIAgentManager] ${role.charAt(0).toUpperCase() + role.slice(1)} initialized with ${agent.getModelId()} (${agent.getProvider()})`,
-            );
+            if (globalOptions.logger) {
+                globalOptions.logger.debug(
+                    `[AIAgentManager] ${role.charAt(0).toUpperCase() + role.slice(1)} initialized with ${agent.getModelId()} (${agent.getProvider()})`,
+                );
+            } else {
+                console.log(
+                    `[AIAgentManager] ${role.charAt(0).toUpperCase() + role.slice(1)} initialized with ${agent.getModelId()} (${agent.getProvider()})`,
+                );
+            }
             return agent;
         } catch (e: any) {
             if (required) throw e;
             // For optional agents, just log warning and return undefined
-            console.warn(
-                `[AIAgentManager] Optional agent ${role} failed to initialize: ${e.message}`,
-            );
+            if (globalOptions.logger) {
+                globalOptions.logger.warn(
+                    `[AIAgentManager] Optional agent ${role} failed to initialize: ${e.message}`,
+                );
+            } else {
+                console.warn(
+                    `[AIAgentManager] Optional agent ${role} failed to initialize: ${e.message}`,
+                );
+            }
             return undefined;
         }
     };
@@ -416,7 +441,13 @@ export function createAIAgentsFromEnv(
         plannerAgent = createAgent('planner')!;
     } catch (e) {
         // Fallback: try using writer config for planner if planner fails
-        console.warn('Planner failed to init, trying writer config as fallback...');
+        if (globalOptions.logger) {
+            globalOptions.logger.warn(
+                'Planner failed to init, trying writer config as fallback...',
+            );
+        } else {
+            console.warn('Planner failed to init, trying writer config as fallback...');
+        }
         plannerAgent = createAgent('writer')!;
     }
 
@@ -429,7 +460,13 @@ export function createAIAgentsFromEnv(
     // Use writer as fallback for researcher if it failed
     if (!researcherAgent && writerAgent) {
         researcherAgent = writerAgent;
-        console.log(`[AIAgentManager] Researcher using Writer agent as fallback.`);
+        if (globalOptions.logger) {
+            globalOptions.logger.info(
+                `[AIAgentManager] Researcher using Writer agent as fallback.`,
+            );
+        } else {
+            console.log(`[AIAgentManager] Researcher using Writer agent as fallback.`);
+        }
     }
 
     // Ensure both agents are initialized

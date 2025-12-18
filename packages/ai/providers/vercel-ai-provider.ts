@@ -6,6 +6,7 @@ import {
     AIModel,
     AIProviderError,
     BatchDocumentationResult,
+    ILogger,
 } from '../types';
 import { generateObject, generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
@@ -24,11 +25,13 @@ export class VercelAIProvider implements IAIProvider {
     readonly provider: AIProvider;
     private modelConfig: AIModel;
     private debug: boolean;
+    private logger?: ILogger;
 
-    constructor(config: AIModel, debug: boolean = false) {
+    constructor(config: AIModel, debug: boolean = false, logger?: ILogger) {
         this.provider = config.provider;
         this.modelConfig = config;
         this.debug = debug;
+        this.logger = logger;
     }
 
     private getModel() {
@@ -38,6 +41,7 @@ export class VercelAIProvider implements IAIProvider {
                 const provider = createOpenAI({
                     apiKey: this.modelConfig.apiKey,
                     baseURL: this.modelConfig.endpoint, // Custom endpoint if provided
+                    headers: this.modelConfig.headers, // Custom headers
                 });
                 return provider(this.modelConfig.modelId);
             }
@@ -159,7 +163,9 @@ export class VercelAIProvider implements IAIProvider {
                     const markdown = buildMarkdownFromStructure(doc);
 
                     if (this.debug) {
-                        console.log(`[VercelAIProvider] Generated markdown for ${doc.symbolName}`);
+                        this.logger?.debug(
+                            `[VercelAIProvider] Generated markdown for ${doc.symbolName}`,
+                        );
                     }
 
                     return {
@@ -180,7 +186,9 @@ export class VercelAIProvider implements IAIProvider {
         } catch (error) {
             const err = error as any;
             // Complete batch failure (network, API error, etc.)
-            console.warn('[VercelAIProvider] Batch generation failed completely:', err.message);
+            this.logger?.warn(
+                `[VercelAIProvider] Batch generation failed completely: ${err.message}`,
+            );
 
             // Return empty result with all items marked as failures
             return {
@@ -218,7 +226,7 @@ export class VercelAIProvider implements IAIProvider {
             return true;
         } catch (error) {
             if (this.debug) {
-                console.error('Connection validation failed:', error);
+                this.logger?.error('Connection validation failed:', error);
             }
             return false;
         }
