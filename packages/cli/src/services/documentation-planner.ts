@@ -245,10 +245,13 @@ export class DocumentationPlanner {
         } else {
             strategyInstructions = `
 ### Strategy: GREENFIELD MODE (New Documentation)
-- **CLI Tool**: Suggest "commands.md", "installation.md".
-- **Web Application**: Suggest "getting-started.md", "architecture.md".
-- **Backend / API**: Suggest "endpoints.md", "authentication.md".
-- **Library / SDK**: Suggest "usage.md", "api-reference.md".
+                - ** Objective **: Create a professional, structured documentation site.
+- ** Recommended Pattern ** (Adapt as needed):
+            1. \`guides/\`: How-to guides and tutorials.
+  2. \`reference/\`: Technical API references and configuration.
+  3. \`concepts/\`: Explanations of core architecture and design.
+- **Flexibility**: You MAY create other top-level folders if the project specificially needs them (e.g., \`examples/\`, \`packages/\`, \`api/\`).
+- **Root**: Ensure \`index.md\` (or \`README.md\` if preferred) exists as the landing page.
 `;
         }
 

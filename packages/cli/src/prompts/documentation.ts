@@ -40,7 +40,12 @@ Then, propose a list of documentation files tailored SPECIFICALLY to that type.
 ${strategyInstructions}
 
 ## STRUCTURED DOCUMENTATION MODE
-- **Structure**: Group files into folders for a better sidebar (e.g., 'guide/installation.md', 'reference/commands.md').
+- **Goal**: Create a rich, navigational structure (e.g. similar to commitlint.js.org).
+- **Recommended Archetypes**:
+    - \`guides/\`: Step-by-step tutorials.
+    - \`reference/\`: API/CLI specs.
+    - \`concepts/\`: Deep dives.
+- **Adaptability**: If the project fits better with other folders (like \`api/\` or \`examples/\`), use them. Do not force 3 folders if 2 are enough, or if 4 are needed.
 - **Index**: Ensure there is a 'index.md' or 'intro.md' as entry point.
 
 ## Existing Flat Documentation for Reorganization
@@ -50,26 +55,31 @@ ${existingDocsList.map((p) => `- ${p}`).join('\n')}
 When creating the 'Output' JSON, if a proposed file path (e.g., 'guide/installation.md') is conceptually similar or a direct migration of an existing flat file (e.g., 'installation.md'), include the 'originalPath' field in the JSON object like this:
 \`\`\`json
 {
-  "path": "guide/installation.md",
+  "path": "guides/installation.md",
   "description": "How to install the project",
   "type": "guide",
   "originalPath": "installation.md" // Path relative to outputDir
 }
 \`\`\`
-This indicates that the content for 'guide/installation.md' should be sourced from 'installation.md' (if it exists) and then updated.
+This indicates that the content for 'guides/installation.md' should be sourced from 'installation.md' (if it exists) and then updated.
 
 ## Rules
-- **User-Centric**: Document *how to use it*.
+- **User-Centric**: Document *how to use it*, not just what it is.
 - **Smart Updates**: Reuse existing files if relevant.
 
 ## Output
 Return ONLY a valid JSON array.
 [
   {
-    "path": "commands.md", 
+    "path": "reference/commands.md", 
     "description": "Reference of all CLI commands.", 
     "type": "guide",
     "relevantPaths": ["packages/cli/src/commands/check.ts", "packages/cli/src/commands/readme.ts"]
+  },
+  {
+    "path": "guides/getting-started.md",
+    "description": "First steps for new users.",
+    "type": "guide"
   }
 ]
 `;
