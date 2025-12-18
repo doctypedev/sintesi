@@ -90,6 +90,23 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
         logger.info(
             `Using cached state SHA ${baseRef.substring(0, 7)} as baseline for drift detection.`,
         );
+    } else if (!baseRef) {
+        // CASE: First run / No state found
+        logger.warn('⚠️  No baseline found (no previous run state and no --base flag provided).');
+        logger.warn('   Run has never been performed or state file is missing.');
+        logger.warn('   Cannot perform accurate drift detection.');
+        logger.warn('   👉 Run "sintesi documentation" to establish a baseline.');
+
+        return {
+            totalEntries: 0,
+            driftedEntries: 0,
+            missingEntries: 0,
+            untrackedEntries: 0,
+            drifts: [],
+            missing: [],
+            success: false, // Fail check because we can't verify
+            configError: 'No baseline found. Run "sintesi documentation" first.',
+        };
     }
 
     // Analyze Project (Get Git Diff)

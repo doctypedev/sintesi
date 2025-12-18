@@ -9,12 +9,27 @@ export class EmbeddingService {
 
     constructor(private logger: Logger) {
         const apiKey = process.env.OPENAI_API_KEY;
+        const heliconeApiKey = process.env.HELICONE_API_KEY;
+
         if (!apiKey) {
             this.logger.warn('OPENAI_API_KEY not found. Embedding service will fail if used.');
         }
-        this.openai = createOpenAI({
+
+        const config: any = {
             apiKey: apiKey || '',
-        });
+        };
+
+        // Configure Helicone proxy if API key is present
+        if (heliconeApiKey) {
+            this.logger.debug('Using Helicone proxy for embeddings');
+            config.baseURL = 'https://oai.helicone.ai/v1';
+            config.headers = {
+                'Helicone-Auth': `Bearer ${heliconeApiKey}`,
+                'Helicone-Cache-Enabled': 'true',
+            };
+        }
+
+        this.openai = createOpenAI(config);
     }
 
     /**

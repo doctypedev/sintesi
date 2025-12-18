@@ -160,6 +160,18 @@ export async function documentationCommand(options: DocumentationOptions): Promi
         const sintesiDir = resolve(cwd, '.sintesi');
         if (!existsSync(sintesiDir)) mkdirSync(sintesiDir, { recursive: true });
 
+        // Ensure .gitignore exists to protect local state vs shared lineage
+        const gitignorePath = resolve(sintesiDir, '.gitignore');
+        if (!existsSync(gitignorePath)) {
+            const gitignoreContent = [
+                '# IMPORTANT: Please commit this file to your repository.',
+                '# It ensures that the lineage graph is shared, enabling distributed semantic checks.',
+                '*',
+                '!lineage.json',
+            ].join('\n');
+            writeFileSync(gitignorePath, gitignoreContent);
+        }
+
         const statePath = resolve(sintesiDir, 'documentation.state.json');
 
         // Get current HEAD SHA
