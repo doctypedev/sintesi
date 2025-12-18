@@ -157,16 +157,19 @@ sintesi readme --force
 
 ### Flags
 
-| Flag           | Alias | Description                                      | Default |
-| :------------- | :---- | :----------------------------------------------- | :------ |
-| `--output-dir` | `-o`  | Output directory                                 | `docs`  |
-| `--force`      | `-f`  | Force full regeneration (ignores existing state) | `false` |
-| `--verbose`    |       | Enable verbose logging                           | `false` |
+| Flag           | Alias | Description                                                                                                  | Default |
+| :------------- | :---- | :----------------------------------------------------------------------------------------------------------- | :------ |
+| `--output-dir` | `-o`  | Output directory                                                                                             | `docs`  |
+| `--force`      | `-f`  | Force full regeneration (ignores existing state; forces a full rewrite of files instead of surgical updates) | `false` |
+| `--verbose`    |       | Enable verbose logging                                                                                       | `false` |
 
 Notes:
 
-- If the docs output directory exists and appears up-to-date the command may perform a "smart check" and skip generation. Use `--force` to force full regeneration.
-- The planner/architect will propose a documentation plan; the builder generates pages and may use configured AI agents depending on available integrations. State is recorded under `.sintesi` to enable future incremental checks.
+- The `--force` flag triggers a full rewrite of target files and bypasses the surgical-update path. The surgical-update code path only runs when a current file exists at the target path and `--force` is not set.
+- Surgical updates are implemented in DocumentationBuilder: documentation-builder.ts imports createPatchFileTool and uses that patch_file tool during surgical updates, and the builder issues update prompts that drive the patching flow. In other words, the surgical-update behavior described elsewhere is explicitly implemented via the DocumentationBuilder using the patch_file tool and update prompts.
+- When surgical updates run they compute and apply minimal, targeted edits (where possible) rather than overwriting the entire file. When `--force` is provided the builder will perform a full rewrite instead of attempting surgical edits.
+- State management: the implementation writes state to .sintesi/documentation.state.json. That state file contains timestamps and drift information used by incremental checks and is referenced by CI flows and smart-check logic to decide whether regeneration or surgical updates are necessary.
+- If the docs output directory exists and appears up-to-date the command may perform a "smart check" and skip generation. Use `--force` to force full regeneration regardless of state.
 
 ### Examples
 
@@ -178,7 +181,7 @@ sintesi documentation
 sintesi documentation --force
 ```
 
-**CI Usage**: Run to generate the documentation site. Exits with code 0 on success.
+**CI Usage**: Run to generate the documentation site. Exits with code 0 on success. CI and incremental check integrations may inspect .sintesi/documentation.state.json (timestamps and drift metadata) to determine whether the documentation output is stale and whether to run a full rebuild or allow surgical updates.
 
 ---
 
