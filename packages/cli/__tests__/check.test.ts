@@ -11,7 +11,28 @@ vi.mock('../src/services/smart-checker');
 vi.mock('../src/services/generation-context');
 vi.mock('../src/services/impact-analyzer');
 vi.mock('fs');
+vi.mock('../src/services/impact-analyzer');
+vi.mock('fs');
 vi.mock('../src/utils/logger'); // Auto-mock first
+
+// Mock child_process modules properly
+vi.mock('child_process', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('child_process')>();
+    return {
+        ...actual,
+        execSync: vi.fn().mockImplementation((cmd: string) => {
+            return {
+                toString: () => {
+                    if (cmd.includes('rev-parse HEAD')) return 'dummy-sha';
+                    if (cmd.includes('diff --name-only')) return 'file1.ts\nfile2.ts';
+                    if (cmd.includes('diff')) return 'some diff content';
+                    return '';
+                },
+                trim: () => 'dummy-output',
+            };
+        }),
+    };
+});
 
 describe('CLI: check command', () => {
     let mockSmartCheckerInstance: any;
@@ -19,7 +40,7 @@ describe('CLI: check command', () => {
     let mockImpactAnalyzerInstance: any;
 
     beforeEach(() => {
-        vi.resetAllMocks();
+        vi.clearAllMocks();
 
         // Mock fs functions
         vi.mocked(fs.existsSync).mockReturnValue(true);

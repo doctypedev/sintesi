@@ -180,7 +180,9 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
         } else if (gitDiff) {
             logger.info('Performing Semantic Analysis (Documentation Site vs Code)...');
 
-            const { execSync } = await import('child_process');
+            const childProcess = await import('child_process');
+            // Check if execSync is available directly or on default property (ESM/CJS interop)
+            const execSync = childProcess.execSync || (childProcess.default as any)?.execSync;
             const changedFilesOutput = execSync(`git diff --name-only ${baseRef || 'HEAD'}`, {
                 cwd: codeRoot,
             })
