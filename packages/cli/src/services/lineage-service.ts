@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { join, relative } from 'path';
 import { Logger } from '../utils/logger';
 
 export interface LineageData {
@@ -59,10 +59,7 @@ export class LineageService {
     track(docPath: string, sourceFiles: string[]): void {
         // Normalize to relative paths for portability
         const relativeSources = sourceFiles.map((p) => {
-            if (p.startsWith(this.projectRoot)) {
-                return p.substring(this.projectRoot.length + 1); // +1 for separator
-            }
-            return p;
+            return relative(this.projectRoot, p);
         });
 
         // Deduplicate and sort
@@ -83,8 +80,9 @@ export class LineageService {
     getImpactedDocs(changedSourceFile: string): string[] {
         // Normalize changed file to relative path if needed
         let relativeChanged = changedSourceFile;
+        // If it's absolute, make it relative
         if (changedSourceFile.startsWith(this.projectRoot)) {
-            relativeChanged = changedSourceFile.substring(this.projectRoot.length + 1);
+            relativeChanged = relative(this.projectRoot, changedSourceFile);
         }
 
         const impactedDocs: string[] = [];

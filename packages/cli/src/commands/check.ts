@@ -194,6 +194,15 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
                 logger.info(`Detected ${changedFiles.length} changed source files.`);
 
                 const lineageService = new LineageService(logger, codeRoot);
+
+                // Warning if lineage is missing (User Feedback)
+                const lineagePath = join(codeRoot, '.sintesi', 'lineage.json');
+                if (!existsSync(lineagePath)) {
+                    logger.warn('⚠️  Lineage graph not found (.sintesi/lineage.json).');
+                    logger.warn('   Semantic Check might be skipped or incomplete.');
+                    logger.warn('   Run "sintesi documentation" to generate the dependency graph.');
+                }
+
                 const impactedDocs = new Set<string>();
 
                 for (const file of changedFiles) {
@@ -213,18 +222,46 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
                     );
 
                     const semanticVerifier = new SemanticVerifier(logger);
-
-                    // TODO: We need the specific diff PER file for best results, but using global diff + changed file name is a decent start-
-                    // or we can fetch file-specific diffs inside the verifier.
-                    // For now, let's allow the Verifier to extract or just use the global diff context.
-
                     let meaningfulDriftCount = 0;
 
                     for (const docPath of impactedDocs) {
+                        // Targeted Diff Extraction (User Feedback)
+                        // Instead of sending the global diff, we extract diff only for the source files
+                        // that impact THIS specific document.
+                        const sources = lineageService.getSources(docPath);
+                        // Filter sources to only those that actually changed
+                        // changedFiles are relative to codeRoot. sources are relative to codeRoot (?)
+                        // LineageService.track ensures sources are relative.
+                        const relevantSources = sources.filter((s) => changedFiles.includes(s));
+
+                        let docSpecificDiff = '';
+                        if (relevantSources.length > 0) {
+                            try {
+                                // Add quotes to paths to handle spaces
+                                const fileArgs = relevantSources.map((f) => `"${f}"`).join(' ');
+                                docSpecificDiff = execSync(
+                                    `git diff ${baseRef || 'HEAD'} -- ${fileArgs}`,
+                                    {
+                                        cwd: codeRoot,
+                                        encoding: 'utf-8',
+                                    },
+                                ).trim();
+                            } catch (e) {
+                                logger.debug(
+                                    `Failed to extract targeted diff for ${docPath}: ${e}`,
+                                );
+                                // Fallback to global diff if extraction fails
+                                docSpecificDiff = gitDiff;
+                            }
+                        } else {
+                            // Should rarely happen if graph is correct, but safe fallback
+                            docSpecificDiff = gitDiff;
+                        }
+
                         const verification = await semanticVerifier.verify(
                             docPath,
-                            gitDiff, // Global diff for now, ideally per-file diff
-                            `Changes involved: ${changedFiles.join(', ')}`,
+                            docSpecificDiff,
+                            `Changes involved: ${relevantSources.join(', ')}`,
                             aiAgents,
                         );
 

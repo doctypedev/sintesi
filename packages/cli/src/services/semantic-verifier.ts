@@ -42,6 +42,8 @@ export class SemanticVerifier {
         // Most docs are single pages, so reading full content is efficient enough and deeper.
 
         // 3. LLM Judge
+
+        // 3. LLM Judge
         const prompt = `
 You are a Senior Technical Editor and Code Auditor. 
 Your task is to determine if a specific CODE CHANGE invalidates or conflicts with the existing DOCUMENTATION.
@@ -51,10 +53,10 @@ We have a documentation file: "${docPath}"
 We have a source code change: "${diffSummary}"
 
 --- EXISTING DOCUMENTATION CONTENT (Target) ---
-${docContent.substring(0, 10000)}
+${docContent.substring(0, 50000)}
 
 --- CODE CHANGE SUMMARY (Source) ---
-${changedFileContent.substring(0, 5000)}
+${changedFileContent.substring(0, 20000)}
 
 INSTRUCTIONS:
 1. Read the Documentation and the Code Change.
@@ -83,7 +85,11 @@ Return a JSON object:
 
             let result;
             try {
-                result = JSON.parse(resultJson);
+                const cleanJson = resultJson
+                    .replace(/```json/g, '')
+                    .replace(/```/g, '')
+                    .trim();
+                result = JSON.parse(cleanJson);
             } catch (e) {
                 // Fallback if structured output fails
                 const lower = resultJson.toLowerCase();
