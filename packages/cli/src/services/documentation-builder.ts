@@ -5,11 +5,7 @@ import { GenerationContextService } from './generation-context';
 import { ReviewService } from './review-service';
 import { createObservabilityMetadata, extendMetadata } from '../utils/observability';
 import { DocPlan } from './documentation-planner';
-import {
-    DOC_GENERATION_PROMPT,
-    DOC_RESEARCH_PROMPT,
-    DOC_QUERY_PROMPT,
-} from '../prompts/documentation';
+import { DOC_GENERATION_PROMPT, DOC_QUERY_PROMPT } from '../prompts/documentation';
 import { pMap } from '../utils/concurrency';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
@@ -75,7 +71,7 @@ export class DocumentationBuilder {
         await pMap(
             pageContexts,
             async (pageCtx) => {
-                const { item, sourceContext, ragContext, researchBrief } = pageCtx;
+                const { item, sourceContext, ragContext } = pageCtx;
                 const fullPath = join(outputDir, item.path);
 
                 let currentContent = '';
@@ -92,13 +88,10 @@ export class DocumentationBuilder {
                 this.logger.info(`> Writing ${item.path}...`);
 
                 // Final Context composition for the Writer
-                // We combine the Source Context, RAG Context, and the Researcher's Brief.
+                // We combine the Source Context and RAG Context directly.
                 const writerContext = `
-                *** RESEARCHER TECHNICAL BRIEF ***
-                ${researchBrief}
-
                 *** RAW CONTEXT (Reference) ***
-                ${sourceContext ? `--- DETECTED SOURCE FILES ---\n${sourceContext.substring(0, 10000)}` : ''}
+                ${sourceContext ? `--- DETECTED SOURCE FILES ---\n${sourceContext.substring(0, 20000)}` : ''}
                 ${ragContext ? `\n--- SEMANTIC SEARCH RESULTS (RAG) ---\n${ragContext}` : ''}
                 `;
 
@@ -233,38 +226,9 @@ export class DocumentationBuilder {
                     }
                 }
 
-                // 3. Generate Research Brief
-                // If we have a Researcher, we ask for a summary. If not, we just pass the raw context.
-                let researchBrief = '';
-                if (aiAgents.researcher && (detailedSourceContext || ragContext)) {
-                    try {
-                        const combinedContext = `
-                        ${detailedSourceContext ? `--- DETECTED SOURCE FILES ---\n${detailedSourceContext}` : ''}
-                        ${ragContext ? `\n--- SEMANTIC SEARCH RESULTS (RAG) ---\n${ragContext}` : ''}
-                        `;
-
-                        const researchPrompt = DOC_RESEARCH_PROMPT(
-                            item.path,
-                            item.description,
-                            combinedContext,
-                            context.packageJson ? JSON.stringify(context.packageJson) : '{}',
-                        );
-
-                        researchBrief = await aiAgents.researcher.generateText(
-                            researchPrompt,
-                            { maxTokens: 4000, temperature: 0.0 },
-                            extendMetadata(sessionMetadata, {
-                                feature: 'content-research',
-                                properties: { documentPath: item.path },
-                            }),
-                        );
-                    } catch (e) {
-                        this.logger.warn(`Researcher failed to brief ${item.path}: ${e}`);
-                        researchBrief = '(Research generation failed, see raw context)';
-                    }
-                } else {
-                    researchBrief = '(No Researcher Agent available or no context found)';
-                }
+                // 3. Skip Research Brief (Optimization)
+                // We pass raw context directly to the writer to save latency/cost.
+                const researchBrief = '';
 
                 results.push({
                     item,
