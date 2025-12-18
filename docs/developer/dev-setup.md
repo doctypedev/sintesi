@@ -34,7 +34,7 @@ This guide covers how to set up the repository for local development, run tests 
 
 ## Prerequisites
 
-- **Node.js**: v20.x or newer
+- **Node.js**: A recent Node.js runtime. The repository does not pin a specific Node version; using a current LTS release (for example, Node 18 or newer) is recommended for compatibility.
 - **PNPM**: v8 or newer
 - **Rust Toolchain** (Optional): For building native crates locally.
 
@@ -93,7 +93,9 @@ pnpm release    # Version and publish
 
 ## Working with the Docs Site
 
-The documentation site is built with VitePress.
+The documentation site is built with VitePress. The repository includes a script to auto-generate a unified sidebar (`docs/scripts/generateSidebar.ts`) and a VitePress configuration at `docs/.vitepress/config.mts`.
+
+Important: the repository's root docs scripts already call the sidebar generator before starting or building the site; you normally don't need to run it manually when using the provided scripts.
 
 ### Development Server
 
@@ -101,7 +103,7 @@ The documentation site is built with VitePress.
 pnpm run docs:dev
 ```
 
-Generates the sidebar and launches the dev server.
+This runs `pnpm run generate:sidebar` and launches the VitePress development server.
 
 ### Production Build and Preview
 
@@ -110,13 +112,46 @@ pnpm run docs:build
 pnpm run docs:preview
 ```
 
+Both commands run the sidebar generator first, then build/preview the site.
+
 ### Sidebar Generation
 
 ```bash
 pnpm run generate:sidebar
 ```
 
-Runs `docs/scripts/generateSidebar.ts` to update `docs/.vitepress/sidebar-auto.ts`.
+Runs `docs/scripts/generateSidebar.ts` to update `docs/.vitepress/sidebar-auto.ts`. Run this manually if you add or reorganize markdown files and want to regenerate the sidebar without starting the dev server.
+
+### Mermaid support (new)
+
+The VitePress configuration now includes the vitepress-plugin-mermaid plugin and a mermaid configuration block. Relevant changes are in `docs/.vitepress/config.mts`:
+
+- The config is wrapped with `withMermaid(defineConfig(...))` (imported from `vitepress-plugin-mermaid`).
+- `vite.optimizeDeps.include` includes `['mermaid']` for faster dev startup.
+- A `mermaid: { ... }` configuration object is present in the config file; use it to pass Mermaid API defaults.
+
+DevDependencies include `mermaid` and `vitepress-plugin-mermaid` so diagrams render locally once dependencies are installed.
+
+How to author Mermaid diagrams in docs:
+
+- Use a fenced code block with the language set to `mermaid`.
+- Example:
+
+```mermaid
+graph TD
+  A[Code changes] --> B[Run tests]
+  B --> C{Tests pass?}
+  C -->|Yes| D[Build]
+  C -->|No| E[Fix issues]
+```
+
+- You can include any Mermaid diagram type supported by Mermaid (flowcharts, sequence diagrams, gantt, class diagrams, etc.).
+- If you need to adjust Mermaid runtime options (theme, securityLevel, etc.) edit the `mermaid` object in `docs/.vitepress/config.mts`. See Mermaid API options: https://mermaid.js.org/config/usage.html and https://mermaid.js.org/config/setup/modules/mermaidAPI.html#mermaidapi-configuration-defaults
+
+Troubleshooting notes:
+
+- After changing the VitePress config or the `mermaid` config, restart the dev server (`pnpm run docs:dev`).
+- If diagrams do not render, ensure dependencies are installed (`pnpm install`) and that the dev server was restarted after the install.
 
 ---
 

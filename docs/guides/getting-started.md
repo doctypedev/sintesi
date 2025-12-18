@@ -30,7 +30,9 @@ This guide assumes you’re working with the Sintesi monorepo root that uses pnp
 
 **Repository URL**: [https://github.com/doctypedev/sintesi.git](https://github.com/doctypedev/sintesi.git)
 
-> **Note**: The root monorepo uses a pnpm workspace configuration (`pnpm-workspace.yaml`) and exposes a CLI at `packages/cli`. The CLI commands are designed to verify, readme, document, and generate changesets with AI assistance.
+> Note: The CLI in these examples uses OpenAI as the primary AI provider. Actual AI provider selection and usage depend on the environment variables you set (e.g., `OPENAI_API_KEY`, `COHERE_API_KEY`) and the active pipeline configured in your environment or deployment.
+
+> The root monorepo uses a pnpm workspace configuration (`pnpm-workspace.yaml`) and exposes a CLI at `packages/cli`. The CLI commands are designed to verify, readme, document, and generate changesets with AI assistance.
 
 ---
 
@@ -53,7 +55,14 @@ This guide assumes you’re working with the Sintesi monorepo root that uses pnp
 
 2.  **Verify the CLI is available**
 
-    You can run the CLI via `npx` (or via your workspace script):
+    You can install the CLI globally (recommended for CI or convenient local use):
+
+    ```bash
+    npm install -g sintesi-monorepo-root
+    sintesi --version
+    ```
+
+    Or run it via `npx` without a global install:
 
     ```bash
     npx sintesi --version
@@ -84,8 +93,8 @@ The AI-powered features require API keys. Start by copying the example and filli
 
 3.  **Optional Keys** (enable additional capabilities):
     - `COHERE_API_KEY`: For embeddings/RAG.
-    - `HELICONE_API_KEY`: Optional, for observability.
-    - `GEMINI_API_KEY`: Optional, not wired in the current AI pipeline.
+    - `HELICONE_API_KEY`: Optional, for observability and telemetry. Note: Helicone is available for optional observability; the CLI does not currently wire Helicone into the AI inference pipeline by default.
+    - `GEMINI_API_KEY`: Optional, reserved for future integrations. Gemini is included in environment examples for potential future use but is not currently wired into the active AI pipeline.
 
 **Example contents**:
 
@@ -96,7 +105,7 @@ COHERE_API_KEY=your-cohere-api-key-here
 GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
-> **Important**: `OPENAI_API_KEY` is **REQUIRED** for AI-powered documentation generation. The other keys enable optional features like observability and semantic retrieval.
+> **Important**: `OPENAI_API_KEY` is **REQUIRED** for AI-powered documentation generation. The other keys enable optional features like observability and semantic retrieval or are reserved for future integrations.
 
 > **Safety Tip**: Keep `.env` private and do not commit it to version control.
 
@@ -112,6 +121,9 @@ Sintesi exposes several commands.
 - `readme`: Generate a `README.md` based on project context.
 - `documentation`: Generate comprehensive documentation site structure.
 - `changeset`: Generate a changeset file from code changes using AI.
+
+> Command-line flags and their names can change across releases; consult the official CLI reference for the authoritative, up-to-date list of options:  
+> 👉 CLI Reference: https://sintesicli.dev/reference/commands.html
 
 ### Key Flags
 
@@ -133,16 +145,18 @@ Sintesi exposes several commands.
 
 #### `check`
 
-| Flag              | Alias  | Description                              |
-| :---------------- | :----- | :--------------------------------------- |
-| `--verbose`       |        | Enable verbose logging                   |
-| `--strict`        |        | Exit with error if drift detected        |
-| `--smart`         |        | Use AI to detect high-level drift        |
-| `--base`          |        | Base branch for smart check              |
-| `--readme`        |        | Check only README drift                  |
-| `--documentation` | `-doc` | Check only documentation drift           |
-| `--output`        | `-o`   | Output file path for README check        |
-| `--output-dir`    | `-d`   | Output directory for documentation check |
+| Flag              | Alias   | Description                                        | Default |
+| :---------------- | :------ | :------------------------------------------------- | :------ |
+| `--verbose`       |         | Enable verbose logging                             |         |
+| `--strict`        |         | Exit with error if drift detected (can be negated) | `true`  |
+| `--smart`         |         | Use AI to detect high-level drift                  |         |
+| `--base`          |         | Base branch for smart check                        |         |
+| `--readme`        |         | Check only README drift                            |         |
+| `--documentation` | `--doc` | Check only documentation drift (alias: `--doc`)    |         |
+| `--output`        | `-o`    | Output file path for README check                  |         |
+| `--output-dir`    | `-d`    | Output directory for documentation check           |         |
+
+Note: The CLI uses yargs for flag parsing. `--strict` defaults to true; yargs supports negation, so you can pass `--no-strict` to disable strict behavior (useful in CI where you want a non-error exit code while still reporting drift).
 
 #### `changeset`
 
@@ -165,6 +179,14 @@ Check for documentation drift with verbose and smart checks:
 
 ```bash
 npx sintesi check --verbose --smart --base main
+```
+
+Check only documentation drift (two equivalent forms: long and alias):
+
+```bash
+npx sintesi check --documentation --base main
+# or using the alias:
+npx sintesi check --doc --base main
 ```
 
 Generate a README for the current project:
@@ -207,7 +229,7 @@ Copy and populate the environment file:
 cp .env.example .env
 ```
 
-Fill in `OPENAI_API_KEY` (required) and other optional keys.
+Fill in `OPENAI_API_KEY` (required) and other optional keys. Note that `HELICONE_API_KEY` and `GEMINI_API_KEY` are included for observability and potential future integrations; they are optional and are not currently wired into the active AI inference pipeline by default.
 
 ### Step 3: Generate Documentation
 
@@ -232,11 +254,19 @@ Open [http://localhost:5173](http://localhost:5173) to view the generated docs.
 ### Optional Steps
 
 - **Verify drift**:
+
     ```bash
     npx sintesi check
     # or scoped:
     npx sintesi check --readme
     ```
+
+    If you run checks in CI and prefer not to fail the job on drift, you can disable strict mode. The `--strict` flag defaults to `true`; yargs supports negation, so use:
+
+    ```bash
+    npx sintesi check --no-strict
+    ```
+
 - **Force update README**:
     ```bash
     npx sintesi readme --force
@@ -250,11 +280,16 @@ Open [http://localhost:5173](http://localhost:5173) to view the generated docs.
 2.  Generated docs appear under the `docs` directory, ready for preview or further customization.
 3.  You can continue iterating: adjust code, re-run documentation generation, and verify drift with the `check` command.
 
+- The docs site supports Mermaid diagrams — you can include Mermaid blocks in docs pages.
+
 ## Next Steps
 
 - Familiarize yourself with the CLI options to tailor the generation workflow to your project.
 - Explore the generated docs structure in `docs/` and adjust as needed for your team's workflow.
 - Integrate Sintesi into CI to ensure documentation stays in sync with code changes.
+- For more on the system architecture and RAG, see:
+    - Concepts — Architecture: https://sintesicli.dev/concepts/architecture.html
+    - Concepts — RAG: https://sintesicli.dev/concepts/rag.html
 
 ::: info Note
 This quick-start guide assumes a standard Sintesi monorepo setup using pnpm workspaces as defined in `pnpm-workspace.yaml` at the repository root. If your project uses a different workspace layout, adjust the commands accordingly (e.g., running from a subpackage directory or using `--filter` when invoking workspace scripts).

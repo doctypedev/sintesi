@@ -104,11 +104,9 @@ jobs:
     This will ignore existing files and regenerate them from scratch.
 
 5.  **Output Options**
-    You can specify custom output paths for the README check and documentation check using the `--output` and `--output-dir` flags, respectively:
-    ```bash
-    sintesi check --output path/to/README.md
-    sintesi check --output-dir path/to/docs
-    ```
+    Output customization (for example, setting the directory where generated docs are written) is supported by specific commands and by the GitHub Action inputs (see `docs_output` in the workflow example above). Command-line flags and their names can change across releases; consult the official CLI reference for the authoritative, up-to-date list of options:
+
+    👉 CLI Reference: https://sintesicli.dev/reference/commands.html
 
 ## 🧠 How it Works
 
@@ -123,7 +121,8 @@ Sintesi is not just a generator; it is a full **documentation lifecycle manager*
 
 We believe in eating our own dog food. This repository's documentation is maintained by Sintesi.
 
-👉 **[Read the Architecture Guide](https://sintesicli.dev/architecture/ai-architecture.html)**
+👉 **[Concepts — Architecture](https://sintesicli.dev/concepts/architecture.html)**  
+👉 **[Concepts — RAG](https://sintesicli.dev/concepts/rag.html)**  
 👉 **[CLI Reference](https://sintesicli.dev/reference/commands.html)**
 
 ---
