@@ -96,6 +96,7 @@ jobs:
                   node packages/cli/dist/cli/src/index.js readme --output README.md --verbose
 
             - name: Cache Sintesi RAG State
+              if: steps.check_skip.outputs.should_skip != 'true'
               uses: actions/cache@v4
               with:
                   path: .sintesi
