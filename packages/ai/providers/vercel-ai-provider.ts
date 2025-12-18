@@ -87,6 +87,11 @@ export class VercelAIProvider implements IAIProvider {
                 schema: z.object({
                     documentation: DocumentationStructureSchema,
                 }),
+                experimental_telemetry: {
+                    isEnabled: true,
+                    functionId: 'generate-documentation',
+                    metadata: request.metadata,
+                },
             };
 
             if (this.modelConfig.maxTokens) {
@@ -254,6 +259,11 @@ export class VercelAIProvider implements IAIProvider {
             const genOptions: any = {
                 model,
                 prompt,
+                experimental_telemetry: {
+                    isEnabled: true,
+                    functionId: 'generate-text',
+                    metadata: options.metadata,
+                },
             };
 
             // Only add parameters if not o1 model (which has strict parameter validation)
