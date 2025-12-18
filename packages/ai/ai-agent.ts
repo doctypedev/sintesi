@@ -286,40 +286,18 @@ function _createSingleAgentFromEnv(
     roleOptions: AIAgentRoleConfig,
     globalOptions: { debug?: boolean; timeout?: number; logger?: ILogger },
 ): AIAgentConfig {
-    const providers: Array<{ env: string; provider: AIProvider; defaultModel: string }> = [
-        { env: 'OPENAI_API_KEY', provider: 'openai', defaultModel: 'gpt-4o' },
-        { env: 'GEMINI_API_KEY', provider: 'gemini', defaultModel: 'gemini-1.5-flash' },
-        {
-            env: 'ANTHROPIC_API_KEY',
-            provider: 'anthropic',
-            defaultModel: 'claude-3-5-haiku-20241022',
-        },
-        { env: 'MISTRAL_API_KEY', provider: 'mistral', defaultModel: 'mistral-large-latest' }, // Updated Mistral default
-    ];
+    // Temporarily support only OpenAI
+    const openaiKey = process.env.OPENAI_API_KEY;
+    const heliconeKey = process.env.HELICONE_API_KEY;
 
-    // Try to find a provider that has its API key set in the environment
-    let selectedProvider: { env: string; provider: AIProvider; defaultModel: string } | undefined;
-
-    // First, check if a specific provider is requested for this role (e.g., roleOptions.provider = 'gemini')
-    if (roleOptions.provider) {
-        selectedProvider = providers.find(
-            (p) => p.provider === roleOptions.provider && process.env[p.env],
-        );
-    } else {
-        // If no specific provider is requested for the role, use the first available one from the list
-        selectedProvider = providers.find((p) => process.env[p.env]);
-    }
-
-    if (selectedProvider) {
-        const modelId =
-            roleOptions.modelId ||
-            getDefaultModel(selectedProvider.provider) ||
-            selectedProvider.defaultModel;
+    // If OpenAI key is present, use it directly
+    if (openaiKey) {
+        const modelId = roleOptions.modelId || getDefaultModel('openai') || 'gpt-4o';
         return {
             model: {
-                provider: selectedProvider.provider,
+                provider: 'openai',
                 modelId: modelId,
-                apiKey: process.env[selectedProvider.env]!,
+                apiKey: openaiKey,
                 maxTokens: roleOptions.maxTokens,
                 temperature: roleOptions.temperature,
             },
@@ -329,29 +307,22 @@ function _createSingleAgentFromEnv(
         };
     }
 
-    // HELICONE-ONLY MODE: If no provider API key but Helicone is configured,
-    // use Helicone as gateway (API keys managed in the Helicone dashboard)
-    const heliconeApiKey = process.env.HELICONE_API_KEY;
-    if (heliconeApiKey) {
-        // Default to OpenAI when using Helicone-only mode
-        const defaultProvider = roleOptions.provider || 'openai';
-        const modelId =
-            roleOptions.modelId ||
-            getDefaultModel(defaultProvider) ||
-            (defaultProvider === 'openai' ? 'gpt-4o' : 'gemini-1.5-flash');
+    // HELICONE-ONLY MODE: If no OpenAI key but Helicone is configured
+    if (heliconeKey) {
+        const modelId = roleOptions.modelId || getDefaultModel('openai') || 'gpt-4o';
 
         if (globalOptions.logger) {
             globalOptions.logger.info(
-                `[AIAgentManager] Using Helicone-only mode (provider API keys configured in Helicone dashboard)`,
+                `[AIAgentManager] Using Helicone-only mode (OpenAI API key managed in Helicone dashboard)`,
             );
         }
 
         return {
             model: {
-                provider: defaultProvider,
+                provider: 'openai',
                 modelId: modelId,
-                // Use dummy API key - Helicone will handle authentication
-                apiKey: 'helicone-managed',
+                // Use dummy key - Helicone will handle authentication
+                apiKey: 'sk-helicone-managed',
                 maxTokens: roleOptions.maxTokens,
                 temperature: roleOptions.temperature,
             },
@@ -361,11 +332,8 @@ function _createSingleAgentFromEnv(
         };
     }
 
-    const specificProviderMsg = roleOptions.provider
-        ? ` for provider '${roleOptions.provider}'`
-        : '';
     throw new Error(
-        `No API key found in environment for the requested role${specificProviderMsg}. Please set HELICONE_API_KEY or a provider API key (OPENAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, MISTRAL_API_KEY).`,
+        `No API key found. Please set OPENAI_API_KEY or HELICONE_API_KEY in your environment.`,
     );
 }
 
