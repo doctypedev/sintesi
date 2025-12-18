@@ -1,11 +1,11 @@
 import { Logger } from '../utils/logger';
-import { AIAgents } from '../../../ai';
+import { AIAgents, ObservabilityMetadata } from '../../../ai';
 
 export class ReviewService {
     constructor(private logger: Logger) {}
 
     /**
-     * Reviews and refines content using the Reviewer and Writer agents.
+     * Reviews and refines content using the Review and Writer agents.
      * If the reviewer flags issues, the writer is asked to refine the content once.
      */
     async reviewAndRefine(
@@ -14,6 +14,7 @@ export class ReviewService {
         itemDescription: string,
         sourceContext: string,
         agents: AIAgents,
+        sessionMetadata?: ObservabilityMetadata,
     ): Promise<string> {
         if (!agents.reviewer) {
             return content;
@@ -55,10 +56,24 @@ export class ReviewService {
     `;
 
         try {
-            let reviewRaw = await agents.reviewer.generateText(reviewPrompt, {
-                maxTokens: 1000,
-                temperature: 0.1,
-            });
+            let reviewRaw = await agents.reviewer.generateText(
+                reviewPrompt,
+                {
+                    maxTokens: 1000,
+                    temperature: 0.1,
+                },
+                sessionMetadata
+                    ? {
+                          ...sessionMetadata,
+                          properties: {
+                              ...sessionMetadata.properties,
+                              feature: 'content-review',
+                              documentPath: itemPath,
+                          },
+                          tags: [...(sessionMetadata.tags || []), 'review', 'validation'],
+                      }
+                    : undefined,
+            );
             reviewRaw = reviewRaw
                 .replace(/```json/g, '')
                 .replace(/```/g, '')
@@ -86,10 +101,24 @@ export class ReviewService {
         `;
 
                 // Use Writer to refine
-                let refinedContent = await agents.writer.generateText(refinePrompt, {
-                    maxTokens: 4000,
-                    temperature: 0.1,
-                });
+                let refinedContent = await agents.writer.generateText(
+                    refinePrompt,
+                    {
+                        maxTokens: 4000,
+                        temperature: 0.1,
+                    },
+                    sessionMetadata
+                        ? {
+                              ...sessionMetadata,
+                              properties: {
+                                  ...sessionMetadata.properties,
+                                  feature: 'content-refinement',
+                                  documentPath: itemPath,
+                              },
+                              tags: [...(sessionMetadata.tags || []), 'refinement', 'revision'],
+                          }
+                        : undefined,
+                );
 
                 // Clean content again
                 refinedContent = refinedContent.trim();

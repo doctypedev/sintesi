@@ -3,6 +3,7 @@ import { resolve, basename } from 'path';
 import { Logger } from '../utils/logger';
 import { createAIAgentsFromEnv, AIAgents } from '../../../ai';
 import { GitBinding } from '@sintesi/core';
+import { createObservabilityMetadata } from '../utils/observability';
 import { getSmartCheckReadmePrompt } from '../prompts/analysis';
 import { ChangeAnalysisService } from './analysis-service';
 import { filterGitDiff } from '../utils/diff-utils';
@@ -219,9 +220,19 @@ export class SmartChecker {
 
             const prompt = getSmartCheckReadmePrompt(readmeContent, gitDiff);
 
-            const response = await plannerAgent.generateText(prompt, {
-                temperature: 0,
+            // Create observability metadata for tracking
+            const sessionMetadata = createObservabilityMetadata({
+                feature: 'smart-check-readme',
+                additionalTags: ['check', 'analysis'],
             });
+
+            const response = await plannerAgent.generateText(
+                prompt,
+                {
+                    temperature: 0,
+                },
+                sessionMetadata,
+            );
 
             // Parse JSON response
             let result;

@@ -1,8 +1,9 @@
 import { Logger } from '../utils/logger';
 import { ProjectContext } from '@sintesi/core';
-import { AIAgents } from '../../../ai';
+import { AIAgents, ObservabilityMetadata } from '../../../ai';
 import { GenerationContextService } from './generation-context';
 import { ReviewService } from './review-service';
+import { createObservabilityMetadata, extendMetadata } from '../utils/observability';
 import { DocPlan } from './documentation-planner';
 import {
     DOC_GENERATION_PROMPT,
@@ -29,6 +30,13 @@ export class DocumentationBuilder {
         force: boolean = false,
     ): Promise<void> {
         this.logger.info('\nStarting content generation...');
+
+        // Create observability metadata for this documentation generation session
+        const sessionMetadata: ObservabilityMetadata = createObservabilityMetadata({
+            feature: 'documentation-generation',
+            projectName: context.packageJson?.name,
+            additionalTags: ['writing'],
+        });
 
         // Initialize RAG Index (Async, but awaited to ensure context is ready)
         // Only if not skipped by config? For now assuming if code loads, we want it.
@@ -90,10 +98,18 @@ export class DocumentationBuilder {
                             item.description,
                             detailedSourceContext.substring(0, 1000),
                         );
-                        const queriesJson = await aiAgents.researcher.generateText(queryPrompt, {
-                            maxTokens: 500,
-                            temperature: 0.2, // Slightly creative to find synonyms
-                        });
+                        const queriesJson = await aiAgents.researcher.generateText(
+                            queryPrompt,
+                            {
+                                maxTokens: 500,
+                                temperature: 0.2,
+                            },
+                            extendMetadata(sessionMetadata, {
+                                feature: 'rag-query-generation',
+                                properties: { documentPath: item.path },
+                                tags: ['rag', 'query-generation'],
+                            }),
+                        );
 
                         let queries: string[] = [];
                         try {
@@ -165,6 +181,11 @@ export class DocumentationBuilder {
                                 maxTokens: 4000,
                                 temperature: 0.0,
                             },
+                            extendMetadata(sessionMetadata, {
+                                feature: 'content-research',
+                                properties: { documentPath: item.path },
+                                tags: ['research', 'context-analysis'],
+                            }),
                         );
 
                         finalContext = `
@@ -192,10 +213,21 @@ export class DocumentationBuilder {
                 );
 
                 try {
-                    let content = await aiAgents.writer.generateText(genPrompt, {
-                        maxTokens: 4000,
-                        temperature: 0.1,
-                    });
+                    let content = await aiAgents.writer.generateText(
+                        genPrompt,
+                        {
+                            maxTokens: 4000,
+                            temperature: 0.1,
+                        },
+                        extendMetadata(sessionMetadata, {
+                            feature: 'content-generation',
+                            properties: {
+                                documentPath: item.path,
+                                documentType: item.type,
+                            },
+                            tags: ['content', item.type],
+                        }),
+                    );
 
                     content = content.trim();
                     if (content.startsWith('```markdown'))
@@ -221,6 +253,7 @@ export class DocumentationBuilder {
                             item.description,
                             reviewerContext,
                             aiAgents,
+                            sessionMetadata,
                         );
                     }
 
