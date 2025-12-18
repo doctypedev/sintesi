@@ -57,6 +57,12 @@ importers:
 
   crates/core/npm/win32-x64-msvc: {}
 
+  packages/ai:
+    dependencies:
+      '@helicone/ai-sdk-provider':
+        specifier: ^1.0.11
+        version: 1.0.11
+
   packages/cli:
     dependencies:
       '@ai-sdk/anthropic':
@@ -1730,6 +1736,13 @@ packages:
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
+
+  /@helicone/ai-sdk-provider@1.0.11:
+    resolution: {integrity: sha512-8TnzZNP/a6wrGJk9bKqAqxK/oma6AlDaERuKTM5bgZTji9gQF0tDPZgXZg5y4KO3IwIcgWH4yWd2v+M1mNnpHw==}
+    hasBin: true
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+    dev: false
 
   /@humanwhocodes/config-array@0.13.0:
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}

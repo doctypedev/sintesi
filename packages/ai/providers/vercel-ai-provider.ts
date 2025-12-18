@@ -7,12 +7,14 @@ import {
     AIProviderError,
     BatchDocumentationResult,
     ILogger,
+    ObservabilityMetadata,
 } from '../types';
 import { generateObject, generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createMistral } from '@ai-sdk/mistral';
+import { createHelicone } from '@helicone/ai-sdk-provider';
 import {
     BatchDocumentationStructureSchema,
     DocumentationStructureSchema,
@@ -34,13 +36,51 @@ export class VercelAIProvider implements IAIProvider {
         this.logger = logger;
     }
 
-    private getModel() {
+    /**
+     * Get model with Helicone fallback
+     * Tries to use Helicone if configured, falls back to native provider on failure
+     */
+    private getModel(metadata?: ObservabilityMetadata) {
+        const heliconeApiKey = process.env.HELICONE_API_KEY;
+
+        // If Helicone is configured and we have metadata, try to use it as a proxy
+        if (heliconeApiKey && metadata) {
+            try {
+                const helicone = createHelicone({ apiKey: heliconeApiKey });
+                return helicone(this.modelConfig.modelId, {
+                    extraBody: {
+                        helicone: this.buildHeliconeConfig(metadata),
+                    },
+                });
+            } catch (error) {
+                // Log warning and fall back to native provider
+                if (this.logger) {
+                    this.logger.warn(
+                        `[VercelAIProvider] Helicone initialization failed, falling back to native provider: ${error}`,
+                    );
+                } else {
+                    console.warn(
+                        `[VercelAIProvider] Helicone initialization failed, falling back to native provider:`,
+                        error,
+                    );
+                }
+                // Fall through to native provider
+            }
+        }
+
+        // Use the standard native provider (fallback or when Helicone not configured)
+        return this.getNativeModel();
+    }
+
+    /**
+     * Get native model without Helicone proxy
+     */
+    private getNativeModel() {
         switch (this.provider) {
             case 'openai': {
-                // Use createOpenAI for explicit configuration without env vars
                 const provider = createOpenAI({
                     apiKey: this.modelConfig.apiKey,
-                    baseURL: this.modelConfig.endpoint, // Custom endpoint if provided
+                    baseURL: this.modelConfig.endpoint,
                 });
                 return provider(this.modelConfig.modelId);
             }
@@ -65,6 +105,40 @@ export class VercelAIProvider implements IAIProvider {
             default:
                 throw new Error(`Unsupported provider: ${this.provider}`);
         }
+    }
+
+    /**
+     * Build Helicone configuration from observability metadata
+     */
+    private buildHeliconeConfig(metadata?: ObservabilityMetadata): any {
+        if (!metadata) return {};
+
+        const heliconeConfig: any = {};
+
+        if (metadata.sessionId) {
+            heliconeConfig.sessionId = metadata.sessionId;
+        }
+
+        if (metadata.sessionName) {
+            heliconeConfig.sessionName = metadata.sessionName;
+        }
+
+        if (metadata.userId) {
+            heliconeConfig.userId = metadata.userId;
+        }
+
+        if (metadata.tags || metadata.agentRole) {
+            heliconeConfig.tags = [
+                ...(metadata.tags || []),
+                ...(metadata.agentRole ? [metadata.agentRole] : []),
+            ];
+        }
+
+        if (metadata.properties) {
+            heliconeConfig.properties = metadata.properties;
+        }
+
+        return heliconeConfig;
     }
 
     async generateDocumentation(request: DocumentationRequest): Promise<DocumentationResponse> {
@@ -256,8 +330,9 @@ export class VercelAIProvider implements IAIProvider {
             temperature?: number;
             maxTokens?: number;
         } = {},
+        metadata?: ObservabilityMetadata,
     ): Promise<string> {
-        const model = this.getModel();
+        const model = this.getModel(metadata);
         const isO1Model = this.modelConfig.modelId.startsWith('o1-');
 
         try {
@@ -280,6 +355,51 @@ export class VercelAIProvider implements IAIProvider {
             return result.text;
         } catch (error) {
             const err = error as any;
+
+            // If Helicone was used and it failed, retry with native provider
+            const heliconeApiKey = process.env.HELICONE_API_KEY;
+            if (heliconeApiKey && metadata) {
+                if (this.logger) {
+                    this.logger.warn(
+                        `[VercelAIProvider] Helicone API call failed, retrying with native provider: ${err.message}`,
+                    );
+                } else {
+                    console.warn(
+                        `[VercelAIProvider] Helicone API call failed, retrying with native provider:`,
+                        err.message,
+                    );
+                }
+
+                try {
+                    // Retry with native provider
+                    const nativeModel = this.getNativeModel();
+                    const genOptions: any = {
+                        model: nativeModel,
+                        prompt,
+                    };
+
+                    if (!isO1Model) {
+                        genOptions.temperature =
+                            options.temperature ?? this.modelConfig.temperature;
+                        genOptions.maxTokens =
+                            options.maxTokens ?? this.modelConfig.maxTokens ?? 1000;
+                    }
+
+                    const result = await generateText(genOptions);
+                    return result.text;
+                } catch (fallbackError) {
+                    // Both Helicone and native failed, throw the native error
+                    const fallbackErr = fallbackError as any;
+                    throw new AIProviderError(
+                        'GENERATION_FAILED',
+                        fallbackErr.message || 'Text generation failed',
+                        this.provider,
+                        fallbackError,
+                    );
+                }
+            }
+
+            // Either Helicone wasn't used, or it was the only attempt
             throw new AIProviderError(
                 'GENERATION_FAILED',
                 err.message || 'Text generation failed',

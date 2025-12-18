@@ -196,6 +196,7 @@ export interface IAIProvider {
      * Generate generic text from a prompt
      * @param prompt The user prompt
      * @param options Optional configuration
+     * @param metadata Optional observability metadata for tracking
      */
     generateText?(
         prompt: string,
@@ -203,6 +204,7 @@ export interface IAIProvider {
             temperature?: number;
             maxTokens?: number;
         },
+        metadata?: ObservabilityMetadata,
     ): Promise<string>;
 }
 
@@ -233,6 +235,30 @@ export interface BatchDocumentationResult {
 }
 
 /**
+ * Observability metadata for tracking AI requests
+ * Used by Helicone to group requests, track costs, and analyze usage patterns
+ */
+export interface ObservabilityMetadata {
+    /** Session ID to group related requests */
+    sessionId?: string;
+
+    /** Human-readable session name */
+    sessionName?: string;
+
+    /** User identifier (e.g., git email, project name) */
+    userId?: string;
+
+    /** Agent role performing the request */
+    agentRole?: 'planner' | 'writer' | 'researcher' | 'reviewer';
+
+    /** Custom properties for filtering and analysis */
+    properties?: Record<string, string | number | boolean>;
+
+    /** Tags for categorization */
+    tags?: string[];
+}
+
+/**
  * Options for generating documentation
  */
 export interface GenerateOptions {
@@ -247,4 +273,7 @@ export interface GenerateOptions {
 
     /** Documentation style (concise, detailed, tutorial) */
     style?: 'concise' | 'detailed' | 'tutorial';
+
+    /** Observability metadata for tracking */
+    metadata?: ObservabilityMetadata;
 }

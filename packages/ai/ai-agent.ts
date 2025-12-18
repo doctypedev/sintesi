@@ -12,6 +12,7 @@ import {
     AIAgentRoleConfig,
     AIProvider, // Import AIProvider type here
     ILogger,
+    ObservabilityMetadata,
 } from './types';
 import { VercelAIProvider } from './providers/vercel-ai-provider';
 
@@ -35,11 +36,13 @@ export class AIAgent {
     private config: AIAgentConfig;
     private retryConfig: { maxAttempts: number; delayMs: number };
     private logger?: ILogger;
+    private role?: 'planner' | 'writer' | 'researcher' | 'reviewer';
 
-    constructor(config: AIAgentConfig) {
+    constructor(config: AIAgentConfig, role?: 'planner' | 'writer' | 'researcher' | 'reviewer') {
         this.config = config;
         this.retryConfig = config.retry || { maxAttempts: 3, delayMs: 1000 };
         this.logger = config.logger;
+        this.role = role;
 
         // Initialize the appropriate provider
         this.provider = this.createProvider();
@@ -127,14 +130,24 @@ export class AIAgent {
             temperature?: number;
             maxTokens?: number;
         } = {},
+        metadata?: ObservabilityMetadata,
     ): Promise<string> {
         this.log('Generating text', {
             promptLength: prompt.length,
             model: this.config.model.modelId,
         });
 
+        // Merge role metadata with provided metadata
+        const mergedMetadata: ObservabilityMetadata = {
+            ...metadata,
+            agentRole: this.role || metadata?.agentRole,
+            tags: [...(metadata?.tags || []), ...(this.role ? [`agent-${this.role}`] : [])],
+        };
+
         if (this.provider.generateText) {
-            return this.executeWithRetry(() => this.provider.generateText!(prompt, options));
+            return this.executeWithRetry(() =>
+                this.provider.generateText!(prompt, options, mergedMetadata),
+            );
         }
 
         throw new Error(
@@ -272,7 +285,7 @@ function getLogger(logger?: ILogger) {
 function _createSingleAgentFromEnv(
     roleOptions: AIAgentRoleConfig,
     globalOptions: { debug?: boolean; timeout?: number; logger?: ILogger },
-): AIAgent {
+): AIAgentConfig {
     const providers: Array<{ env: string; provider: AIProvider; defaultModel: string }> = [
         { env: 'OPENAI_API_KEY', provider: 'openai', defaultModel: 'gpt-4o' },
         { env: 'GEMINI_API_KEY', provider: 'gemini', defaultModel: 'gemini-1.5-flash' },
@@ -302,7 +315,7 @@ function _createSingleAgentFromEnv(
             roleOptions.modelId ||
             getDefaultModel(selectedProvider.provider) ||
             selectedProvider.defaultModel;
-        return new AIAgent({
+        return {
             model: {
                 provider: selectedProvider.provider,
                 modelId: modelId,
@@ -313,7 +326,7 @@ function _createSingleAgentFromEnv(
             timeout: globalOptions.timeout,
             debug: globalOptions.debug,
             logger: globalOptions.logger,
-        });
+        };
     }
 
     const specificProviderMsg = roleOptions.provider
@@ -428,7 +441,7 @@ export function createAIAgentsFromEnv(
                 temperature: config?.temperature,
             };
 
-            const agent = _createSingleAgentFromEnv(options, globalOptions);
+            const agent = new AIAgent(_createSingleAgentFromEnv(options, globalOptions), role);
             const log = getLogger(globalOptions.logger);
             log.debug(
                 `[AIAgentManager] ${role.charAt(0).toUpperCase() + role.slice(1)} initialized with ${agent.getModelId()} (${agent.getProvider()})`,
