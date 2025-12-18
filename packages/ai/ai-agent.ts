@@ -338,10 +338,10 @@ export function createAIAgentsFromEnv(
 
     // OpenAI model defaults
     const modelDefaults = {
-        planner: 'gpt-4o',
-        writer: 'gpt-4o-mini',
-        researcher: 'gpt-4o-mini',
-        reviewer: 'gpt-4o',
+        planner: 'gpt-5-mini',
+        writer: 'gpt-5-nano',
+        researcher: 'gpt-5-mini',
+        reviewer: 'gpt-5-nano',
     };
 
     // Use Record type for better type safety instead of 'any'

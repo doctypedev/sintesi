@@ -9,7 +9,7 @@ import { AIProvider } from './types';
  * These are cost-effective models suitable for documentation generation
  */
 export const DEFAULT_MODELS: Record<AIProvider, string> = {
-    openai: 'gpt-4o-mini',
+    openai: 'gpt-5-mini',
     gemini: 'gemini-1.5-flash-8b',
     anthropic: 'claude-3-5-haiku-20241022',
     mistral: 'mistral-small-latest',
