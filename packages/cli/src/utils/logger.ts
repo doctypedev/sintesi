@@ -2,6 +2,8 @@
  * Simple CLI logger with colored output
  */
 
+import type { ILogger } from '../../../ai';
+
 export enum LogLevel {
     ERROR = 'error',
     WARN = 'warn',
@@ -27,8 +29,9 @@ const colors = {
 
 /**
  * CLI Logger for formatted console output
+ * Implements ILogger interface for compatibility with AI module
  */
-export class Logger {
+export class Logger implements ILogger {
     private verbose: boolean;
 
     constructor(verbose: boolean = false) {
