@@ -7,6 +7,8 @@ import { readFileSync } from 'fs';
 import { glob } from 'glob';
 import { IndexingStateManager } from './indexing-state';
 import { statSync } from 'fs';
+import { execSync } from 'child_process';
+import { GitBinding } from '@sintesi/core';
 
 export class RetrievalService {
     private vectorStore: VectorStoreService;
@@ -34,6 +36,53 @@ export class RetrievalService {
         this.logger.info('🔍 [RAG] Starting incremental project indexing...');
         this.stateManager.load();
 
+        // Detect current commit SHA
+        let currentSha = '';
+        try {
+            currentSha = execSync('git rev-parse HEAD', {
+                encoding: 'utf-8',
+                cwd: this.projectRoot,
+                stdio: 'pipe',
+            }).trim();
+        } catch (e) {
+            this.logger.debug('Could not determine current git SHA: ' + e);
+        }
+
+        const lastSha = this.stateManager.getLastCommitSha();
+        let useGitDiff = false;
+        let changedFilesFromGit: Set<string> | null = null;
+
+        if (currentSha && lastSha && currentSha !== lastSha) {
+            try {
+                this.logger.info(
+                    `[RAG] Detected previous state (SHA: ${lastSha.substring(0, 7)}). Computing diff using Rust GitBinding...`,
+                );
+
+                const gitBinding = new GitBinding(this.projectRoot);
+                const summary = gitBinding.analyzeChanges(lastSha);
+
+                if (summary.changedFiles) {
+                    // changedFiles from Rust are relative paths
+                    changedFilesFromGit = new Set(
+                        summary.changedFiles.map((p) =>
+                            require('path').resolve(this.projectRoot, p),
+                        ),
+                    );
+                    useGitDiff = true;
+                    this.logger.debug(
+                        `[RAG] Rust Git diff found ${changedFilesFromGit.size} changed files.`,
+                    );
+                }
+            } catch (e) {
+                this.logger.warn(
+                    `[RAG] Failed to compute git diff using Rust binding. Falling back to timestamp check: ${e}`,
+                );
+            }
+        } else if (currentSha && currentSha === lastSha) {
+            this.logger.success('✅ [RAG] Index is already up to date (SHA matches).');
+            return;
+        }
+
         // 1. Find Files
         const files = await glob('**/*.{ts,tsx,js,jsx,rs,md}', {
             cwd: this.projectRoot,
@@ -54,15 +103,38 @@ export class RetrievalService {
         // Check for modifications or new files
         for (const file of files) {
             try {
-                const stats = statSync(file);
-                const mtime = stats.mtimeMs;
-                const fileState = this.stateManager.getFileState(file);
+                // If using git diff, purely check membership
+                if (useGitDiff && changedFilesFromGit) {
+                    if (changedFilesFromGit.has(file)) {
+                        filesToProcess.push(file);
+                        const fileState = this.stateManager.getFileState(file);
+                        if (fileState) {
+                            filesToDelete.push(...fileState.chunkIds);
+                        }
+                    }
+                    // If NOT in changedFilesFromGit, we skip it (assume valid)
+                    // But we should verify if it's a NEW file that git diff might have caught?
+                    // `git diff` usually captures new files if they are committed.
+                    // If they are staged/unstaged, regular diff might catch them but we rely on committed state for "lastCommitSha".
+                    // Actually, if we rely on CI, everything is committed.
+                    // Localfy, we might want to check dirty state too?
+                    // For safety, let's mix: if git diff identifies it, process it.
+                    // If file is NOT tracked in state at all, process it (new file).
+                    else if (!this.stateManager.getFileState(file)) {
+                        filesToProcess.push(file);
+                    }
+                } else {
+                    // Fallback to Timestamp
+                    const stats = statSync(file);
+                    const mtime = stats.mtimeMs;
+                    const fileState = this.stateManager.getFileState(file);
 
-                if (!fileState || fileState.lastModified < mtime) {
-                    filesToProcess.push(file);
-                    // If it was modified, we mark old chunks for deletion
-                    if (fileState) {
-                        filesToDelete.push(...fileState.chunkIds);
+                    if (!fileState || fileState.lastModified < mtime) {
+                        filesToProcess.push(file);
+                        // If it was modified, we mark old chunks for deletion
+                        if (fileState) {
+                            filesToDelete.push(...fileState.chunkIds);
+                        }
                     }
                 }
             } catch (e) {
@@ -177,6 +249,9 @@ export class RetrievalService {
             });
         }
 
+        if (currentSha) {
+            this.stateManager.setLastCommitSha(currentSha);
+        }
         this.stateManager.save();
         this.logger.success(`✅ [RAG] Incremental index complete.`);
     }
