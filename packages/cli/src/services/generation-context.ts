@@ -510,13 +510,28 @@ export class GenerationContextService {
     /**
      * Reads the content of relevant files to provide context to the LLM.
      */
+    /**
+     * Reads the content of relevant files to provide context to the LLM.
+     * Returns simply the content string for backward compatibility.
+     */
     readRelevantContext(
         item: { path: string; description: string; relevantPaths?: string[] },
         context: ProjectContext,
     ): string {
+        return this.readRelevantContextWithFiles(item, context).content;
+    }
+
+    /**
+     * Reads relevant context and returns both content string and list of utilized file paths.
+     */
+    readRelevantContextWithFiles(
+        item: { path: string; description: string; relevantPaths?: string[] },
+        context: ProjectContext,
+    ): { content: string; files: string[] } {
         const MAX_CONTEXT_CHARS = 30000;
         let content = '';
         let chars = 0;
+        const utilizedFiles: string[] = [];
 
         // 1. Identify Target Files (Seeds)
         let targetFiles: string[] = [];
@@ -617,6 +632,8 @@ export class GenerationContextService {
                 const fileContent = readFileSync(filePath, 'utf-8');
                 const isSeed = targetFiles.includes(filePath);
 
+                utilizedFiles.push(filePath);
+
                 // Give more space to configuration/entry files
                 const limit = isSeed || priorityFiles.includes(filePath) ? 8000 : 2000;
 
@@ -639,6 +656,7 @@ export class GenerationContextService {
                         const testContent = readFileSync(testPath, 'utf-8');
                         content += `\n\n--- ASSOCIATED TEST (Usage Example): ${testPath} ---\n${testContent.substring(0, 3000)}`;
                         chars += Math.min(testContent.length, 3000);
+                        utilizedFiles.push(testPath);
                         break;
                     }
                 }
@@ -647,6 +665,6 @@ export class GenerationContextService {
             }
         }
 
-        return content;
+        return { content, files: utilizedFiles };
     }
 }

@@ -8,7 +8,8 @@ import { Logger } from '../utils/logger';
 import { CheckResult, CheckOptions } from '../types';
 import { SmartChecker } from '../services/smart-checker';
 import { GenerationContextService } from '../services/generation-context';
-import { ImpactAnalyzer } from '../services/impact-analyzer';
+import { LineageService } from '../services/lineage-service';
+import { SemanticVerifier } from '../services/semantic-verifier';
 import { existsSync, mkdirSync, writeFileSync, readdirSync, readFileSync } from 'fs';
 import { resolve, join } from 'path';
 
@@ -177,25 +178,118 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
             docReason = 'Documentation directory is missing or empty.';
             logger.warn('⚠️ Drift detected: Documentation is missing');
         } else if (gitDiff) {
-            logger.info('Performing impact analysis (Documentation Site vs Code)...');
-            const impactAnalyzer = new ImpactAnalyzer(logger);
-            // We use 'checkWithLogging' which returns shouldProceed=true if update is needed
-            const docImpact = await impactAnalyzer.checkWithLogging({
-                gitDiff,
-                docType: 'documentation',
-                aiAgents,
-                force: false,
-                outputDir: options.outputDir || 'docs',
-            });
-            docDriftDetected = docImpact.shouldProceed;
-            docReason = docImpact.reason;
+            logger.info('Performing Semantic Analysis (Documentation Site vs Code)...');
+
+            const childProcess = await import('child_process');
+            // Check if execSync is available directly or on default property (ESM/CJS interop)
+            const execSync = childProcess.execSync || (childProcess.default as any)?.execSync;
+            const changedFilesOutput = execSync(`git diff --name-only ${baseRef || 'HEAD'}`, {
+                cwd: codeRoot,
+            })
+                .toString()
+                .trim();
+            const changedFiles = changedFilesOutput.split('\n').filter((f) => f.length > 0);
+
+            let impactedDocsSize = 0;
+
+            if (changedFiles.length > 0) {
+                logger.info(`Detected ${changedFiles.length} changed source files.`);
+
+                const lineageService = new LineageService(logger, codeRoot);
+
+                // Warning if lineage is missing (User Feedback)
+                const lineagePath = join(codeRoot, '.sintesi', 'lineage.json');
+                if (!existsSync(lineagePath)) {
+                    logger.warn('⚠️  Lineage graph not found (.sintesi/lineage.json).');
+                    logger.warn('   Semantic Check might be skipped or incomplete.');
+                    logger.warn('   Run "sintesi documentation" to generate the dependency graph.');
+                }
+
+                const impactedDocs = new Set<string>();
+
+                for (const file of changedFiles) {
+                    const docs = lineageService.getImpactedDocs(file);
+                    docs.forEach((d) => impactedDocs.add(d));
+                }
+
+                impactedDocsSize = impactedDocs.size;
+
+                if (impactedDocs.size === 0) {
+                    logger.success(
+                        '✅ No documentation pages rely on the changed source files (Lineage Check).',
+                    );
+                } else {
+                    logger.info(
+                        `🔍 ${impactedDocs.size} documentation pages potentially impacted. deeply verifying...`,
+                    );
+
+                    const semanticVerifier = new SemanticVerifier(logger);
+                    let meaningfulDriftCount = 0;
+
+                    for (const docPath of impactedDocs) {
+                        // Targeted Diff Extraction (User Feedback)
+                        // Instead of sending the global diff, we extract diff only for the source files
+                        // that impact THIS specific document.
+                        const sources = lineageService.getSources(docPath);
+                        // Filter sources to only those that actually changed
+                        // changedFiles are relative to codeRoot. sources are relative to codeRoot (?)
+                        // LineageService.track ensures sources are relative.
+                        const relevantSources = sources.filter((s) => changedFiles.includes(s));
+
+                        let docSpecificDiff = '';
+                        if (relevantSources.length > 0) {
+                            try {
+                                // Add quotes to paths to handle spaces
+                                const fileArgs = relevantSources.map((f) => `"${f}"`).join(' ');
+                                docSpecificDiff = execSync(
+                                    `git diff ${baseRef || 'HEAD'} -- ${fileArgs}`,
+                                    {
+                                        cwd: codeRoot,
+                                        encoding: 'utf-8',
+                                    },
+                                ).trim();
+                            } catch (e) {
+                                logger.debug(
+                                    `Failed to extract targeted diff for ${docPath}: ${e}`,
+                                );
+                                // Fallback to global diff if extraction fails
+                                docSpecificDiff = gitDiff;
+                            }
+                        } else {
+                            // Should rarely happen if graph is correct, but safe fallback
+                            docSpecificDiff = gitDiff;
+                        }
+
+                        const verification = await semanticVerifier.verify(
+                            docPath,
+                            docSpecificDiff,
+                            `Changes involved: ${relevantSources.join(', ')}`,
+                            aiAgents,
+                        );
+
+                        if (verification.isDrift) {
+                            meaningfulDriftCount++;
+                            docReason = verification.reason || 'Semantic conflict detected';
+                            logger.warn(`  ❌ Drift in ${docPath}: ${docReason}`);
+                        } else {
+                            logger.success(`  ✅ ${docPath} validated as safely in-sync.`);
+                        }
+                    }
+
+                    docDriftDetected = meaningfulDriftCount > 0;
+                }
+            } else {
+                logger.success('No source files changed.');
+            }
 
             if (docDriftDetected) {
                 logger.warn(
                     '⚠️ Drift detected: Documentation site likely needs updates based on recent changes.',
                 );
-            } else {
-                logger.success('Documentation site appears to be in sync.');
+            } else if (!docDriftDetected && impactedDocsSize > 0) {
+                logger.success(
+                    'All impacted documentation pages verified as semantically consistent.',
+                );
             }
         }
     }
@@ -207,7 +301,16 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
 
         const sintesiGitignorePath = join(sintesiDir, '.gitignore');
         if (!existsSync(sintesiGitignorePath)) {
-            writeFileSync(sintesiGitignorePath, '*');
+            // We ignore everything by default (state is local), BUT we must whitelist lineage.json
+            // because it is the "Shared Knowledge Graph" required for other devs to run checks.
+            const gitignoreContent = [
+                '# IMPORTANT: Please commit this file to your repository.',
+                '# It ensures that the lineage graph is shared, enabling distributed semantic checks.',
+                '*',
+                '!lineage.json',
+            ].join('\n');
+
+            writeFileSync(sintesiGitignorePath, gitignoreContent);
             logger.debug(`Created .gitignore in ${sintesiDir}`);
         }
 
