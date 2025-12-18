@@ -329,11 +329,43 @@ function _createSingleAgentFromEnv(
         };
     }
 
+    // HELICONE-ONLY MODE: If no provider API key but Helicone is configured,
+    // use Helicone as gateway (API keys managed in the Helicone dashboard)
+    const heliconeApiKey = process.env.HELICONE_API_KEY;
+    if (heliconeApiKey) {
+        // Default to OpenAI when using Helicone-only mode
+        const defaultProvider = roleOptions.provider || 'openai';
+        const modelId =
+            roleOptions.modelId ||
+            getDefaultModel(defaultProvider) ||
+            (defaultProvider === 'openai' ? 'gpt-4o' : 'gemini-1.5-flash');
+
+        if (globalOptions.logger) {
+            globalOptions.logger.info(
+                `[AIAgentManager] Using Helicone-only mode (provider API keys configured in Helicone dashboard)`,
+            );
+        }
+
+        return {
+            model: {
+                provider: defaultProvider,
+                modelId: modelId,
+                // Use dummy API key - Helicone will handle authentication
+                apiKey: 'helicone-managed',
+                maxTokens: roleOptions.maxTokens,
+                temperature: roleOptions.temperature,
+            },
+            timeout: globalOptions.timeout,
+            debug: globalOptions.debug,
+            logger: globalOptions.logger,
+        };
+    }
+
     const specificProviderMsg = roleOptions.provider
         ? ` for provider '${roleOptions.provider}'`
         : '';
     throw new Error(
-        `No API key found in environment for the requested role${specificProviderMsg}. Please set relevant environment variable.`,
+        `No API key found in environment for the requested role${specificProviderMsg}. Please set HELICONE_API_KEY or a provider API key (OPENAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, MISTRAL_API_KEY).`,
     );
 }
 
