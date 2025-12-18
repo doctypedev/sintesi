@@ -206,7 +206,10 @@ export class SmartChecker {
         // 3. Consult AI
         try {
             this.logger.info('🤖 Asking AI if README needs updates based on recent changes...');
-            const aiAgents: AIAgents = createAIAgentsFromEnv({ debug: this.logger.getVerbose() });
+            const aiAgents: AIAgents = createAIAgentsFromEnv({
+                debug: this.logger.getVerbose(),
+                logger: this.logger,
+            });
             const plannerAgent = aiAgents.planner;
 
             if (!(await plannerAgent.validateConnection())) {

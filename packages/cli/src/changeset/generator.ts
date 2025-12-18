@@ -197,7 +197,10 @@ export class ChangesetGenerator {
         analysis: ChangesetAnalysis,
         verbose: boolean,
     ): Promise<ChangesetAIResponse> {
-        const aiAgents: AIAgents = createAIAgentsFromEnv({ debug: verbose });
+        const aiAgents: AIAgents = createAIAgentsFromEnv({
+            debug: verbose,
+            logger: this.logger,
+        });
         const plannerAgent = aiAgents.planner;
 
         // Build prompt for AI

@@ -99,7 +99,7 @@ export class GenerationContextService {
             };
 
             const aiAgents = createAIAgentsFromEnv(
-                { debug: verbose },
+                { debug: verbose, logger: this.logger },
                 { planner: plannerConfig, writer: writerConfig },
             );
 

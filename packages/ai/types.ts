@@ -33,6 +33,18 @@ export interface AIModel {
 }
 
 /**
+ * Interface for a logger to be injected into the AI module
+ */
+export interface ILogger {
+    debug(message: string, ...args: unknown[]): void;
+    info(message: string, ...args: unknown[]): void;
+    warn(message: string, ...args: unknown[]): void;
+    error(message: string, ...args: unknown[]): void;
+    success?(message: string, ...args: unknown[]): void;
+    log?(message: string, ...args: unknown[]): void;
+}
+
+/**
  * Configuration for a specific AI Agent role (e.g., planner, writer)
  */
 export interface AIAgentRoleConfig {
@@ -145,6 +157,9 @@ export interface AIAgentConfig {
         maxAttempts: number;
         delayMs: number;
     };
+
+    /** Logger instance */
+    logger?: ILogger;
 }
 
 /**
@@ -184,7 +199,10 @@ export interface IAIProvider {
      */
     generateText?(
         prompt: string,
-        options?: { temperature?: number; maxTokens?: number },
+        options?: {
+            temperature?: number;
+            maxTokens?: number;
+        },
     ): Promise<string>;
 }
 
