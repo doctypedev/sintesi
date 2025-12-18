@@ -19,36 +19,59 @@ jobs:
               with:
                   fetch-depth: 0
 
+            - name: Check for skip label
+              id: check_skip
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  # Retrieve labels for the merged PR associated with this commit
+                  PR_LABELS=$(gh pr list --search "${{ github.sha }}" --state merged --json labels --jq '.[].labels[].name' || true)
+                  echo "Labels found: $PR_LABELS"
+                  if echo "$PR_LABELS" | grep -q "skip sintesi"; then
+                      echo "should_skip=true" >> "$GITHUB_OUTPUT"
+                      echo "Skipping workflow due to 'skip sintesi' label."
+                  else
+                      echo "should_skip=false" >> "$GITHUB_OUTPUT"
+                  fi
+
             - name: Setup Rust
+              if: steps.check_skip.outputs.should_skip != 'true'
               uses: dtolnay/rust-toolchain@stable
 
             - name: Setup Node.js
+              if: steps.check_skip.outputs.should_skip != 'true'
               uses: actions/setup-node@v4
               with:
                   node-version: '20'
 
             - name: Setup pnpm
+              if: steps.check_skip.outputs.should_skip != 'true'
               uses: pnpm/action-setup@v3
               with:
                   version: 9
 
             - name: Install dependencies
+              if: steps.check_skip.outputs.should_skip != 'true'
               run: pnpm install --frozen-lockfile
 
             # Build crates/core explicitly to generate the necessary .node binary and types
             - name: Build Rust Core
+              if: steps.check_skip.outputs.should_skip != 'true'
               working-directory: crates/core
               run: pnpm build
 
             # Copy generated types to packages/core so it can build
             - name: Prepare Core Native Types
+              if: steps.check_skip.outputs.should_skip != 'true'
               run: cp crates/core/index.d.ts packages/core/native-types.d.ts
 
             # Build the entire monorepo (includes packages/cli, packages/core, etc.)
             - name: Build packages
+              if: steps.check_skip.outputs.should_skip != 'true'
               run: pnpm build
 
             - name: Run Sintesi Check (README)
+              if: steps.check_skip.outputs.should_skip != 'true'
               env:
                   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
               run: |
@@ -56,6 +79,7 @@ jobs:
                   node packages/cli/dist/cli/src/index.js check --readme --no-strict --verbose
 
             - name: Run Sintesi Check (Documentation)
+              if: steps.check_skip.outputs.should_skip != 'true'
               env:
                   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
               run: |
@@ -63,6 +87,7 @@ jobs:
                   node packages/cli/dist/cli/src/index.js check --doc --no-strict --verbose
 
             - name: Run Sintesi README command
+              if: steps.check_skip.outputs.should_skip != 'true'
               env:
                   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
                   COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
@@ -71,6 +96,7 @@ jobs:
                   node packages/cli/dist/cli/src/index.js readme --output README.md --verbose
 
             - name: Run Sintesi Documentation command
+              if: steps.check_skip.outputs.should_skip != 'true'
               env:
                   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
                   COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
@@ -79,14 +105,16 @@ jobs:
                   node packages/cli/dist/cli/src/index.js documentation --output-dir docs --verbose
 
             - name: Format generated code
+              if: steps.check_skip.outputs.should_skip != 'true'
               run: pnpm run format
 
             - name: Check for any changes
+              if: steps.check_skip.outputs.should_skip != 'true'
               id: git_status
               run: echo "changes=$(git status --porcelain | wc -l)" >> "$GITHUB_OUTPUT"
 
             - name: Create Pull Request if documentation changed
-              if: steps.git_status.outputs.changes > 0
+              if: steps.check_skip.outputs.should_skip != 'true' && steps.git_status.outputs.changes > 0
               uses: peter-evans/create-pull-request@v5
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
