@@ -8,6 +8,8 @@ export interface FileState {
 }
 
 export interface IndexState {
+    version?: number;
+    lastCommitSha?: string;
     files: Record<string, FileState>;
 }
 
@@ -45,6 +47,20 @@ export class IndexingStateManager {
         } catch (e) {
             this.logger.error('Failed to save RAG state: ' + e);
         }
+    }
+
+    /**
+     * Gets the last processed commit SHA.
+     */
+    getLastCommitSha(): string | undefined {
+        return this.state.lastCommitSha;
+    }
+
+    /**
+     * Sets the last processed commit SHA.
+     */
+    setLastCommitSha(sha: string): void {
+        this.state.lastCommitSha = sha;
     }
 
     /**
