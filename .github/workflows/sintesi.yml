@@ -75,6 +75,15 @@ jobs:
               if: steps.check_skip.outputs.should_skip != 'true'
               run: pnpm build
 
+            - name: Restore Sintesi State Cache
+              if: steps.check_skip.outputs.should_skip != 'true'
+              uses: actions/cache@v4
+              with:
+                  path: .sintesi
+                  key: sintesi-state-${{ runner.os }}-${{ github.sha }}
+                  restore-keys: |
+                      sintesi-state-${{ runner.os }}-
+
             - name: Run Sintesi Check (README)
               if: steps.check_skip.outputs.should_skip != 'true'
               run: |
@@ -92,15 +101,6 @@ jobs:
               run: |
                   # Runs internally a smart check. If no changes, it skips generation.
                   node packages/cli/dist/cli/src/index.js readme --output README.md --verbose
-
-            - name: Cache Sintesi RAG State
-              if: steps.check_skip.outputs.should_skip != 'true'
-              uses: actions/cache@v4
-              with:
-                  path: .sintesi
-                  key: sintesi-rag-${{ runner.os }}-${{ github.sha }}
-                  restore-keys: |
-                      sintesi-rag-${{ runner.os }}-
 
             - name: Run Sintesi Documentation command
               if: steps.check_skip.outputs.should_skip != 'true'

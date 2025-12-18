@@ -6,7 +6,7 @@
 
 import { Logger } from '../utils/logger';
 import { resolve } from 'path';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'fs';
 import { GenerationContextService } from '../services/generation-context';
 import { ReviewService } from '../services/review-service';
 import { SmartChecker } from '../services/smart-checker';
@@ -135,4 +135,36 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
 
     // 3. Delegate to Builder
     await builder.buildReadme(options, context, gitDiff, outputPath, aiAgents, smartSuggestion);
+
+    // 4. Update State
+    try {
+        const sintesiDir = resolve(cwd, '.sintesi');
+        if (!existsSync(sintesiDir)) mkdirSync(sintesiDir, { recursive: true });
+
+        const statePath = resolve(sintesiDir, 'readme.state.json');
+
+        // Get current HEAD SHA
+        const { execSync } = await import('child_process');
+        const currentSha = execSync('git rev-parse HEAD', { cwd }).toString().trim();
+
+        writeFileSync(
+            statePath,
+            JSON.stringify(
+                {
+                    timestamp: Date.now(),
+                    lastGeneratedSha: currentSha,
+                    readme: {
+                        hasDrift: false,
+                        reason: null,
+                        suggestion: null,
+                    },
+                },
+                null,
+                2,
+            ),
+        );
+        logger.debug(`Updated readme state with SHA: ${currentSha}`);
+    } catch (e) {
+        logger.warn('Failed to save readme state: ' + e);
+    }
 }

@@ -9,7 +9,7 @@ import { CheckResult, CheckOptions } from '../types';
 import { SmartChecker } from '../services/smart-checker';
 import { GenerationContextService } from '../services/generation-context';
 import { ImpactAnalyzer } from '../services/impact-analyzer';
-import { existsSync, mkdirSync, writeFileSync, readdirSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readdirSync, readFileSync } from 'fs';
 import { resolve, join } from 'path';
 
 /**
@@ -49,9 +49,51 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
         };
     }
 
+    // Load detailed state to check for last logic
+    let lastDocSha: string | undefined;
+    let lastReadmeSha: string | undefined;
+
+    try {
+        const sintesiDir = resolve(process.cwd(), '.sintesi');
+        if (existsSync(join(sintesiDir, 'documentation.state.json'))) {
+            const docState = JSON.parse(
+                readFileSync(join(sintesiDir, 'documentation.state.json'), 'utf-8'),
+            );
+            if (docState.lastGeneratedSha) {
+                lastDocSha = docState.lastGeneratedSha;
+                logger.info(
+                    `Found previous documentation state (SHA: ${(docState.lastGeneratedSha as string).substring(0, 7)})`,
+                );
+            }
+        }
+        if (existsSync(join(sintesiDir, 'readme.state.json'))) {
+            const readmeState = JSON.parse(
+                readFileSync(join(sintesiDir, 'readme.state.json'), 'utf-8'),
+            );
+            if (readmeState.lastGeneratedSha) {
+                lastReadmeSha = readmeState.lastGeneratedSha;
+            }
+        }
+    } catch (e) {
+        logger.debug(`Failed to load previous state: ${e}`);
+    }
+
+    // Determine Base Ref
+    // If user provided --base, use it. Otherwise use last SHA if available.
+    // Note: If checking BOTH, and they have different SHAs, we might have a conflict if asking for a single "changes" analysis.
+    // 'analyzeProject' returns a single git diff.
+    // For now, prioritize Documentation SHA if available, as that's the primary "drift" target.
+    const baseRef = options.base || lastDocSha || lastReadmeSha;
+
+    if (baseRef && !options.base) {
+        logger.info(
+            `Using cached state SHA ${baseRef.substring(0, 7)} as baseline for drift detection.`,
+        );
+    }
+
     // Analyze Project (Get Git Diff)
     logger.info('Analyzing project changes...');
-    const { gitDiff } = await contextService.analyzeProject();
+    const { gitDiff } = await contextService.analyzeProject(baseRef);
 
     // 0. Existence Check
     let readmeExists = true;
@@ -73,7 +115,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
 
     if (!gitDiff && readmeOK && docsOK) {
         logger.success(
-            'No recent code changes detected and required documentation exists. Everything is likely in sync.',
+            'No relevant changes detected since last generation. Everything is in sync.',
         );
         return {
             totalEntries: 0,
@@ -105,7 +147,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
             logger.info('Performing smart check (README vs Code)...');
             const smartChecker = new SmartChecker(logger, codeRoot);
             const smartResult = await smartChecker.checkReadme({
-                baseBranch: options.base,
+                baseBranch: options.base || lastReadmeSha, // Use specific SHA for readme if available
                 readmePath: resolve(codeRoot, options.output || 'README.md'),
             });
 
@@ -177,6 +219,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
                 JSON.stringify(
                     {
                         timestamp: Date.now(),
+                        lastGeneratedSha: lastReadmeSha, // Preserve SHA
                         readme: {
                             hasDrift: readmeDriftDetected,
                             reason: readmeReason,
@@ -198,6 +241,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
                 JSON.stringify(
                     {
                         timestamp: Date.now(),
+                        lastGeneratedSha: lastDocSha, // Preserve SHA
                         documentation: {
                             hasDrift: docDriftDetected,
                             reason: docReason,
