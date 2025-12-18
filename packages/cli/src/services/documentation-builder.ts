@@ -3,7 +3,7 @@ import { ProjectContext } from '@sintesi/core';
 import { AIAgents, ObservabilityMetadata } from '../../../ai';
 import { GenerationContextService } from './generation-context';
 import { ReviewService } from './review-service';
-import { createObservabilityMetadata } from '../utils/observability';
+import { createObservabilityMetadata, extendMetadata } from '../utils/observability';
 import { DocPlan } from './documentation-planner';
 import {
     DOC_GENERATION_PROMPT,
@@ -102,17 +102,13 @@ export class DocumentationBuilder {
                             queryPrompt,
                             {
                                 maxTokens: 500,
-                                temperature: 0.2, // Slightly creative to find synonyms
+                                temperature: 0.2,
                             },
-                            {
-                                ...sessionMetadata,
-                                properties: {
-                                    ...sessionMetadata.properties,
-                                    feature: 'rag-query-generation',
-                                    documentPath: item.path,
-                                },
-                                tags: [...(sessionMetadata.tags || []), 'rag', 'query-generation'],
-                            },
+                            extendMetadata(sessionMetadata, {
+                                feature: 'rag-query-generation',
+                                properties: { documentPath: item.path },
+                                tags: ['rag', 'query-generation'],
+                            }),
                         );
 
                         let queries: string[] = [];
@@ -185,19 +181,11 @@ export class DocumentationBuilder {
                                 maxTokens: 4000,
                                 temperature: 0.0,
                             },
-                            {
-                                ...sessionMetadata,
-                                properties: {
-                                    ...sessionMetadata.properties,
-                                    feature: 'content-research',
-                                    documentPath: item.path,
-                                },
-                                tags: [
-                                    ...(sessionMetadata.tags || []),
-                                    'research',
-                                    'context-analysis',
-                                ],
-                            },
+                            extendMetadata(sessionMetadata, {
+                                feature: 'content-research',
+                                properties: { documentPath: item.path },
+                                tags: ['research', 'context-analysis'],
+                            }),
                         );
 
                         finalContext = `
@@ -231,16 +219,14 @@ export class DocumentationBuilder {
                             maxTokens: 4000,
                             temperature: 0.1,
                         },
-                        {
-                            ...sessionMetadata,
+                        extendMetadata(sessionMetadata, {
+                            feature: 'content-generation',
                             properties: {
-                                ...sessionMetadata.properties,
-                                feature: 'content-generation',
                                 documentPath: item.path,
                                 documentType: item.type,
                             },
-                            tags: [...(sessionMetadata.tags || []), 'content', item.type],
-                        },
+                            tags: ['content', item.type],
+                        }),
                     );
 
                     content = content.trim();

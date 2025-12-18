@@ -1,7 +1,8 @@
 import { Logger } from '../utils/logger';
 import { ProjectContext } from '@sintesi/core';
-import { AIAgents } from '../../../ai';
+import { AIAgents, ObservabilityMetadata } from '../../../ai';
 import { GenerationContextService } from './generation-context';
+import { createObservabilityMetadata, extendMetadata } from '../utils/observability';
 import { README_GENERATION_PROMPT } from '../prompts/readme';
 import { ReviewService } from './review-service';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
@@ -50,6 +51,13 @@ export class ReadmeBuilder {
         const s = spinner();
         s.start(isUpdate ? 'Updating README...' : 'Generating README...');
 
+        // Create observability metadata for tracking
+        const sessionMetadata: ObservabilityMetadata = createObservabilityMetadata({
+            feature: 'readme-generation',
+            projectName: context.packageJson?.name,
+            additionalTags: ['readme'],
+        });
+
         // Format context for AI
         const fileSummary = context.files
             .map(function (f) {
@@ -80,10 +88,17 @@ export class ReadmeBuilder {
         );
 
         try {
-            let readmeContent = await aiAgents.writer.generateText(prompt, {
-                maxTokens: 4000,
-                temperature: 0.1,
-            });
+            let readmeContent = await aiAgents.writer.generateText(
+                prompt,
+                {
+                    maxTokens: 4000,
+                    temperature: 0.1,
+                },
+                extendMetadata(sessionMetadata, {
+                    feature: 'readme-content',
+                    tags: ['writing'],
+                }),
+            );
 
             // Cleanup
             readmeContent = readmeContent.trim();
@@ -103,6 +118,7 @@ export class ReadmeBuilder {
                     'Project README',
                     sharedContextPrompt,
                     aiAgents,
+                    sessionMetadata,
                 );
             }
 

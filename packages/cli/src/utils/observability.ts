@@ -1,10 +1,32 @@
 import { ObservabilityMetadata } from '../../../ai';
 import { execSync } from 'child_process';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
 /**
- * Creates observability metadata for tracking AI requests
- * @param options Options for creating metadata
+ * Safely get Git user email for user tracking
+ * Falls back gracefully in CI/CD or non-git environments
  */
+function getGitUserEmail(): string | undefined {
+    try {
+        // Check if .git directory exists (avoids errors in Docker/CI)
+        const gitDir = join(process.cwd(), '.git');
+        if (!existsSync(gitDir)) {
+            return undefined;
+        }
+
+        const email = execSync('git config user.email', {
+            encoding: 'utf-8',
+            stdio: ['pipe', 'pipe', 'ignore'], // Suppress stderr
+        }).trim();
+
+        return email || undefined;
+    } catch {
+        // Git not configured or command failed
+        return undefined;
+    }
+}
+
 export function createObservabilityMetadata(options: {
     feature?: string;
     projectName?: string;
@@ -15,13 +37,8 @@ export function createObservabilityMetadata(options: {
     const { feature, projectName, sessionId, additionalProperties, additionalTags } = options;
 
     // Try to get git user email for user tracking
-    let userId: string | undefined;
-    try {
-        userId = execSync('git config user.email', { encoding: 'utf-8' }).trim();
-    } catch {
-        // Fallback to project name if git not available
-        userId = projectName || 'anonymous';
-    }
+    const gitEmail = getGitUserEmail();
+    const userId = gitEmail || projectName || 'anonymous';
 
     // Generate session ID if not provided (timestamp-based)
     const finalSessionId = sessionId || `sintesi-${Date.now()}`;
@@ -49,5 +66,28 @@ export function createObservabilityMetadata(options: {
         userId,
         properties,
         tags,
+    };
+}
+
+/**
+ * Helper to extend observability metadata with additional properties and tags
+ * Returns a new object without mutating the original
+ */
+export function extendMetadata(
+    base: ObservabilityMetadata,
+    extensions: {
+        feature?: string;
+        properties?: Record<string, string | number | boolean>;
+        tags?: string[];
+    },
+): ObservabilityMetadata {
+    return {
+        ...base,
+        properties: {
+            ...base.properties,
+            ...(extensions.feature && { feature: extensions.feature }),
+            ...extensions.properties,
+        },
+        tags: [...(base.tags || []), ...(extensions.tags || [])],
     };
 }
