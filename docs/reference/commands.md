@@ -134,8 +134,11 @@ sintesi check --documentation
 
 Notes:
 
-- By default generation may be skipped if a recent pipeline/state check validated the README as in-sync. Use `--force` to regenerate regardless.
-- The command may use configured AI integrations to assist generation. The exact generation flow (single-agent vs. multi-agent pipelines, planner/writer/reviewer splits) is implementation-dependent; consult the `readme` implementation for details. If AI initialization or required integrations are not available the command will abort with an error.
+- By default generation may be skipped if a recent pipeline/state check validated the README as in-sync. The command checks for a pipeline state file at `.sintesi/readme.state.json` and, if the state is recent and indicates no drift, the generation will be skipped. Use `--force` to regenerate regardless.
+- If no valid state is found and the target README exists, the command runs a standalone smart check (via SmartChecker.checkReadme). If the smart check reports no drift the command will exit early. If the smart check reports drift it may provide a short suggestion (smartSuggestion) which the generator will use to focus the update.
+- When proceeding, the command initializes configured AI agents (abort if AI agents cannot be initialized) and analyzes the project context. If a Git diff is present and `--force` is not used, a semantic impact analysis is performed (ImpactAnalyzer.checkWithLogging) to determine whether generation should continue.
+- The actual content generation is delegated to the ReadmeBuilder (builder.buildReadme). After a successful build the command attempts to update `.sintesi/readme.state.json` recording a timestamp and the current HEAD SHA (lastGeneratedSha) and marking the readme state as in-sync.
+- The command may use configured AI integrations to assist generation (planner/writer/reviewer flows). If AI initialization or required integrations are not available the command will abort with an error.
 
 ### Examples
 

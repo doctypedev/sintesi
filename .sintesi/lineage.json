@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastGeneratedSha": "8079d450bbdec49e0d125a04bbb1620b40c191b7",
+  "lastGeneratedSha": "05d8900319aeda64730f0da474a1413da39abb23",
   "dependencies": {
     "index.md": [
       "README.md",
@@ -8,9 +8,9 @@
     ],
     "guides/getting-started.md": [
       ".env.example",
-      "README.md",
       "package.json",
-      "packages/cli/src/index.ts"
+      "packages/cli/src/index.ts",
+      "pnpm-workspace.yaml"
     ],
     "reference/commands.md": [
       "packages/cli/src/commands/changeset.ts",
@@ -19,8 +19,10 @@
       "packages/cli/src/index.ts"
     ],
     "guides/ci-and-checks.md": [
-      "packages/cli/src/commands/check.ts",
-      "packages/cli/src/utils/git-helper.ts"
+      ".github/actions/smart-build-rust/action.yml",
+      ".github/workflows/ci.yml",
+      ".github/workflows/publish.yml",
+      ".github/workflows/sintesi.yml"
     ],
     "guides/changeset-workflow.md": [
       "packages/cli/CHANGELOG.md",
@@ -53,10 +55,9 @@
       "crates/core/src/napi/utils.rs"
     ],
     "developer/dev-setup.md": [
-      "docs/.vitepress/config.mts",
-      "docs/.vitepress/theme/index.ts",
-      "docs/scripts/generateSidebar.ts",
-      "package.json"
+      "packages/cli/package.json",
+      "packages/cli/tsconfig.json",
+      "pnpm-workspace.yaml"
     ]
   }
 }

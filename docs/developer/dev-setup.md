@@ -26,7 +26,9 @@ This guide covers how to set up the repository for local development, run tests 
 - **docs/scripts/**: Sidebar generation tooling
 - **vitest.config.ts**: testing configurations
 
-> **Note**: The repository uses a PNPM workspace configured in `pnpm-workspace.yaml` to manage multiple packages in a single repository.
+> **Note**: The repository uses a PNPM workspace configured in `pnpm-workspace.yaml` to manage multiple packages in a single repository. The workspace now explicitly includes the Rust crate and its platform packages (`crates/core` and `crates/core/npm/*`), so pnpm will consider them during installs/builds.
+
+Important lineage files: the repository lineage used for docs/state tracking now includes `pnpm-workspace.yaml` as well as `packages/cli/package.json` and `packages/cli/tsconfig.json`. Changes to those files can affect build ordering, docs generation, or the automated dependency detection used by the tooling.
 
 **Repository URL**: [https://github.com/doctypedev/sintesi.git](https://github.com/doctypedev/sintesi.git)
 
@@ -34,9 +36,9 @@ This guide covers how to set up the repository for local development, run tests 
 
 ## Prerequisites
 
-- **Node.js**: A recent Node.js runtime. The repository does not pin a specific Node version; using a current LTS release (for example, Node 18 or newer) is recommended for compatibility.
+- **Node.js**: Node.js v20 or newer. The CLI package requires Node >= 20.0.0 (see `packages/cli/package.json` "engines" field). Ensure your local Node runtime matches or exceeds that requirement. If your environment needs a different Node version, update the package "engines" fields and CI configs consistently.
 - **PNPM**: v8 or newer
-- **Rust Toolchain** (Optional): For building native crates locally.
+- **Rust Toolchain** (Optional / Recommended): For building native crates locally (used to generate the .node binaries and TypeScript type declarations).
 
 ---
 
@@ -49,6 +51,8 @@ From the repository root:
 ```bash
 pnpm install
 ```
+
+Note: `pnpm install` will include workspace entries declared in `pnpm-workspace.yaml`, including `crates/core` and `crates/core/npm/*`.
 
 ### 2. Run Tests
 
@@ -71,6 +75,59 @@ pnpm build
 
 On success, it prints:
 `✅ Build Completed. Run: <path>/packages/cli/dist/cli/src/index.js`
+
+### 3.a Native Rust core (crates/core) — local build
+
+When you are developing or changing Rust code in `crates/core`, you must build the Rust crate locally to generate both the native Node addon (.node) and the TypeScript declaration file (`index.d.ts`) consumed by the TypeScript packages.
+
+From the repository root, the equivalent of what CI now runs (the Smart Rust Build action) is:
+
+```bash
+# Build the Rust crate for your platform
+cd crates/core
+pnpm install
+pnpm run build
+cd ../..
+```
+
+After the build completes, locate the generated TypeScript declaration file produced by the Rust build. The exact location of `index.d.ts` can vary depending on the crate build packaging (for example, it may be emitted at `crates/core/index.d.ts`, `crates/core/pkg/index.d.ts`, or under a `target` or `dist` subfolder). Use the following robust approach from the repository root to find and copy the first matching declaration into the TypeScript package:
+
+```bash
+# Find a generated index.d.ts under crates/core (search depth will find common locations)
+GENERATED=$(find crates/core -type f -name 'index.d.ts' | head -n 1)
+
+if [ -z "$GENERATED" ]; then
+  echo "index.d.ts could not be found under crates/core. Check build logs or crate packaging scripts (look under crates/core/pkg, crates/core/target, or similar)."
+  exit 1
+fi
+
+# Ensure destination package folder exists and copy the types
+mkdir -p packages/core
+cp "$GENERATED" packages/core/native-types.d.ts
+
+echo "Copied $GENERATED -> packages/core/native-types.d.ts"
+```
+
+If you know the exact path the build emits (for example `crates/core/pkg/index.d.ts`), you can copy it directly:
+
+```bash
+cp crates/core/pkg/index.d.ts packages/core/native-types.d.ts
+```
+
+Alternatively, `crates/core` contains helper scripts referenced in its README (for example `crates/core/scripts/build.sh`) — run those if present to package platform artifacts and copy types into place.
+
+<Callout type="info">
+If you modify Rust code and plan to build TypeScript packages (like `packages/core`), regenerate the TypeScript declaration file from `crates/core` and copy it to `packages/core/native-types.d.ts`. The CI Smart Rust Build action does this automatically; for local development, verify the generated path (see the find-based example above) and ensure the destination directory (`packages/core`) exists before copying. Also ensure the platform `.node` binary is available under `crates/core/npm/{platform}` if you need to run local Node tests that import the native module.
+</Callout>
+
+To test the built native package locally you can run the example included in the crate:
+
+```bash
+# After building the crate and ensuring platform package includes the .node binary
+node crates/core/example.js
+```
+
+Expected behavior: the example attempts to require the platform package under `crates/core/npm/{platform}` (for example, `./npm/darwin-arm64`) and invoke exported functions/classes.
 
 ### 4. Lint and Format
 
@@ -144,9 +201,6 @@ graph TD
   C -->|Yes| D[Build]
   C -->|No| E[Fix issues]
 ```
-
-- You can include any Mermaid diagram type supported by Mermaid (flowcharts, sequence diagrams, gantt, class diagrams, etc.).
-- If you need to adjust Mermaid runtime options (theme, securityLevel, etc.) edit the `mermaid` object in `docs/.vitepress/config.mts`. See Mermaid API options: https://mermaid.js.org/config/usage.html and https://mermaid.js.org/config/setup/modules/mermaidAPI.html#mermaidapi-configuration-defaults
 
 Troubleshooting notes:
 
@@ -229,3 +283,5 @@ graph TD
   F --> G[VitePress dev]
   D --> H[CLI binary at packages/cli/dist/]
 ```
+
+---
