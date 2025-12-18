@@ -82,6 +82,7 @@ jobs:
               if: steps.check_skip.outputs.should_skip != 'true'
               env:
                   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  HELICONE_API_KEY: ${{ secrets.HELICONE_API_KEY }}
               run: |
                   # Check specifically for Documentation drift
                   node packages/cli/dist/cli/src/index.js check --doc --no-strict --verbose

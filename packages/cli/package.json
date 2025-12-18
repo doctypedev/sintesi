@@ -47,6 +47,7 @@
         "@ai-sdk/openai": "^2.0.77",
         "@ai-sdk/provider": "^2.0.0",
         "@clack/prompts": "^0.11.0",
+        "@helicone/ai-sdk-provider": "^1.0.11",
         "@lancedb/lancedb": "^0.23.0",
         "@sintesi/core": "workspace:*",
         "@types/uuid": "^10.0.0",

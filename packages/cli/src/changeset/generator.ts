@@ -8,7 +8,8 @@ import { VersionTypeDetector } from './version-detector';
 import { ChangesetPrompt } from '../prompts/changeset-prompt';
 import fs from 'fs/promises';
 import path from 'path';
-import { createAIAgentsFromEnv, AIAgents } from '../../../ai'; // Import new factory
+import { createAIAgentsFromEnv, AIAgents } from '../../../ai';
+import { createObservabilityMetadata } from '../utils/observability';
 
 /**
  * Changeset version type
@@ -211,10 +212,23 @@ export class ChangesetGenerator {
         }
 
         try {
-            // Use the planner agent's direct text generation capability
-            const response = await plannerAgent.generateText(prompt, {
-                temperature: 0.3, // Lower temperature for more deterministic results
+            // Create observability metadata for tracking
+            const sessionMetadata = createObservabilityMetadata({
+                feature: 'changeset-generation',
+                additionalTags: ['changeset', 'analysis'],
+                additionalProperties: {
+                    totalChanges: analysis.totalChanges,
+                },
             });
+
+            // Use the planner agent's direct text generation capability
+            const response = await plannerAgent.generateText(
+                prompt,
+                {
+                    temperature: 0.3, // Lower temperature for more deterministic results
+                },
+                sessionMetadata,
+            );
 
             // Parse AI response
             return this.parseAIResponse(response);
