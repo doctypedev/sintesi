@@ -339,7 +339,7 @@ export function createAIAgentsFromEnv(
     // OpenAI model defaults
     const modelDefaults = {
         planner: 'gpt-5-mini',
-        writer: 'gpt-5-nano',
+        writer: 'gpt-5-mini',
         researcher: 'gpt-5-mini',
         reviewer: 'gpt-5-nano',
     };

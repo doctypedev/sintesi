@@ -137,6 +137,7 @@ describe('CLI: check command', () => {
 
         const result = await checkCommand({
             verbose: false,
+            base: 'main',
             // smart option omitted, but command should run it
         });
 
