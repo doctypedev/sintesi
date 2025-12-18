@@ -57,12 +57,6 @@ importers:
 
   crates/core/npm/win32-x64-msvc: {}
 
-  packages/ai:
-    dependencies:
-      '@helicone/ai-sdk-provider':
-        specifier: ^1.0.11
-        version: 1.0.11
-
   packages/cli:
     dependencies:
       '@ai-sdk/anthropic':
@@ -1903,7 +1897,6 @@ packages:
   /@lancedb/lancedb@0.23.0(apache-arrow@18.1.0):
     resolution: {integrity: sha512-aYrIoEG24AC+wILCL57Ius/Y4yU+xFHDPKLvmjzzN4byAjzeIGF0TC86S5RBt4Ji+dxS7yIWV5Q/gE5/fybIFQ==}
     engines: {node: '>= 18'}
-    cpu: [x64, arm64]
     os: [darwin, linux, win32]
     peerDependencies:
       apache-arrow: '>=15.0.0 <=18.1.0'
