@@ -191,7 +191,9 @@ export class DocumentationPlanner {
             try {
                 const readmePath = join(process.cwd(), 'README.md');
                 if (existsSync(readmePath)) readmeContent = readFileSync(readmePath, 'utf-8');
-            } catch (e) {}
+            } catch (e) {
+                // Ignore read error
+            }
 
             try {
                 const discoveryPrompt = DOC_DISCOVERY_PROMPT(
