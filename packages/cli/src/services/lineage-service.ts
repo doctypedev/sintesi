@@ -7,9 +7,16 @@ export interface LineageData {
     [docPath: string]: string[];
 }
 
+interface LineageFile {
+    version: string;
+    lastGeneratedSha?: string;
+    dependencies: LineageData;
+}
+
 export class LineageService {
     private lineagePath: string;
     private lineage: LineageData = {};
+    private lastGeneratedSha?: string;
     private projectRoot: string;
 
     constructor(
@@ -23,11 +30,20 @@ export class LineageService {
 
     /**
      * Loads the lineage data from disk.
+     * Supports migration from legacy (raw map) to structured format.
      */
     private load(): void {
         try {
             if (existsSync(this.lineagePath)) {
-                this.lineage = JSON.parse(readFileSync(this.lineagePath, 'utf-8'));
+                const raw = JSON.parse(readFileSync(this.lineagePath, 'utf-8'));
+                // Detection: New format has "dependencies" key
+                if (raw.dependencies && typeof raw.dependencies === 'object') {
+                    this.lineage = raw.dependencies;
+                    this.lastGeneratedSha = raw.lastGeneratedSha;
+                } else {
+                    // Legacy format: the whole object is the map
+                    this.lineage = raw;
+                }
             }
         } catch (e) {
             this.logger.debug('Failed to load lineage data, starting fresh: ' + e);
@@ -44,11 +60,26 @@ export class LineageService {
             if (!existsSync(sintesiDir)) {
                 mkdirSync(sintesiDir, { recursive: true });
             }
-            writeFileSync(this.lineagePath, JSON.stringify(this.lineage, null, 2));
+
+            const fileContent: LineageFile = {
+                version: '1.0.0',
+                lastGeneratedSha: this.lastGeneratedSha,
+                dependencies: this.lineage,
+            };
+
+            writeFileSync(this.lineagePath, JSON.stringify(fileContent, null, 2));
             this.logger.debug(`Saved lineage data to ${this.lineagePath}`);
         } catch (e) {
             this.logger.warn('Failed to save lineage data: ' + e);
         }
+    }
+
+    setLastGeneratedSha(sha: string): void {
+        this.lastGeneratedSha = sha;
+    }
+
+    getLastGeneratedSha(): string | undefined {
+        return this.lastGeneratedSha;
     }
 
     /**

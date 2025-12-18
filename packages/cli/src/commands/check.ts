@@ -54,6 +54,10 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     let lastDocSha: string | undefined;
     let lastReadmeSha: string | undefined;
 
+    // Load Lineage Service early to check for shared baseline
+    const lineageService = new LineageService(logger, codeRoot);
+    const lineageSha = lineageService.getLastGeneratedSha();
+
     try {
         const sintesiDir = resolve(process.cwd(), '.sintesi');
         if (existsSync(join(sintesiDir, 'documentation.state.json'))) {
@@ -83,8 +87,11 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     // If user provided --base, use it. Otherwise use last SHA if available.
     // Note: If checking BOTH, and they have different SHAs, we might have a conflict if asking for a single "changes" analysis.
     // 'analyzeProject' returns a single git diff.
-    // For now, prioritize Documentation SHA if available, as that's the primary "drift" target.
-    const baseRef = options.base || lastDocSha || lastReadmeSha;
+    // Priority:
+    // 1. Explicit --base flag
+    // 2. Lineage SHA (Shared/Committed baseline)
+    // 3. Local State SHA (Local ephemeral state)
+    const baseRef = options.base || lineageSha || lastDocSha || lastReadmeSha;
 
     if (baseRef && !options.base) {
         logger.info(
@@ -212,7 +219,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
             if (changedFiles.length > 0) {
                 logger.info(`Detected ${changedFiles.length} changed source files.`);
 
-                const lineageService = new LineageService(logger, codeRoot);
+                // LineageService is already initialized above
 
                 // Warning if lineage is missing (User Feedback)
                 const lineagePath = join(codeRoot, '.sintesi', 'lineage.json');

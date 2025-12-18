@@ -10,6 +10,7 @@ import { pMap } from '../utils/concurrency';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { LineageService } from './lineage-service';
+import { execSync } from 'child_process';
 
 interface PageContext {
     item: DocPlan;
@@ -158,7 +159,13 @@ export class DocumentationBuilder {
             3, // Concurrency for Writing (Keep manageable)
         );
 
-        // Save Lineage Data
+        // Save Lineage Data with SHA
+        try {
+            const currentSha = execSync('git rev-parse HEAD', { encoding: 'utf-8' }).trim();
+            this.lineageService.setLastGeneratedSha(currentSha);
+        } catch (e) {
+            this.logger.warn('Failed to capture current git SHA for lineage: ' + e);
+        }
         this.lineageService.save();
 
         this.logger.success(`\nDocumentation successfully generated in ${outputDir}/\n`);
