@@ -9,6 +9,7 @@ import { DOC_GENERATION_PROMPT, DOC_QUERY_PROMPT } from '../prompts/documentatio
 import { pMap } from '../utils/concurrency';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
+import { LineageService } from './lineage-service';
 
 interface PageContext {
     item: DocPlan;
@@ -18,11 +19,15 @@ interface PageContext {
 }
 
 export class DocumentationBuilder {
+    private lineageService: LineageService;
+
     constructor(
         private logger: Logger,
         private reviewService: ReviewService,
         private generationContextService: GenerationContextService,
-    ) {}
+    ) {
+        this.lineageService = new LineageService(logger);
+    }
 
     async buildDocumentation(
         plan: DocPlan[],
@@ -153,6 +158,9 @@ export class DocumentationBuilder {
             3, // Concurrency for Writing (Keep manageable)
         );
 
+        // Save Lineage Data
+        this.lineageService.save();
+
         this.logger.success(`\nDocumentation successfully generated in ${outputDir}/\n`);
     }
 
@@ -174,10 +182,11 @@ export class DocumentationBuilder {
                 this.logger.debug(`[Research] Analyzing needs for ${item.path}...`);
 
                 // 1. Get Static Source Context (File system)
-                const detailedSourceContext = this.generationContextService.readRelevantContext(
-                    item,
-                    context,
-                );
+                // We now capture the specific files used in this context
+                const { content: detailedSourceContext, files: sourceFiles } =
+                    this.generationContextService.readRelevantContextWithFiles(item, context);
+
+                this.lineageService.track(item.path, sourceFiles);
 
                 // 2. RAG Retrieval via Researcher (Dynamic)
                 let ragContext = '';
@@ -214,6 +223,10 @@ export class DocumentationBuilder {
 
                         if (Array.isArray(queries) && queries.length > 0) {
                             this.logger.debug(`  ↳ 🔍 Searching: ${queries.join(', ')}`);
+
+                            // Note: We currently don't track lineage from RAG chunks because
+                            // RAG returns snippets, not full file identity easily in current impl.
+                            // Future improvement: Return Metadata with RAG results.
                             const searchResults = await Promise.all(
                                 queries.map((q) =>
                                     this.generationContextService.retrieveContext(q),

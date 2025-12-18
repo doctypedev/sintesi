@@ -8,7 +8,8 @@ import { Logger } from '../utils/logger';
 import { CheckResult, CheckOptions } from '../types';
 import { SmartChecker } from '../services/smart-checker';
 import { GenerationContextService } from '../services/generation-context';
-import { ImpactAnalyzer } from '../services/impact-analyzer';
+import { LineageService } from '../services/lineage-service';
+import { SemanticVerifier } from '../services/semantic-verifier';
 import { existsSync, mkdirSync, writeFileSync, readdirSync, readFileSync } from 'fs';
 import { resolve, join } from 'path';
 
@@ -177,25 +178,79 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
             docReason = 'Documentation directory is missing or empty.';
             logger.warn('⚠️ Drift detected: Documentation is missing');
         } else if (gitDiff) {
-            logger.info('Performing impact analysis (Documentation Site vs Code)...');
-            const impactAnalyzer = new ImpactAnalyzer(logger);
-            // We use 'checkWithLogging' which returns shouldProceed=true if update is needed
-            const docImpact = await impactAnalyzer.checkWithLogging({
-                gitDiff,
-                docType: 'documentation',
-                aiAgents,
-                force: false,
-                outputDir: options.outputDir || 'docs',
-            });
-            docDriftDetected = docImpact.shouldProceed;
-            docReason = docImpact.reason;
+            logger.info('Performing Semantic Analysis (Documentation Site vs Code)...');
+
+            const { execSync } = await import('child_process');
+            const changedFilesOutput = execSync(`git diff --name-only ${baseRef || 'HEAD'}`, {
+                cwd: codeRoot,
+            })
+                .toString()
+                .trim();
+            const changedFiles = changedFilesOutput.split('\n').filter((f) => f.length > 0);
+
+            let impactedDocsSize = 0;
+
+            if (changedFiles.length > 0) {
+                logger.info(`Detected ${changedFiles.length} changed source files.`);
+
+                const lineageService = new LineageService(logger, codeRoot);
+                const impactedDocs = new Set<string>();
+
+                for (const file of changedFiles) {
+                    const docs = lineageService.getImpactedDocs(file);
+                    docs.forEach((d) => impactedDocs.add(d));
+                }
+
+                impactedDocsSize = impactedDocs.size;
+
+                if (impactedDocs.size === 0) {
+                    logger.success(
+                        '✅ No documentation pages rely on the changed source files (Lineage Check).',
+                    );
+                } else {
+                    logger.info(
+                        `🔍 ${impactedDocs.size} documentation pages potentially impacted. deeply verifying...`,
+                    );
+
+                    const semanticVerifier = new SemanticVerifier(logger);
+
+                    // TODO: We need the specific diff PER file for best results, but using global diff + changed file name is a decent start-
+                    // or we can fetch file-specific diffs inside the verifier.
+                    // For now, let's allow the Verifier to extract or just use the global diff context.
+
+                    let meaningfulDriftCount = 0;
+
+                    for (const docPath of impactedDocs) {
+                        const verification = await semanticVerifier.verify(
+                            docPath,
+                            gitDiff, // Global diff for now, ideally per-file diff
+                            `Changes involved: ${changedFiles.join(', ')}`,
+                            aiAgents,
+                        );
+
+                        if (verification.isDrift) {
+                            meaningfulDriftCount++;
+                            docReason = verification.reason || 'Semantic conflict detected';
+                            logger.warn(`  ❌ Drift in ${docPath}: ${docReason}`);
+                        } else {
+                            logger.success(`  ✅ ${docPath} validated as safely in-sync.`);
+                        }
+                    }
+
+                    docDriftDetected = meaningfulDriftCount > 0;
+                }
+            } else {
+                logger.success('No source files changed.');
+            }
 
             if (docDriftDetected) {
                 logger.warn(
                     '⚠️ Drift detected: Documentation site likely needs updates based on recent changes.',
                 );
-            } else {
-                logger.success('Documentation site appears to be in sync.');
+            } else if (!docDriftDetected && impactedDocsSize > 0) {
+                logger.success(
+                    'All impacted documentation pages verified as semantically consistent.',
+                );
             }
         }
     }
@@ -207,7 +262,16 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
 
         const sintesiGitignorePath = join(sintesiDir, '.gitignore');
         if (!existsSync(sintesiGitignorePath)) {
-            writeFileSync(sintesiGitignorePath, '*');
+            // We ignore everything by default (state is local), BUT we must whitelist lineage.json
+            // because it is the "Shared Knowledge Graph" required for other devs to run checks.
+            const gitignoreContent = [
+                '# IMPORTANT: Please commit this file to your repository.',
+                '# It ensures that the lineage graph is shared, enabling distributed semantic checks.',
+                '*',
+                '!lineage.json',
+            ].join('\n');
+
+            writeFileSync(sintesiGitignorePath, gitignoreContent);
             logger.debug(`Created .gitignore in ${sintesiDir}`);
         }
 
