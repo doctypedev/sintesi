@@ -134,7 +134,6 @@ const nativeModule = loadNativeModule();
 // Re-export types
 import type * as CoreTypes from './native-types';
 
-export type CodeRef = CoreTypes.CodeRef;
 // ... (other types)
 
 // Export values with types
@@ -168,10 +167,7 @@ export const GraphAnalyzer = GraphAnalyzerVal as typeof CoreTypes.GraphAnalyzer;
 export type AstAnalyzer = CoreTypes.AstAnalyzer;
 
 export type CodeSignature = CoreTypes.CodeSignature;
-export type SignatureHash = CoreTypes.SignatureHash;
-export type DocRef = CoreTypes.DocRef;
-export type SintesiMapEntry = CoreTypes.SintesiMapEntry;
-export type SintesiMap = CoreTypes.SintesiMap;
+
 export type FileDiscoveryResult = CoreTypes.FileDiscoveryResult;
 export type FileDiscoveryOptions = CoreTypes.FileDiscoveryOptions;
 

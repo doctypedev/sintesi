@@ -21,28 +21,6 @@ Before configuring the CLI tool, ensure that you have the following:
     npm install -g pnpm
     ```
 
-## Configuration Overview
-
-The CLI tool can be configured through the `sintesi.config.json` file located at the root of the `sintesi-monorepo-root` project. Below is the structure of the configuration file:
-
-```json
-{
-    "projectName": "sintesi",
-    "projectRoot": ".",
-    "docsFolder": "./docs",
-    "mapFile": "sintesi-map.json",
-    "outputStrategy": "mirror"
-}
-```
-
-### Configuration Fields
-
-- **projectName**: The name of the project (string).
-- **projectRoot**: The root directory of the project (string).
-- **docsFolder**: The folder where documentation files are stored (string).
-- **mapFile**: The name of the map file used by the CLI (string).
-- **outputStrategy**: The strategy for outputting results (string, e.g., "mirror").
-
 ## Repository URL Auto-Detection
 
 A new feature has been added to automatically detect and populate the repository URL from the git configuration when it is missing in `package.json`. This enhancement ensures that the repository information is always available, preventing potential issues during operations that require this data.
@@ -145,7 +123,7 @@ The following commands are available in the `packages/cli/src/commands` director
 
 ### Usage Examples
 
-To use the CLI tool with the configuration file, ensure that `sintesi.config.json` is properly set up. For example, you can run:
+To use the CLI tool, you can run:
 
 ```bash
 npx sintesi documentation --output-dir docs --verbose

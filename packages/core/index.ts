@@ -28,12 +28,7 @@ export {
 } from './native-loader';
 
 export type {
-    CodeRef,
     CodeSignature,
-    SignatureHash,
-    DocRef,
-    SintesiMapEntry,
-    SintesiMap,
     FileDiscoveryResult,
     FileDiscoveryOptions,
     SymbolTypeValue,

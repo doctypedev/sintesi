@@ -5,7 +5,18 @@
 //! changes, its hash will change, triggering documentation updates.
 
 use sha2::{Sha256, Digest};
-use crate::types::{CodeSignature, SignatureHash, SymbolType};
+use crate::types::{CodeSignature, SymbolType};
+
+/// Hash information for a code signature
+#[derive(Debug, Clone)]
+pub struct SignatureHash {
+    /// SHA256 hash of the signature
+    pub hash: String,
+    /// Original signature that was hashed
+    pub signature: CodeSignature,
+    /// Timestamp when hash was generated (milliseconds since Unix epoch)
+    pub timestamp: i64,
+}
 
 /// Signature hasher for generating deterministic hashes
 pub struct SignatureHasher;
