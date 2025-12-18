@@ -286,62 +286,31 @@ function _createSingleAgentFromEnv(
     roleOptions: AIAgentRoleConfig,
     globalOptions: { debug?: boolean; timeout?: number; logger?: ILogger },
 ): AIAgentConfig {
-    // Temporarily support only OpenAI
+    // Require OpenAI API key
     const openaiKey = process.env.OPENAI_API_KEY;
-    const heliconeKey = process.env.HELICONE_API_KEY;
 
-    // If OpenAI key is present, use it directly
-    if (openaiKey) {
-        const modelId = roleOptions.modelId || getDefaultModel('openai') || 'gpt-4o';
-        return {
-            model: {
-                provider: 'openai',
-                modelId: modelId,
-                apiKey: openaiKey,
-                maxTokens: roleOptions.maxTokens,
-                temperature: roleOptions.temperature,
-            },
-            timeout: globalOptions.timeout,
-            debug: globalOptions.debug,
-            logger: globalOptions.logger,
-        };
+    if (!openaiKey) {
+        throw new Error(
+            `OPENAI_API_KEY is required. Please set it in your .env file. ` +
+                `Note: HELICONE_API_KEY can be used for observability tracking, but OPENAI_API_KEY is still required.`,
+        );
     }
 
-    // HELICONE-ONLY MODE: If no OpenAI key but Helicone is configured
-    if (heliconeKey) {
-        const modelId = roleOptions.modelId || getDefaultModel('openai') || 'gpt-4o';
-
-        if (globalOptions.logger) {
-            globalOptions.logger.info(
-                `[AIAgentManager] Using Helicone-only mode (OpenAI API key managed in Helicone dashboard)`,
-            );
-        }
-
-        return {
-            model: {
-                provider: 'openai',
-                modelId: modelId,
-                // Use dummy key - Helicone will handle authentication
-                apiKey: 'sk-helicone-managed',
-                maxTokens: roleOptions.maxTokens,
-                temperature: roleOptions.temperature,
-            },
-            timeout: globalOptions.timeout,
-            debug: globalOptions.debug,
-            logger: globalOptions.logger,
-        };
-    }
-
-    throw new Error(
-        `No API key found. Please set OPENAI_API_KEY or HELICONE_API_KEY in your environment.`,
-    );
+    const modelId = roleOptions.modelId || getDefaultModel('openai') || 'gpt-4o';
+    return {
+        model: {
+            provider: 'openai',
+            modelId: modelId,
+            apiKey: openaiKey,
+            maxTokens: roleOptions.maxTokens,
+            temperature: roleOptions.temperature,
+        },
+        timeout: globalOptions.timeout,
+        debug: globalOptions.debug,
+        logger: globalOptions.logger,
+    };
 }
 
-/**
- * Factory function to create role-based AI Agents from environment variables.
- * Currently supports OpenAI only.
- * @returns {AIAgents} An object containing configured planner, writer, researcher and reviewer AIAgent instances.
- */
 export function createAIAgentsFromEnv(
     globalOptions: {
         debug?: boolean;
@@ -359,13 +328,11 @@ export function createAIAgentsFromEnv(
 ): AIAgents {
     const roles = ['planner', 'writer', 'researcher', 'reviewer'] as const;
 
-    // Check if we have OpenAI or Helicone configured
-    const hasOpenAI = !!process.env.OPENAI_API_KEY;
-    const hasHelicone = !!process.env.HELICONE_API_KEY;
-
-    if (!hasOpenAI && !hasHelicone) {
+    // Check if we have OpenAI API key
+    if (!process.env.OPENAI_API_KEY) {
         throw new Error(
-            'No API key found in environment variables. Please set OPENAI_API_KEY or HELICONE_API_KEY.',
+            'OPENAI_API_KEY is required. Please set it in your .env file.\n' +
+                'Note: You can also set HELICONE_API_KEY for observability tracking.',
         );
     }
 
