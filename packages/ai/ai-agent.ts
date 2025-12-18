@@ -294,7 +294,6 @@ function _createSingleAgentFromEnv(
                 apiKey: process.env[selectedProvider.env]!,
                 maxTokens: roleOptions.maxTokens,
                 temperature: roleOptions.temperature,
-                headers: roleOptions.headers,
             },
             timeout: globalOptions.timeout,
             debug: globalOptions.debug,

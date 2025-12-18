@@ -34,36 +34,31 @@ export class VercelAIProvider implements IAIProvider {
         this.logger = logger;
     }
 
-    private getModel(callHeaders?: Record<string, string>) {
-        const headers = { ...this.modelConfig.headers, ...callHeaders };
+    private getModel() {
         switch (this.provider) {
             case 'openai': {
                 // Use createOpenAI for explicit configuration without env vars
                 const provider = createOpenAI({
                     apiKey: this.modelConfig.apiKey,
                     baseURL: this.modelConfig.endpoint, // Custom endpoint if provided
-                    headers, // Custom headers merged
                 });
                 return provider(this.modelConfig.modelId);
             }
             case 'gemini': {
                 const provider = createGoogleGenerativeAI({
                     apiKey: this.modelConfig.apiKey,
-                    headers,
                 });
                 return provider(this.modelConfig.modelId);
             }
             case 'anthropic': {
                 const provider = createAnthropic({
                     apiKey: this.modelConfig.apiKey,
-                    headers,
                 });
                 return provider(this.modelConfig.modelId);
             }
             case 'mistral': {
                 const provider = createMistral({
                     apiKey: this.modelConfig.apiKey,
-                    headers,
                 });
                 return provider(this.modelConfig.modelId);
             }
@@ -73,7 +68,7 @@ export class VercelAIProvider implements IAIProvider {
     }
 
     async generateDocumentation(request: DocumentationRequest): Promise<DocumentationResponse> {
-        const model = this.getModel(request.metadata);
+        const model = this.getModel();
 
         // Use structured prompt from request
         const prompt = request.prompt;
@@ -87,11 +82,6 @@ export class VercelAIProvider implements IAIProvider {
                 schema: z.object({
                     documentation: DocumentationStructureSchema,
                 }),
-                experimental_telemetry: {
-                    isEnabled: true,
-                    functionId: 'generate-documentation',
-                    metadata: request.metadata,
-                },
             };
 
             if (this.modelConfig.maxTokens) {
@@ -249,21 +239,15 @@ export class VercelAIProvider implements IAIProvider {
         options: {
             temperature?: number;
             maxTokens?: number;
-            metadata?: Record<string, string>;
         } = {},
     ): Promise<string> {
-        const model = this.getModel(options.metadata);
+        const model = this.getModel();
         const isO1Model = this.modelConfig.modelId.startsWith('o1-');
 
         try {
             const genOptions: any = {
                 model,
                 prompt,
-                experimental_telemetry: {
-                    isEnabled: true,
-                    functionId: 'generate-text',
-                    metadata: options.metadata,
-                },
             };
 
             // Only add parameters if not o1 model (which has strict parameter validation)

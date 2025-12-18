@@ -221,10 +221,6 @@ export class SmartChecker {
 
             const response = await plannerAgent.generateText(prompt, {
                 temperature: 0,
-                metadata: {
-                    step: 'smart-check',
-                    'x-step-name': 'Smart Check',
-                },
             });
 
             // Parse JSON response

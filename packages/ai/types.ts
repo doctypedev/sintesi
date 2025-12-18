@@ -30,9 +30,6 @@ export interface AIModel {
 
     /** API endpoint (optional, for custom endpoints) */
     endpoint?: string;
-
-    /** Custom headers to send with requests (e.g., for observability) */
-    headers?: Record<string, string>;
 }
 
 /**
@@ -60,8 +57,6 @@ export interface AIAgentRoleConfig {
     /** Override default temperature for this role */
     /** Override default temperature for this role */
     temperature?: number;
-    /** Custom headers for this agent's model */
-    headers?: Record<string, string>;
 }
 
 /**
@@ -97,9 +92,6 @@ export interface DocumentationRequest {
 
     /** The system prompt to use */
     systemPrompt: string;
-
-    /** Additional metadata for the request (e.g. step name) */
-    metadata?: Record<string, string>;
 }
 
 /**
@@ -211,7 +203,6 @@ export interface IAIProvider {
         options?: {
             temperature?: number;
             maxTokens?: number;
-            metadata?: Record<string, string>;
         },
     ): Promise<string>;
 }
@@ -257,7 +248,4 @@ export interface GenerateOptions {
 
     /** Documentation style (concise, detailed, tutorial) */
     style?: 'concise' | 'detailed' | 'tutorial';
-
-    /** Additional metadata for the request (e.g. step name) */
-    metadata?: Record<string, string>;
 }

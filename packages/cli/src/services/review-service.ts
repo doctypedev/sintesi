@@ -58,10 +58,6 @@ export class ReviewService {
             let reviewRaw = await agents.reviewer.generateText(reviewPrompt, {
                 maxTokens: 1000,
                 temperature: 0.1,
-                metadata: {
-                    step: 'content-review',
-                    'x-step-name': 'Content Review',
-                },
             });
             reviewRaw = reviewRaw
                 .replace(/```json/g, '')
@@ -93,10 +89,6 @@ export class ReviewService {
                 let refinedContent = await agents.writer.generateText(refinePrompt, {
                     maxTokens: 4000,
                     temperature: 0.1,
-                    metadata: {
-                        step: 'content-refinement',
-                        'x-step-name': 'Content Refinement',
-                    },
                 });
 
                 // Clean content again
