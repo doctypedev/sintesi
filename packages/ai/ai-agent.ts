@@ -339,9 +339,8 @@ function _createSingleAgentFromEnv(
 
 /**
  * Factory function to create role-based AI Agents from environment variables.
- * Planner typically uses a more capable (and potentially pricier) model for reasoning.
- * Writer typically uses a faster, cheaper model for text generation.
- * @returns {AIAgents} An object containing configured planner and writer AIAgent instances.
+ * Currently supports OpenAI only.
+ * @returns {AIAgents} An object containing configured planner, writer, researcher and reviewer AIAgent instances.
  */
 export function createAIAgentsFromEnv(
     globalOptions: {
@@ -358,135 +357,44 @@ export function createAIAgentsFromEnv(
         reviewer?: AIAgentRoleConfig;
     } = {},
 ): AIAgents {
-    const defaultPlannerModel = 'gpt-4o'; // OpenAI default
-    const defaultWriterModel = 'gpt-4o-mini'; // OpenAI default
-    const defaultResearcherModel = 'gpt-4o-mini'; // Fast, cheap
-    const defaultReviewerModel = 'gpt-4o'; // Good reasoning
+    const roles = ['planner', 'writer', 'researcher', 'reviewer'] as const;
 
-    let plannerAgent: AIAgent;
-    let writerAgent: AIAgent;
-    let researcherAgent: AIAgent | undefined;
-    let reviewerAgent: AIAgent | undefined;
+    // Check if we have OpenAI or Helicone configured
+    const hasOpenAI = !!process.env.OPENAI_API_KEY;
+    const hasHelicone = !!process.env.HELICONE_API_KEY;
 
-    const currentProvider = process.env.OPENAI_API_KEY
-        ? 'openai'
-        : process.env.GEMINI_API_KEY
-          ? 'gemini'
-          : process.env.ANTHROPIC_API_KEY
-            ? 'anthropic'
-            : process.env.MISTRAL_API_KEY
-              ? 'mistral'
-              : undefined;
-
-    if (!currentProvider) {
-        throw new Error('No API key found in environment variables to initialize any AI provider.');
+    if (!hasOpenAI && !hasHelicone) {
+        throw new Error(
+            'No API key found in environment variables. Please set OPENAI_API_KEY or HELICONE_API_KEY.',
+        );
     }
 
-    const getModelDefaults = (provider: AIProvider) => {
-        // Use AIProvider type
-        switch (provider) {
-            case 'openai':
-                return {
-                    planner: 'o4-mini',
-                    writer: 'gpt-4o-mini',
-                    researcher: 'o4-mini',
-                    reviewer: 'gpt-4o',
-                };
-            case 'gemini':
-                return {
-                    planner: 'gemini-1.5-flash',
-                    writer: 'gemini-1.5-flash-001',
-                    researcher: 'gemini-1.5-flash-001',
-                    reviewer: 'gemini-1.5-pro', // Reviewer needs more IQ
-                };
-            case 'anthropic':
-                return {
-                    planner: 'claude-3-5-haiku-20241022',
-                    writer: 'claude-3-5-haiku-20241022',
-                    researcher: 'claude-3-5-haiku-20241022',
-                    reviewer: 'claude-3-5-sonnet-20241022',
-                };
-            case 'mistral':
-                return {
-                    planner: 'mistral-large-latest',
-                    writer: 'mistral-small-latest',
-                    researcher: 'mistral-small-latest',
-                    reviewer: 'mistral-large-latest',
-                };
-            default:
-                return {
-                    planner: defaultPlannerModel,
-                    writer: defaultWriterModel,
-                    researcher: defaultResearcherModel,
-                    reviewer: defaultReviewerModel,
-                };
-        }
+    // OpenAI model defaults
+    const modelDefaults = {
+        planner: 'gpt-4o',
+        writer: 'gpt-4o-mini',
+        researcher: 'gpt-4o-mini',
+        reviewer: 'gpt-4o',
     };
 
-    const modelDefaults = getModelDefaults(currentProvider);
+    const agents: any = {};
+    for (const role of roles) {
+        const roleConfig = roleConfigs?.[role];
+        const options: AIAgentRoleConfig = {
+            modelId: roleConfig?.modelId || modelDefaults[role],
+            provider: 'openai', // Only OpenAI supported
+            maxTokens: roleConfig?.maxTokens,
+            temperature: roleConfig?.temperature,
+        };
 
-    // Helper to create agent safely
-    const createAgent = (
-        role: 'planner' | 'writer' | 'researcher' | 'reviewer',
-        required: boolean = true,
-    ) => {
-        try {
-            const config = roleConfigs?.[role];
-            const defaults = modelDefaults[role];
+        const agent = new AIAgent(_createSingleAgentFromEnv(options, globalOptions), role);
+        agents[role] = agent;
 
-            const options: AIAgentRoleConfig = {
-                modelId: config?.modelId || defaults,
-                provider: config?.provider || currentProvider,
-                maxTokens: config?.maxTokens,
-                temperature: config?.temperature,
-            };
-
-            const agent = new AIAgent(_createSingleAgentFromEnv(options, globalOptions), role);
-            const log = getLogger(globalOptions.logger);
-            log.debug(
-                `[AIAgentManager] ${role.charAt(0).toUpperCase() + role.slice(1)} initialized with ${agent.getModelId()} (${agent.getProvider()})`,
-            );
-            return agent;
-        } catch (e: any) {
-            if (required) throw e;
-            // For optional agents, just log warning and return undefined
-            const log = getLogger(globalOptions.logger);
-            log.warn(`[AIAgentManager] Optional agent ${role} failed to initialize: ${e.message}`);
-            return undefined;
-        }
-    };
-
-    try {
-        plannerAgent = createAgent('planner')!;
-    } catch (e) {
-        // Fallback: try using writer config for planner if planner fails
         const log = getLogger(globalOptions.logger);
-        log.warn('Planner failed to init, trying writer config as fallback...');
-        plannerAgent = createAgent('writer')!;
+        log.debug(
+            `[AIAgentManager] ${role.charAt(0).toUpperCase() + role.slice(1)} initialized with ${agent.getModelId()} (${agent.getProvider()})`,
+        );
     }
 
-    writerAgent = createAgent('writer')!;
-
-    // Optional Agents
-    researcherAgent = createAgent('researcher', false);
-    reviewerAgent = createAgent('reviewer', false);
-
-    // Use writer as fallback for researcher if it failed
-    if (!researcherAgent && writerAgent) {
-        researcherAgent = writerAgent;
-        const log = getLogger(globalOptions.logger);
-        log.info(`[AIAgentManager] Researcher using Writer agent as fallback.`);
-    }
-
-    // Ensure both agents are initialized
-    if (!plannerAgent || !writerAgent) {
-        throw new Error('Failed to initialize both planner and writer AI agents.');
-    }
-
-    return {
-        planner: plannerAgent,
-        writer: writerAgent,
-        researcher: researcherAgent,
-        reviewer: reviewerAgent,
-    };
+    return agents as AIAgents;
 }
