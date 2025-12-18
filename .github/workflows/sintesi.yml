@@ -39,10 +39,6 @@ jobs:
                       echo "should_skip=false" >> "$GITHUB_OUTPUT"
                   fi
 
-            - name: Setup Rust
-              if: steps.check_skip.outputs.should_skip != 'true'
-              uses: dtolnay/rust-toolchain@stable
-
             - name: Setup Node.js
               if: steps.check_skip.outputs.should_skip != 'true'
               uses: actions/setup-node@v4
@@ -59,16 +55,9 @@ jobs:
               if: steps.check_skip.outputs.should_skip != 'true'
               run: pnpm install --frozen-lockfile
 
-            # Build crates/core explicitly to generate the necessary .node binary and types
-            - name: Build Rust Core
+            - name: Smart Rust Build
               if: steps.check_skip.outputs.should_skip != 'true'
-              working-directory: crates/core
-              run: pnpm build
-
-            # Copy generated types to packages/core so it can build
-            - name: Prepare Core Native Types
-              if: steps.check_skip.outputs.should_skip != 'true'
-              run: cp crates/core/index.d.ts packages/core/native-types.d.ts
+              uses: ./.github/actions/smart-build-rust
 
             # Build the entire monorepo (includes packages/cli, packages/core, etc.)
             - name: Build packages

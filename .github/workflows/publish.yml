@@ -36,18 +36,8 @@ jobs:
             - name: Install dependencies
               run: pnpm install
 
-            - name: Setup Rust (for type gen if needed, or just copy)
-              uses: dtolnay/rust-toolchain@stable
-
-            - name: Build Rust core types
-              run: |
-                  cd crates/core
-                  pnpm install
-                  pnpm run build
-
-            # Copy native types from crates/core to packages/core BEFORE build
-            - name: Prepare Core Native Types
-              run: cp crates/core/index.d.ts packages/core/native-types.d.ts
+            - name: Smart Rust Build
+              uses: ./.github/actions/smart-build-rust
 
             - name: Build packages
               run: pnpm run build

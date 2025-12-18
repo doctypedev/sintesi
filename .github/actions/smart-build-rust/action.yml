@@ -1,0 +1,34 @@
+name: 'Smart Rust Build'
+description: 'Builds Rust core only if changes are detected or forced'
+inputs:
+    force:
+        description: 'Force build regardless of changes'
+        required: false
+        default: 'false'
+runs:
+    using: 'composite'
+    steps:
+        - name: Check for Rust changes
+          uses: dorny/paths-filter@v3
+          id: filter
+          with:
+              filters: |
+                  rust:
+                    - 'crates/core/**'
+
+        - name: Setup Rust
+          if: steps.filter.outputs.rust == 'true' || inputs.force == 'true'
+          uses: dtolnay/rust-toolchain@stable
+
+        - name: Build Rust core types (in crates/core)
+          if: steps.filter.outputs.rust == 'true' || inputs.force == 'true'
+          shell: bash
+          run: |
+              cd crates/core
+              pnpm install
+              pnpm run build
+
+        - name: Prepare Core Native Types (for packages/core build)
+          if: steps.filter.outputs.rust == 'true' || inputs.force == 'true'
+          shell: bash
+          run: cp crates/core/index.d.ts packages/core/native-types.d.ts
