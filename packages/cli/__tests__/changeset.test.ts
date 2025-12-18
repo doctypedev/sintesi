@@ -34,7 +34,7 @@ vi.mock('@sintesi/core', () => {
         GitBinding: class {
             constructor() {}
             analyzeChanges() {
-                return { git_diff: '', changed_files: [], has_meaningful_changes: false };
+                return { gitDiff: '', changedFiles: [], hasMeaningfulChanges: false };
             }
         },
     };
