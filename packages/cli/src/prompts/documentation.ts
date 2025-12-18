@@ -328,3 +328,49 @@ Refine the content to address the feedback.
 ${originalContent}
 \`\`\`
 `;
+
+export const DOC_UPDATE_PROMPT = (
+    projectName: string,
+    path: string,
+    description: string,
+    sourceContext: string,
+    gitDiff: string,
+    currentContent: string,
+) => `
+You are the **Lead Technical Writer** maintaining the documentation.
+Project Name: ${projectName}
+File: "${path}"
+Purpose: ${description}
+
+## Goal
+Update the existing documentation file to reflect the latest code changes.
+**CRITICAL**: Do NOT rewrite the file. Use the \`patch_file\` tool to surgically modify ONLY the outdated sections.
+
+## Source Code Context (The New Truth)
+${sourceContext}
+
+## Git Diff (What changed recently)
+${gitDiff || 'No specific git diff available. Rely on Source Code Context.'}
+
+## Existing File Content (Read-Only Reference)
+\`\`\`markdown
+${currentContent}
+\`\`\`
+
+## Instructions
+1. **Analyze**: Compare the "Existing File Content" with the "Source Code Context" and "Git Diff".
+2. **Identify Drift**: Find specific sentences, code blocks, or tables that are now factually incorrect.
+3. **Execute Patches**:
+   - Call \`patch_file(original_text, new_text)\` for each correction.
+   - You can make multiple tool calls in sequence.
+   - If the file is perfectly accurate, do nothing.
+4. **Preserve Style**: When writing \`new_text\`, match the existing tone and formatting exactly.
+
+## Constraints
+- **Do NOT** return the full file content in your final response.
+- **Do NOT** make stylistic changes (rephrasing) unless necessary for clarity.
+- **Do NOT** touch sections that are not related to the code changes.
+- If you cannot find a unique match for \`original_text\`, try to include more surrounding context in the snippet.
+
+Your final response should be a brief summary of changes applied (e.g., "Updated CLI flags table and added new 'auth' section.").
+`;

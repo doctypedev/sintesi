@@ -200,12 +200,21 @@ export interface IAIProvider {
      */
     generateText?(
         prompt: string,
-        options?: {
-            temperature?: number;
-            maxTokens?: number;
-        },
+        options?: GenerateTextOptions,
         metadata?: ObservabilityMetadata,
     ): Promise<string>;
+}
+
+/**
+ * Options for text generation
+ */
+export interface GenerateTextOptions {
+    temperature?: number;
+    maxTokens?: number;
+    /** Vercel AI SDK Tools (Record<string, CoreTool>) */
+    tools?: Record<string, unknown>;
+    /** Maximum number of tool roundtrips */
+    maxSteps?: number;
 }
 
 /**

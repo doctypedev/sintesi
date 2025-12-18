@@ -8,6 +8,7 @@ import {
     BatchDocumentationResult,
     ILogger,
     ObservabilityMetadata,
+    GenerateTextOptions,
 } from '../types';
 import { generateObject, generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
@@ -335,10 +336,7 @@ export class VercelAIProvider implements IAIProvider {
      */
     async generateText(
         prompt: string,
-        options: {
-            temperature?: number;
-            maxTokens?: number;
-        } = {},
+        options: GenerateTextOptions = {},
         metadata?: ObservabilityMetadata,
     ): Promise<string> {
         const model = this.getModel(metadata);
@@ -358,6 +356,16 @@ export class VercelAIProvider implements IAIProvider {
             } else {
                 // For reasoning models (o1/o3), we omit temperature/maxTokens
                 // They use maxCompletionTokens instead, handled by the AI SDK
+            }
+
+            // Pass tools if provided
+            if (options.tools) {
+                genOptions.tools = options.tools;
+            }
+
+            // Pass maxSteps if provided (default to 1 for standard generation, higher for agents)
+            if (options.maxSteps) {
+                genOptions.maxSteps = options.maxSteps;
             }
 
             const result = await generateText(genOptions);
@@ -396,6 +404,14 @@ export class VercelAIProvider implements IAIProvider {
                             options.temperature ?? this.modelConfig.temperature;
                         genOptions.maxTokens =
                             options.maxTokens ?? this.modelConfig.maxTokens ?? 1000;
+                    }
+
+                    // Pass tools if provided
+                    if (options.tools) {
+                        genOptions.tools = options.tools;
+                    }
+                    if (options.maxSteps) {
+                        genOptions.maxSteps = options.maxSteps;
                     }
 
                     const result = await generateText(genOptions);
