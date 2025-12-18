@@ -8,9 +8,9 @@
 
 pub mod analyzer;
 pub mod hasher;
-pub mod drift;
+
 
 // Re-export commonly used types
 pub use analyzer::{AstAnalyzerInternal, SymbolInfo, AnalysisResult};
 pub use hasher::SignatureHasher;
-pub use drift::{DriftDetector, DriftResult, DriftStatus};
+

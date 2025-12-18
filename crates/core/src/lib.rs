@@ -11,15 +11,14 @@
 //!
 //! ### 1. Types (`types`)
 //! Core type definitions used across all modules. Includes:
-//! - `CodeRef`, `CodeSignature`, `SignatureHash`
-//! - `DocRef`, `SintesiMapEntry`, `SintesiMap`
+//! - `CodeSignature`
 //! - `SymbolType` enum
 //!
-//! ### 2. AST & Drift Detection (`ast`)
-//! Static analysis and drift detection (Deterministic Logic):
+//! ### 2. AST (`ast`)
+//! Static analysis and signature extraction:
 //! - AST analysis for TypeScript/JavaScript
 //! - Signature extraction and normalization
-//! - SHA256 hashing for deterministic drift detection
+//! - SHA256 hashing for signatures
 //!
 //! ### 3. Content & Mapping (`content`)
 //! Markdown processing and file discovery:
@@ -68,14 +67,10 @@ mod napi;
 // ============================================================================
 
 // Types
-pub use types::{
-    CodeRef, CodeSignature, DocRef, SintesiMap, SintesiMapEntry, SignatureHash, SymbolType,
-};
+pub use types::{CodeSignature, SymbolType};
 
 // AST & Drift Detection
-pub use ast::{
-    AstAnalyzerInternal, DriftDetector, DriftResult, DriftStatus, SignatureHasher,
-};
+pub use ast::{AstAnalyzerInternal, SignatureHasher};
 
 // Content & Mapping
 pub use content::{
