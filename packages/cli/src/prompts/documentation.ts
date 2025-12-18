@@ -131,6 +131,11 @@ ${SHARED_SAFETY_RULES}
 1. **Frontmatter**: Start with YAML frontmatter containing 'title', 'description', 'icon' (emoji), and 'order' (number).
 2. **Mermaid**: If explaining a flow/process, use a \`\`\`mermaid\`\`\` block.
 3. **Components**: Use <Callout type="info"> text </Callout> for notes if appropriate.
+
+## OUTPUT FORMAT RULES (CRITICAL)
+- **STRICTLY MARKDOWN ONLY**: The output must be the raw file content.
+- **NO CONVERSATIONAL TEXT**: Do NOT write "Here is the file", "I have updated...", or "Let me know if...".
+- **NO CHATTER**: Just output the document.
 `;
 
 export const DOC_RESEARCH_PROMPT = (
@@ -306,6 +311,7 @@ Refine the content to address the feedback.
 - **APPLY FIXES**: Directly address the specific critiques.
 - **RESTORE**: Keep the rest of the document as is (unless it needs flow adjustments).
 - **OUTPUT**: Return the FULLY rewritten Markdown file.
+- **NO CONVERSATIONAL TEXT**: Do NOT include "Here is the fixed file" or "I updated section X". Just the file content.
 
 ## Previous Content:
 \`\`\`markdown
