@@ -5,7 +5,12 @@ import { GenerationContextService } from './generation-context';
 import { ReviewService } from './review-service';
 import { createObservabilityMetadata, extendMetadata } from '../utils/observability';
 import { DocPlan } from './documentation-planner';
-import { DOC_GENERATION_PROMPT, DOC_QUERY_PROMPT } from '../prompts/documentation';
+import {
+    DOC_GENERATION_PROMPT,
+    DOC_QUERY_PROMPT,
+    DOC_UPDATE_PROMPT,
+} from '../prompts/documentation';
+import { createPatchFileTool } from '../tools/patch-file';
 import { pMap } from '../utils/concurrency';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
@@ -101,46 +106,97 @@ export class DocumentationBuilder {
                 ${ragContext ? `\n--- SEMANTIC SEARCH RESULTS (RAG) ---\n${ragContext}` : ''}
                 `;
 
-                const genPrompt = DOC_GENERATION_PROMPT(
-                    context.packageJson?.name || 'Project',
-                    item.path,
-                    item.description,
-                    writerContext,
-                    packageJsonSummary,
-                    repoInstructions,
-                    gitDiff,
-                    currentContent,
-                );
-
                 try {
-                    let content = await aiAgents.writer.generateText(
-                        genPrompt,
-                        {
-                            maxTokens: 4000,
-                            temperature: 0.1,
-                        },
-                        extendMetadata(sessionMetadata, {
-                            feature: 'content-generation',
-                            properties: {
-                                documentPath: item.path,
-                                documentType: item.type,
-                            },
-                            tags: ['content', item.type],
-                        }),
-                    );
+                    let finalContent = '';
 
-                    content = content.trim();
-                    if (content.startsWith('```markdown'))
-                        content = content.replace(/^```markdown\s*/, '').replace(/```$/, '');
-                    else if (content.startsWith('```'))
-                        content = content.replace(/^```\s*/, '').replace(/```$/, '');
+                    // STRATEGY SELECTION: UPDATE vs CREATE
+                    if (currentContent && !force) {
+                        this.logger.info(`  ↳ 🩹 Surgical Update Mode detected for ${item.path}`);
+
+                        const fileContext = { content: currentContent, path: item.path };
+                        const patchTool = createPatchFileTool(fileContext);
+
+                        const updatePrompt = DOC_UPDATE_PROMPT(
+                            context.packageJson?.name || 'Project',
+                            item.path,
+                            item.description,
+                            writerContext,
+                            gitDiff,
+                            currentContent,
+                        );
+
+                        // Execute Agent with Tools
+                        const summary = await aiAgents.writer.generateText(
+                            updatePrompt,
+                            {
+                                maxTokens: 4000,
+                                temperature: 0.1,
+                                tools: { patch_file: patchTool },
+                                maxSteps: 5, // Allow up to 5 patch operations
+                            },
+                            extendMetadata(sessionMetadata, {
+                                feature: 'content-update',
+                                properties: {
+                                    documentPath: item.path,
+                                    documentType: item.type,
+                                    mode: 'surgical-update',
+                                },
+                                tags: ['content', 'update', item.type],
+                            }),
+                        );
+
+                        // In this mode, the tool mutates 'fileContext.content'
+                        // The returned 'summary' is just the agent saying "I updated X".
+                        finalContent = fileContext.content;
+                        this.logger.debug(`  ↳ Agent summary: ${summary.substring(0, 100)}...`);
+                    } else {
+                        // LEGACY/CREATE MODE: Full rewrite
+                        const genPrompt = DOC_GENERATION_PROMPT(
+                            context.packageJson?.name || 'Project',
+                            item.path,
+                            item.description,
+                            writerContext,
+                            packageJsonSummary,
+                            repoInstructions,
+                            gitDiff,
+                            currentContent,
+                        );
+
+                        let generated = await aiAgents.writer.generateText(
+                            genPrompt,
+                            {
+                                maxTokens: 4000,
+                                temperature: 0.1,
+                            },
+                            extendMetadata(sessionMetadata, {
+                                feature: 'content-generation',
+                                properties: {
+                                    documentPath: item.path,
+                                    documentType: item.type,
+                                    mode: 'full-generation',
+                                },
+                                tags: ['content', 'generation', item.type],
+                            }),
+                        );
+
+                        // Clean Markdown
+                        generated = generated.trim();
+                        if (generated.startsWith('```markdown'))
+                            generated = generated
+                                .replace(/^```markdown\s*/, '')
+                                .replace(/```$/, '');
+                        else if (generated.startsWith('```'))
+                            generated = generated.replace(/^```\s*/, '').replace(/```$/, '');
+
+                        finalContent = generated;
+                    }
 
                     // Reviewer
                     // We pass the RAW Source Context to the Reviewer for "Grounding"
                     // The Reviewer should strictly check against the code, not the Researcher's interpretation.
                     if (aiAgents.reviewer) {
-                        content = await this.reviewService.reviewAndRefine(
-                            content,
+                        finalContent = await this.reviewService.reviewAndRefine(
+                            finalContent,
                             item.path,
                             item.description,
                             sourceContext, // GROUND TRUTH
@@ -150,7 +206,7 @@ export class DocumentationBuilder {
                     }
 
                     mkdirSync(dirname(fullPath), { recursive: true });
-                    writeFileSync(fullPath, content);
+                    writeFileSync(fullPath, finalContent);
                     this.logger.success(`✔ Wrote ${item.path}`);
                 } catch (e) {
                     this.logger.error(`✖ Failed ${item.path}: ${e}`);

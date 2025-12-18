@@ -7,6 +7,7 @@ import {
     DocumentationRequest,
     DocumentationResponse,
     GenerateOptions,
+    GenerateTextOptions,
     IAIProvider,
     AIProviderError,
     AIAgentRoleConfig,
@@ -126,10 +127,7 @@ export class AIAgent {
      */
     async generateText(
         prompt: string,
-        options: {
-            temperature?: number;
-            maxTokens?: number;
-        } = {},
+        options: GenerateTextOptions = {},
         metadata?: ObservabilityMetadata,
     ): Promise<string> {
         this.log('Generating text', {
