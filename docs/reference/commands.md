@@ -141,7 +141,7 @@ sintesi documentation
 - Analyzes the project structure and generates documentation files.
 - Skips generation if no relevant code changes are detected.
 - **Diff-reset behavior**: Using `--force` or if the output directory is missing will bypass checks and always regenerate the documentation.
-- **Note**: If the `repository` field is missing in `package.json`, the command will automatically detect and populate the repository URL from the git configuration.
+- **Architectural Discovery**: The command includes a built-in architectural discovery phase performed by the Researcher agent, which logs the process and generates an architectural brief to guide documentation planning.
 
 #### Options
 
