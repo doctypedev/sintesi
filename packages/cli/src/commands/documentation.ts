@@ -7,7 +7,7 @@
 import { Logger } from '../utils/logger';
 import { spinner } from '@clack/prompts';
 import { resolve } from 'path';
-import { readFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
+import { readFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'fs';
 import { GenerationContextService } from '../services/generation-context';
 import { ReviewService } from '../services/review-service';
 import { DocumentationPlanner } from '../services/documentation-planner';
@@ -154,4 +154,35 @@ export async function documentationCommand(options: DocumentationOptions): Promi
 
     // 4. PHASE 2: The Builder (Generation)
     await builder.buildDocumentation(plan, context, gitDiff, outputDir, aiAgents, options.force);
+
+    // 5. Update State
+    try {
+        const sintesiDir = resolve(cwd, '.sintesi');
+        if (!existsSync(sintesiDir)) mkdirSync(sintesiDir, { recursive: true });
+
+        const statePath = resolve(sintesiDir, 'documentation.state.json');
+
+        // Get current HEAD SHA
+        const { execSync } = await import('child_process');
+        const currentSha = execSync('git rev-parse HEAD', { cwd }).toString().trim();
+
+        writeFileSync(
+            statePath,
+            JSON.stringify(
+                {
+                    timestamp: Date.now(),
+                    lastGeneratedSha: currentSha,
+                    documentation: {
+                        hasDrift: false,
+                        reason: null,
+                    },
+                },
+                null,
+                2,
+            ),
+        );
+        logger.debug(`Updated documentation state with SHA: ${currentSha}`);
+    } catch (e) {
+        logger.warn('Failed to save documentation state: ' + e);
+    }
 }

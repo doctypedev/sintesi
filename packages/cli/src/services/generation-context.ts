@@ -138,7 +138,7 @@ export class GenerationContextService {
     /**
      * Analyzes the project structure and retrieves the git diff.
      */
-    async analyzeProject(): Promise<{ context: ProjectContext; gitDiff: string }> {
+    async analyzeProject(baseRef?: string): Promise<{ context: ProjectContext; gitDiff: string }> {
         // Structural Context
         const context = getProjectContext(this.cwd);
 
@@ -147,7 +147,8 @@ export class GenerationContextService {
         try {
             const analysisService = new ChangeAnalysisService(this.logger);
             const analysis = await analysisService.analyze({
-                fallbackToLastCommit: true,
+                baseBranch: baseRef, // Defaults to 'main' inside if undefined, or handled below
+                fallbackToLastCommit: !baseRef, // Only fallback if we don't have a specific base
                 includeSymbols: false,
                 stagedOnly: false,
             });
