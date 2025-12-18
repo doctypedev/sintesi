@@ -9,7 +9,7 @@
 
 > **The intelligent documentation engine.**
 
-Sintesi guarantees your documentation never drifts from your codebase. It uses **multi-agent AI** and **RAG** to analyze your source code, plan a documentation structure, and write comprehensive, up-to-date docs. No outdated wikis, no "docs rot".
+Sintesi ensures your documentation remains aligned with your codebase. It leverages **multi-agent AI** and **Retrieval-Augmented Generation (RAG)** to analyze your source code, plan a documentation structure, and produce comprehensive, up-to-date documentation. Say goodbye to outdated wikis and "docs rot."
 
 ---
 
@@ -51,7 +51,7 @@ jobs:
                   fetch-depth: 0
 
             - name: Sintesi Check & Fix
-              uses: doctypedev/action@v0
+              uses: doctypedev/action@v1 # Updated to the latest verified version
               with:
                   openai_api_key: ${{ secrets.OPENAI_API_KEY }}
                   cohere_api_key: ${{ secrets.COHERE_API_KEY }} # Add COHERE_API_KEY for semantic retrieval
@@ -60,14 +60,14 @@ jobs:
                   docs_output: 'docs' # Optional: Directory for the output documentation - Default: docs
 ```
 
-1.  **Install**
+1. **Install**
 
     ```bash
     npm install -g @sintesi/sintesi
     ```
 
-2.  **Generate Documentation**
-    Don't have documentation? Let Sintesi inspect your code and create a living documentation site.
+2. **Generate Documentation**
+   Don't have documentation? Let Sintesi inspect your code and create a living documentation site.
 
     ```bash
     sintesi documentation
@@ -79,8 +79,8 @@ jobs:
     sintesi readme
     ```
 
-3.  **Verify Integrity**
-    Run this in your CI/CD pipeline. If the code changes but the documentation doesn't, this returns exit code 1.
+3. **Verify Integrity**
+   Run this in your CI/CD pipeline. If the code changes but the documentation doesn't, this returns exit code 1.
 
     ```bash
     sintesi check
@@ -93,8 +93,8 @@ jobs:
     sintesi check --doc
     ```
 
-4.  **Force Overwrite**
-    If you need to regenerate documentation or README files and want to bypass existing content checks, you can use the `--force` flag:
+4. **Force Overwrite**
+   If you need to regenerate documentation or README files and want to bypass existing content checks, you can use the `--force` flag:
 
     ```bash
     sintesi documentation --force
@@ -103,8 +103,9 @@ jobs:
 
     This will ignore existing files and regenerate them from scratch.
 
-5.  **Output Options**
-    You can specify custom output paths for the README check and documentation check using the `--output` and `--output-dir` flags, respectively:
+5. **Output Options**
+   You can specify custom output paths for the README check and documentation check using the `--output` and `--output-dir` flags, respectively:
+
     ```bash
     sintesi check --output path/to/README.md
     sintesi check --output-dir path/to/docs
@@ -114,10 +115,10 @@ jobs:
 
 Sintesi is not just a generator; it is a full **documentation lifecycle manager**.
 
-1.  **Analyze:** It scans your project structure and reads key files to understand the "DNA" of your codebase.
-2.  **Plan:** An AI Architect designs a documentation structure tailored to your project type.
-3.  **Generate:** Specialized agents (Planner, Writer, Reviewer, and Researcher) write comprehensive documentation, ensuring accuracy by reading actual source code.
-4.  **Verify:** The `check` command ensures your documentation stays in sync with your latest code changes.
+1. **Analyze:** It scans your project structure and reads key files to understand the "DNA" of your codebase.
+2. **Plan:** An AI Architect designs a documentation structure tailored to your project type.
+3. **Generate:** Specialized agents (Planner, Writer, Reviewer, and Researcher) write comprehensive documentation, ensuring accuracy by reading actual source code.
+4. **Verify:** The `check` command ensures your documentation stays in sync with your latest code changes.
 
 ## 📚 Documentation
 
@@ -131,6 +132,10 @@ We believe in eating our own dog food. This repository's documentation is mainta
 ### What is Multi-Agent AI?
 
 **Multi-Agent AI** refers to the use of multiple specialized agents that work collaboratively to achieve a common goal. In the context of Sintesi, these agents (Planner, Writer, Reviewer, and Researcher) each have distinct roles that enhance the quality and accuracy of the documentation process. This approach allows for a more nuanced understanding of the codebase, resulting in documentation that is not only comprehensive but also contextually relevant.
+
+#### Example of Multi-Agent AI in Action
+
+For instance, while the **Planner** outlines the structure of the documentation, the **Writer** generates the content based on the latest code changes, and the **Reviewer** ensures that the generated content meets quality standards. This collaborative effort results in documentation that is both accurate and informative.
 
 ---
 
@@ -152,11 +157,28 @@ You should include `COHERE_API_KEY` in your `.env` configuration:
 COHERE_API_KEY=your-cohere-api-key-here
 ```
 
+### Observability Features
+
+Sintesi now includes enhanced observability capabilities. By setting the `HELICONE_API_KEY`, you can track all AI requests in the Helicone dashboard, providing insights into usage and costs. This feature is optional but recommended for better monitoring of AI interactions.
+
+Additionally, logger support has been integrated for AI agents, which enhances the documentation generation process by providing detailed logs of operations and configurations.
+
 ---
 
-## Contributing
+## Troubleshooting and FAQs
 
-We love contributions! Please check out our [Contributing Guide](./docs/community/contributing.md).
+### Common Issues
+
+- **Documentation not updating:** Ensure that your CI/CD pipeline is correctly configured and that the `sintesi check` command is included.
+- **API key errors:** Double-check that your API keys are correctly set in your environment variables.
+
+### Frequently Asked Questions
+
+- **Can I use Sintesi with any programming language?**
+  Yes, Sintesi is designed to work with various programming languages by analyzing the code structure.
+
+- **How do I contribute to Sintesi?**
+  We welcome contributions! Please check out our [Contributing Guide](./docs/community/contributing.md).
 
 ---
 
