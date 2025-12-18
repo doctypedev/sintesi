@@ -131,6 +131,11 @@ ${SHARED_SAFETY_RULES}
 1. **Frontmatter**: Start with YAML frontmatter containing 'title', 'description', 'icon' (emoji), and 'order' (number).
 2. **Mermaid**: If explaining a flow/process, use a \`\`\`mermaid\`\`\` block.
 3. **Components**: Use <Callout type="info"> text </Callout> for notes if appropriate.
+
+## OUTPUT FORMAT RULES (CRITICAL)
+- **STRICTLY MARKDOWN ONLY**: The output must be the raw file content.
+- **NO CONVERSATIONAL TEXT**: Do NOT write "Here is the file", "I have updated...", or "Let me know if...".
+- **NO CHATTER**: Just output the document.
 `;
 
 export const DOC_RESEARCH_PROMPT = (
@@ -202,7 +207,14 @@ Focus on:
 3. Configuration files or schemas.
 
 Provide the output as a JSON array of strings.
-Example: ["Authentication logic in user controller", "JWT configuration", "login function signature"]
+
+### Examples:
+- Target: "auth/login.md" (How to log in)
+  Output: ["UserLoginController.authenticate", "AuthConfig interface", "JWT token generation logic"]
+- Target: "cli/commands/deploy.ts" (Deploy command)
+  Output: ["DeployCommand definition", "DeployOptions interface", "uploadToS3 function"]
+
+Example Output: ["Authentication logic in user controller", "JWT configuration", "login function signature"]
 `;
 
 export const DOC_DISCOVERY_PROMPT = (
@@ -240,4 +252,69 @@ Example Output:
 - **Architecture**: Monorepo using Turborepo. Core logic is in \`packages/core\` (Rust), consumed by \`packages/cli\` (Node.js).
 - **Pattern**: The CLI uses a Command Pattern approach (see \`commands/\` folder).
 - **Key Flow**: The \`Planner\` service orchestrates \`Agents\` (see \`packages/ai\`).
+`;
+
+export const DOC_REVIEW_PROMPT = (
+    path: string,
+    description: string,
+    content: string,
+    sourceContext: string,
+) => `
+You are a Senior Technical Reviewer.
+Your task is to review the following documentation file content against the actual Source Code (Ground Truth).
+
+File: "${path}"
+Purpose: ${description}
+
+## Content to Review:
+\`\`\`markdown
+${content}
+\`\`\`
+
+## Source Context (GROUND TRUTH):
+Use this context to verify facts.
+\`\`\`
+${sourceContext}
+\`\`\`
+
+## Evaluation Criteria:
+1. **Hallucinations (CRITICAL)**: specific checks:
+    - Do explicitly mentioned flags/arguments exist in Source Context?
+    - Do mentioned API keys/Env vars exist?
+    - Do imported modules exist?
+2. **Accuracy**: Is the explanation technically correct?
+3. **Completeness**: Does it cover the purpose?
+
+## Output
+Return ONLY a JSON object:
+{
+  "score": number, // 1-5 (5 is perfect)
+  "critique": string, // High level summary
+  "specific_critiques": [
+     // List specific, actionable fixes. Use "Line X" or "Section Y" references.
+     "The flag '--fast' does not exist in the source code. Remove it.",
+     "The function 'login' actually returns a Promise<void>, not boolean."
+  ],
+  "critical_issues": boolean // True if factual errors (hallucinations) are found
+}
+`;
+
+export const DOC_REFINE_PROMPT = (path: string, critiques: string[], originalContent: string) => `
+You are the Technical Writer.
+Your previous draft for "${path}" was reviewed and needs specific fixes.
+
+## Reviewer Feedback (Fix These Issues):
+${critiques.map((c) => `- ${c}`).join('\n')}
+
+## Instruction
+Refine the content to address the feedback.
+- **APPLY FIXES**: Directly address the specific critiques.
+- **RESTORE**: Keep the rest of the document as is (unless it needs flow adjustments).
+- **OUTPUT**: Return the FULLY rewritten Markdown file.
+- **NO CONVERSATIONAL TEXT**: Do NOT include "Here is the fixed file" or "I updated section X". Just the file content.
+
+## Previous Content:
+\`\`\`markdown
+${originalContent}
+\`\`\`
 `;
