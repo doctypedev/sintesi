@@ -1,202 +1,151 @@
 ---
-title: CLI Commands
-description: Comprehensive reference for all available Sintesi CLI commands.
-icon: ⌨️
-order: 20
+title: Sintesi CLI Commands Reference
+description: 'Verified CLI subcommands for sintesi-monorepo-root: changeset, check, readme, and documentation.'
+icon: 🧭
+order: 3
 ---
 
-# CLI Commands Reference for sintesi-monorepo-root
+# Sintesi CLI Command Reference
 
-This document provides a comprehensive reference for all available CLI commands in the `sintesi-monorepo-root` project. The commands are designed to facilitate various tasks within the monorepo, enhancing development efficiency and project management.
+This document lists the verified CLI subcommands exposed by the Sintesi tool in this monorepo.
 
-## Available Commands
+**Available Commands**:
 
-### 1. `check`
-
-The `check` command verifies that documentation is in sync with code by detecting drift.
-
-#### Usage
-
-```bash
-sintesi check
-```
-
-#### Description
-
-- Performs a smart check to validate that the README and documentation are in sync with the codebase.
-- Saves context for other commands to consume if drift is detected.
-
-#### Options
-
-- `--verbose`: Provides detailed output of the checks performed.
-- `--base <branch>`: Specifies the base branch for comparison (default is `origin/main`).
-- `--readme`: Checks only for README drift.
-- `--documentation`: Checks only for documentation drift.
-- `--strict`: Exit with error code if drift detected (default: true).
-- `--smart`: Use AI high-level drift detection (default: true).
-- `--output <path>`: Specifies the output file path for README check (default is `README.md`).
-- `--output-dir <path>`: Specifies the output directory for documentation check (default is `docs`).
-
-#### Usage Examples
-
-```bash
-sintesi check -- --verbose --base origin/main
-sintesi check -- --readme --no-strict --verbose
-sintesi check -- --documentation --no-strict --verbose
-```
+- `changeset`
+- `check`
+- `readme`
+- `documentation`
 
 ---
 
-### 2. `readme`
+## `changeset`
 
-The `readme` command generates or updates the README file for the project.
+**Purpose**: Generate a changeset file from code changes using AI (with optional manual overrides).
 
-#### Usage
+### Flags
 
-```bash
-sintesi readme
-```
+| Flag             | Alias | Description                         | Default      |
+| :--------------- | :---- | :---------------------------------- | :----------- |
+| `--base-branch`  | `-b`  | Base branch to compare against      | `main`       |
+| `--staged-only`  | `-s`  | Only analyze staged changes         | `false`      |
+| `--package-name` | `-p`  | Package name for the changeset      | (auto)       |
+| `--output-dir`   | `-o`  | Output directory                    | `.changeset` |
+| `--skip-ai`      |       | Skip AI analysis (use defaults)     | `false`      |
+| `--version-type` | `-t`  | `major` \| `minor` \| `patch`       |              |
+| `--description`  | `-d`  | Manually specify description        |              |
+| `--verbose`      |       | Enable verbose logging              | `false`      |
+| `--interactive`  | `-i`  | Force interactive package selection | `false`      |
+| `--force-fetch`  |       | Fetch latest changes from remote    | `false`      |
 
-#### Description
-
-- Creates or updates the README file based on the current project context.
-- Integrates recent code changes and suggestions from previous checks.
-- Skips generation if no relevant code changes are detected, unless forced.
-- **Diff-reset behavior**: Using `--force` or if the output file is missing will bypass checks and always regenerate the README.
-
-#### Options
-
-- `--output <path>`: Specifies the output path for the README file (default is `README.md`).
-- `--force`: Forces a regeneration of README, bypassing existing checks.
-- `--verbose`: Provides detailed output during the generation process.
-
-#### Usage Examples
+### Examples
 
 ```bash
-sintesi readme -- --output README.md --force
-```
-
----
-
-### 3. `changeset`
-
-The `changeset` command generates changesets from code changes using AI.
-
-#### Usage
-
-```bash
+# Basic usage (AI-assisted)
 sintesi changeset
+
+# Scoped to staged changes
+sintesi changeset --staged-only
+
+# Manual override
+sintesi changeset -t minor -d "Add new feature" --skip-ai
+
+# Force fetch before analysis
+sintesi changeset --force-fetch
 ```
 
-#### Description
-
-- Analyzes git diff to find changed files.
-- Uses AI to determine version type (major/minor/patch) and description.
-- Generates a changeset file in the `.changeset` directory.
-- **Pre-flight Check**: Verifies if `@changesets/cli` is installed before proceeding.
-- **Changeset generation priority**:
-    1. Manual flags (`--version-type`, `--description`) override AI.
-    2. `--skip-ai` disables AI entirely, falling back to default bump (patch) and generic description.
-    3. Default (no manual flags, AI enabled): AI determines version bump and description.
-    4. `--interactive` enforces interactive package selection regardless of detection.
-
-#### Options
-
-- `--base-branch <branch>`: Specifies the base branch for comparison (default is `main`).
-- `--staged-only`: Analyzes only staged changes.
-- `--package-name <name>`: Package name for the changeset (auto-detected from package.json if not specified).
-- `--output-dir <path>`: Specifies the output directory for the changeset file (default is `.changeset`).
-- `--skip-ai`: Disables AI usage for version type and description.
-- `--version-type <type>`: Manually specify version type (`major`, `minor`, `patch`).
-- `--description <text>`: Manually specify description.
-- `--interactive`: Enables interactive package selection.
-- `--verbose`: Provides detailed output during the changeset generation process.
-- `--force-fetch`: Fetches from the specified base branch when true.
-
-#### Error Handling
-
-- If `@changesets/cli` is not installed, the command will fail with an error message indicating the need to install it.
-
-#### Usage Examples
-
-```bash
-sintesi changeset -- --base-branch main --staged-only
-sintesi changeset -- --skip-ai --version-type minor --description "New feature"
-```
+**CI Usage**: Exits with code 0 on success, 1 on failure. Requires `@changesets/cli` installed.
 
 ---
 
-### 4. `documentation`
+## `check`
 
-The `documentation` command automates the generation of project documentation based on the current codebase.
+**Purpose**: Verify that documentation is in sync with code. Supports both README drift and documentation site drift checks, with AI-assisted drift detection.
 
-#### Usage
+### Flags
 
-```bash
-sintesi documentation
-```
+| Flag              | Alias   | Description                              | Default |
+| :---------------- | :------ | :--------------------------------------- | :------ |
+| `--verbose`       |         | Enable verbose logging                   | `false` |
+| `--strict`        |         | Exit with error code if drift detected   | `true`  |
+| `--smart`         |         | Use AI to detect high-level drift        | `true`  |
+| `--base`          |         | Base ref for drift comparison            |         |
+| `--readme`        |         | Check only README drift                  | `false` |
+| `--documentation` | `--doc` | Check only documentation drift           | `false` |
+| `--output`        | `-o`    | Output file path for README check        |         |
+| `--output-dir`    | `-d`    | Output directory for documentation check |         |
 
-#### Description
-
-- Analyzes the project structure and generates documentation files.
-- Skips generation if no relevant code changes are detected.
-- **Diff-reset behavior**: Using `--force` or if the output directory is missing will bypass checks and always regenerate the documentation.
-- **Note**: If the `repository` field is missing in `package.json`, the command will automatically detect and populate the repository URL from the git configuration.
-
-#### Options
-
-- `--output-dir <path>`: Specifies the output directory for the generated documentation (default is `docs`).
-- `--verbose`: Provides detailed output during the documentation process.
-- `--force`: Forces a regeneration of documentation, bypassing existing checks.
-
-#### Usage Examples
+### Examples
 
 ```bash
-sintesi documentation -- --output-dir docs --verbose --force
-```
+# Standard check
+sintesi check
 
----
-
-## Global Logging Flag
-
-All commands support a global `--verbose` flag to enable detailed logging output. When this flag is set, the `Logger` class will print debug messages, allowing for better insight into the command execution process.
-
-### Enabling Debug Output
-
-To enable debug output, simply append the `--verbose` flag to any command:
-
-```bash
+# Verbose output
 sintesi check --verbose
+
+# Scope to README only
+sintesi check --readme
+
+# Scope to documentation site only
+sintesi check --documentation
 ```
 
-### Interpreting Log Messages
-
-Log messages from AI operations will be prefixed with the relevant context, such as the agent type or operation being performed. For example:
-
-```
-[DEBUG] [AIAgent planner] Generating text...
-```
-
-This indicates that the debug message is coming from the planner AI agent during a text generation operation.
+**CI Usage**: Exits with code 0 if no drift is detected (or strict is false). Exits with code 1 if drift is detected in strict mode.
 
 ---
 
-## Environment Variables
+## `readme`
 
-To utilize the RAG feature, you can set the following environment variable:
+**Purpose**: Generate a `README.md` based on project context.
 
-| Name           | Required? | Purpose                                                  |
-| -------------- | --------- | -------------------------------------------------------- |
-| COHERE_API_KEY | optional  | Enables `RerankingService.rerank` via Cohere Rerank API. |
+### Flags
 
-Make sure to include `COHERE_API_KEY` in your `.env` configuration:
+| Flag        | Alias | Description             | Default     |
+| :---------- | :---- | :---------------------- | :---------- |
+| `--output`  | `-o`  | Output file path        | `README.md` |
+| `--force`   | `-f`  | Overwrite existing file | `false`     |
+| `--verbose` |       | Enable verbose logging  | `false`     |
 
-```plaintext
-COHERE_API_KEY=your-cohere-api-key-here
+### Examples
+
+```bash
+# Generate README
+sintesi readme
+
+# Force overwrite
+sintesi readme --force
 ```
+
+**CI Usage**: Run to generate or update README. Exits with code 0 on success.
 
 ---
 
-## Conclusion
+## `documentation`
 
-These CLI commands are integral to the development workflow of the `sintesi-monorepo-root` project. By utilizing these commands, developers can streamline their processes, maintain project integrity, and enhance productivity. For further assistance or to report issues, please refer to the project's documentation or contact the development team.
+**Purpose**: Generate comprehensive documentation site structure and content.
+
+### Flags
+
+| Flag           | Alias | Description             | Default |
+| :------------- | :---- | :---------------------- | :------ |
+| `--output-dir` | `-o`  | Output directory        | `docs`  |
+| `--force`      | `-f`  | Force full regeneration | `false` |
+| `--verbose`    |       | Enable verbose logging  | `false` |
+
+### Examples
+
+```bash
+# Generate documentation
+sintesi documentation
+
+# Force full regeneration
+sintesi documentation --force
+```
+
+**CI Usage**: Run to generate the documentation site. Exits with code 0 on success.
+
+---
+
+::: info Note
+Flags shown above reflect what is implemented in the source code and tests. The command context relies on the repository URL defined in the package context.
+:::

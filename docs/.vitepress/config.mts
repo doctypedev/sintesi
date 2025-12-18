@@ -1,8 +1,9 @@
 import { defineConfig } from 'vitepress'
 import { autoSidebar } from './sidebar-auto';
+import { withMermaid } from 'vitepress-plugin-mermaid';
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: "Sintesi",
   description: "Autonomous Documentation Platform",
   appearance: 'dark', // Force dark theme
@@ -12,7 +13,6 @@ export default defineConfig({
 
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Guide', link: '/guide/configuration' },
       { text: 'Reference', link: '/reference/commands' }
     ],
 
@@ -32,6 +32,12 @@ export default defineConfig({
     }
   },
 
+  vite: {
+    optimizeDeps: {
+      include: ['mermaid']
+    }
+  },
+
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
     ['meta', { name: 'theme-color', content: '#ff3131' }],
@@ -42,5 +48,8 @@ export default defineConfig({
 
   markdown: {
     theme: 'github-dark-dimmed'
+  },
+  mermaid: {
+    // refer to https://mermaid.js.org/config/setup/modules/mermaidAPI.html#mermaidapi-configuration-defaults for options
   }
-})
+}))

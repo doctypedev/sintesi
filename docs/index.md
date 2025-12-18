@@ -1,101 +1,83 @@
 ---
 layout: home
-title: Home
+
 hero:
-    name: Sintesi
-    text: Intelligent Documentation Generator
-    tagline: Keep your docs in sync with your code automatically.
+    name: 'Sintesi'
+    text: 'Autonomous Documentation Platform'
+    tagline: Keep your documentation in sync with your code using AI agents and RAG.
     actions:
         - theme: brand
           text: Get Started
-          link: /guide/configuration
+          link: /guides/getting-started
         - theme: alt
-          text: View Commands
-          link: /reference/commands
+          text: View on GitHub
+          link: https://github.com/doctypedev/doctype
+
 features:
-    - title: Smart Drift Detection
-      details: Automatically detects when your documentation is out of sync with your code.
-    - title: AI-Powered Updates
-      details: Uses advanced LLMs to intelligently update documentation based on code changes.
-    - title: Zero Config
-      details: Works out of the box with sensible defaults, but fully configurable when needed.
+    - title: Multi-Agent AI Workflow
+      details: Planner, Writer, Reviewer, and Researcher agents collaborate to produce high-quality, up-to-date docs.
+      icon: 🤖
+    - title: RAG-Powered
+      details: Retrieval-Augmented Generation ensures your documentation is semantically accurate and context-aware.
+      icon: 🧠
+    - title: Monorepo Native
+      details: Built for complex workspaces with per-package change tracking and scalable orchestration.
+      icon: 🏢
 ---
 
-## Introduction
+## Quick Start
 
-The **Sintesi CLI Tool** is a command-line interface designed to streamline the documentation process for developers. By integrating intelligent checks and automated updates, Sintesi ensures that your documentation remains in sync with your codebase. This tool leverages AI to enhance documentation quality, making it easier to maintain and generate comprehensive documentation.
-
-## Purpose
-
-The primary purpose of the Sintesi CLI Tool is to facilitate the following:
-
-- **Documentation Drift Detection**: Automatically checks for discrepancies between your code and its corresponding documentation.
-- **Automated Documentation Updates**: Uses AI to update documentation based on recent code changes.
-- **User-Friendly Interface**: Provides an intuitive command-line interface for various documentation tasks.
-
-## Verified Commands
-
-Sintesi includes several verified commands that enhance its functionality:
-
-### `sintesi check`
-
-- **Purpose**: Verifies that documentation is in sync with the code.
-- **Flags**:
-    - `--verbose`: Enables verbose output.
-    - `--smart`: Uses smart checks to detect drift.
-    - `--base <branch>`: Specifies the base branch for comparison (default is `main`).
-
-### `sintesi readme`
-
-- **Purpose**: Generates a `README.md` based on project context.
-- **Features**: Analyzes recent code changes to improve documentation generation.
-
-### `sintesi changeset`
-
-- **Purpose**: Generates changesets from code changes using AI.
-- **Flags**:
-    - `--baseBranch <branch>`: Specifies the base branch for changeset generation (default is `main`).
-    - `--forceFetch`: Forces fetching from the specified base branch.
-
-### `sintesi documentation`
-
-- **Purpose**: Generates project documentation using AI.
-- **Features**: Automatically creates documentation based on code analysis and TODO placeholders.
-
-## Usage Examples
-
-### Check Command
-
-To check for documentation drift:
+Install the Sintesi CLI (global install recommended for CI or local usage):
 
 ```bash
-npx sintesi check --verbose --smart --base main
+npm install -g @sintesi/sintesi
 ```
 
-### Readme Command
+### Core Workflow
 
-To generate a README file:
-
-```bash
-npx sintesi readme
+```mermaid
+graph TD
+    A[Code Changes] --> B[Sintesi CLI]
+    B --> C[AI Agents]
+    C --> D[Updated Docs]
 ```
 
-### Changeset Command
+### Common Commands
 
-To generate a changeset:
+::: code-group
 
-```bash
-npx sintesi changeset --baseBranch main --noAI
+```bash [Generate Docs]
+# Generate documentation for the current project
+sintesi documentation
 ```
 
-### Documentation Command
-
-To generate documentation:
-
-```bash
-npx sintesi documentation
+```bash [Check Drift]
+# Verify documentation integrity
+sintesi check
 ```
 
-## Conclusion
+```bash [Update README]
+# Generate a README based on project context
+sintesi readme
+```
 
-With Sintesi, developers can ensure their documentation is always up-to-date and reflective of the current state of their code. The integration of AI and smart checks makes it a powerful tool for maintaining high-quality documentation effortlessly.
+:::
+
+## Primary Use-Cases
+
+- **CLI for automated documentation**: A lightweight, scriptable command-line interface that drives documentation generation, verification, and changeset creation.
+- **RAG-enabled doc generation**: AI-assisted generation that reads actual source code, indexes context, and writes up-to-date documentation.
+- **Monorepo-aware workflows**: Detects monorepo structure, maps changes to affected packages, and supports per-package updates and changesets.
+
+---
+
+## CLI Reference Summary
+
+| Command         | Description                                           |
+| :-------------- | :---------------------------------------------------- |
+| `readme`        | Generate a `README.md` based on project context.      |
+| `documentation` | Generate comprehensive documentation site structure.  |
+| `check`         | Verify documentation is in sync with code.            |
+| `changeset`     | Generate a changeset file from code changes using AI. |
+
+> **Note**: The CLI surface is implemented in the `packages/cli` workspace. Commands documented here map to the code paths under `packages/cli`.
