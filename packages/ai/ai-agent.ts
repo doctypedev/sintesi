@@ -344,7 +344,8 @@ export function createAIAgentsFromEnv(
         reviewer: 'gpt-4o',
     };
 
-    const agents: any = {};
+    // Use Record type for better type safety instead of 'any'
+    const agents: Record<string, AIAgent> = {};
     for (const role of roles) {
         const roleConfig = roleConfigs?.[role];
         const options: AIAgentRoleConfig = {
@@ -363,5 +364,5 @@ export function createAIAgentsFromEnv(
         );
     }
 
-    return agents as AIAgents;
+    return agents as unknown as AIAgents;
 }

@@ -72,6 +72,7 @@ export function createObservabilityMetadata(options: {
 /**
  * Helper to extend observability metadata with additional properties and tags
  * Returns a new object without mutating the original
+ * Automatically deduplicates tags to prevent duplicates when called multiple times
  */
 export function extendMetadata(
     base: ObservabilityMetadata,
@@ -81,6 +82,10 @@ export function extendMetadata(
         tags?: string[];
     },
 ): ObservabilityMetadata {
+    // Deduplicate tags using Set to prevent duplicates
+    const allTags = [...(base.tags || []), ...(extensions.tags || [])];
+    const uniqueTags = Array.from(new Set(allTags));
+
     return {
         ...base,
         properties: {
@@ -88,6 +93,6 @@ export function extendMetadata(
             ...(extensions.feature && { feature: extensions.feature }),
             ...extensions.properties,
         },
-        tags: [...(base.tags || []), ...(extensions.tags || [])],
+        tags: uniqueTags,
     };
 }
