@@ -17,7 +17,7 @@ Your goal is to design a documentation structure for the End User / Developer wh
 Package.json:
 ${packageJsonSummary}
 
-File Structure (Filtered for relevance):
+## File Structure (Filtered for relevance):
 ${fileSummary}
 ${specificContext}
 
@@ -203,4 +203,41 @@ Focus on:
 
 Provide the output as a JSON array of strings.
 Example: ["Authentication logic in user controller", "JWT configuration", "login function signature"]
+`;
+
+export const DOC_DISCOVERY_PROMPT = (
+    packageJsonSummary: string,
+    fileSummary: string,
+    readmeSummary: string,
+) => `
+You are the **Lead Architect Agent** (The Explorer).
+Your goal is to perform a high-level "Discovery" scan of this project to guide the Documentation Planner.
+
+## Project Context
+Package.json:
+${packageJsonSummary}
+
+## File Structure (Roots & Key Files)
+${fileSummary}
+
+## README Context (if available)
+${readmeSummary || 'No README found.'}
+
+## Task
+Analyze the provided context to identify the core architectural patterns and domain concepts of the application.
+The Planner will use your output to decide **which documentation chapters** are needed.
+
+### Focus on:
+1. **Application Type**: Is it a CLI? A REST API? A Next.js App? A Monorepo?
+2. **Key Concepts**: Does it use specific patterns like CQRS, Event Sourcing, Plugins, Adapters?
+3. **Data Flows**: What are the main data entities or pipelines implied by the file names?
+
+### Output format
+Return a concise **Technical Architectural Brief**.
+Use bullet points. Be technically precise.
+
+Example Output:
+- **Architecture**: Monorepo using Turborepo. Core logic is in \`packages/core\` (Rust), consumed by \`packages/cli\` (Node.js).
+- **Pattern**: The CLI uses a Command Pattern approach (see \`commands/\` folder).
+- **Key Flow**: The \`Planner\` service orchestrates \`Agents\` (see \`packages/ai\`).
 `;
