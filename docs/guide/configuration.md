@@ -91,6 +91,7 @@ NODE_ENV=development
 API_URL=https://api.example.com
 OPENAI_API_KEY=your-openai-api-key-here
 COHERE_API_KEY=your-cohere-api-key-here
+HELICONE_API_KEY=your-helicone-api-key-here
 ```
 
 ### Accessing Environment Variables
@@ -105,13 +106,12 @@ const apiUrl = process.env.API_URL;
 
 The following environment variables are supported:
 
-| Name              | Required? | Purpose                                                 |
-| ----------------- | --------- | ------------------------------------------------------- |
-| OPENAI_API_KEY    | yes       | embeddings & OpenAI LLMs                                |
-| GEMINI_API_KEY    | optional  | alternative LLM provider                                |
-| ANTHROPIC_API_KEY | optional  | alternative LLM provider                                |
-| MISTRAL_API_KEY   | optional  | alternative LLM provider                                |
-| COHERE_API_KEY    | optional  | enables `RerankingService.rerank` via Cohere Rerank API |
+| Name             | Required? | Purpose                                 |
+| ---------------- | --------- | --------------------------------------- |
+| OPENAI_API_KEY   | yes       | Required for AI agent functionality.    |
+| GEMINI_API_KEY   | optional  | Alternative LLM provider.               |
+| COHERE_API_KEY   | optional  | Enables reranking via Cohere API.       |
+| HELICONE_API_KEY | optional  | For AI observability and cost tracking. |
 
 ## CLI Commands
 

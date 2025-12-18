@@ -17,7 +17,7 @@ The RAG pipeline consists of several key components:
 
 - **RetrievalService**: The core orchestrator that manages indexing and context retrieval.
 - **VectorStoreService**: A wrapper for LanceDB that stores embedded code chunks.
-- **EmbeddingService**: Utilizes OpenAI's `text-embedding-3-small` model for embedding text.
+- **EmbeddingService**: Utilizes OpenAI's embedding models for embedding text. Please verify the specific model version in use, as it may vary based on updates from OpenAI.
 - **RerankingService**: Integrates with the Cohere API for reranking retrieved results.
 - **CodeChunkingService**: An AST-based chunker that segments source files into manageable pieces.
 - **IndexingStateManager**: Tracks the state of indexed files to optimize updates.
@@ -27,16 +27,18 @@ The RAG pipeline consists of several key components:
 
 To utilize the RAG pipeline, you need to configure the following environment variables in your `.env` file:
 
-| Name             | Required? | Effect                                                                                 |
-| ---------------- | --------- | -------------------------------------------------------------------------------------- |
-| `OPENAI_API_KEY` | Yes       | Required for initializing the EmbeddingService and RetrievalService.                   |
-| `COHERE_API_KEY` | No        | Enables the RerankingService to utilize the Cohere API for improved context retrieval. |
+| Name               | Required? | Effect                                                                                 |
+| ------------------ | --------- | -------------------------------------------------------------------------------------- |
+| `OPENAI_API_KEY`   | Yes       | Required for initializing the EmbeddingService and RetrievalService.                   |
+| `COHERE_API_KEY`   | No        | Enables the RerankingService to utilize the Cohere API for improved context retrieval. |
+| `HELICONE_API_KEY` | No        | Optional, for AI observability and cost tracking.                                      |
 
 ### Example `.env` Configuration
 
 ```plaintext
 OPENAI_API_KEY=sk-your-openai-api-key-here
 COHERE_API_KEY=your-cohere-api-key-here
+# HELICONE_API_KEY=sk-helicone-your-api-key-here
 ```
 
 ## Building and Using the RAG Index
@@ -88,6 +90,7 @@ const ragContext = await generationContextService.retrieveContext('How does auth
 - **Missing API Keys**: Ensure that both `OPENAI_API_KEY` and `COHERE_API_KEY` are set in your environment. The `EmbeddingService` will warn if the `OPENAI_API_KEY` is missing.
 - **Indexing Issues**: If the index does not seem to update, check the file modification times and ensure that the files are not being ignored (e.g., `node_modules`, `dist`, `.git`).
 - **Empty Context**: If the retrieved context is empty, verify that the query is relevant and that the index has been built successfully.
+- **Model Verification**: Confirm the specific OpenAI model being used for embeddings, as the documentation may reference a model that is not currently available or has been updated.
 
 ## Conclusion
 

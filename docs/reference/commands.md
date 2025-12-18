@@ -189,10 +189,12 @@ To utilize the RAG feature, you can set the following environment variable:
 | -------------- | --------- | -------------------------------------------------------- |
 | COHERE_API_KEY | optional  | Enables `RerankingService.rerank` via Cohere Rerank API. |
 
-Make sure to include `COHERE_API_KEY` in your `.env` configuration:
+Make sure to include these keys in your `.env` configuration:
 
 ```plaintext
+OPENAI_API_KEY=sk-your-openai-api-key-here
 COHERE_API_KEY=your-cohere-api-key-here
+# HELICONE_API_KEY=sk-helicone-your-api-key-here
 ```
 
 ---

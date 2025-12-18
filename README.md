@@ -9,7 +9,7 @@
 
 > **The intelligent documentation engine.**
 
-Sintesi guarantees your documentation never drifts from your codebase. It uses **multi-agent AI** and **RAG** to analyze your source code, plan a documentation structure, and write comprehensive, up-to-date docs. No outdated wikis, no "docs rot".
+Sintesi guarantees your documentation never drifts from your codebase. It uses **multi-agent AI** and **Retrieval-Augmented Generation (RAG)** to analyze your source code, plan a documentation structure, and write comprehensive, up-to-date docs. No outdated wikis, no "docs rot".
 
 ---
 
@@ -51,7 +51,7 @@ jobs:
                   fetch-depth: 0
 
             - name: Sintesi Check & Fix
-              uses: doctypedev/action@v0
+              uses: doctypedev/sintesi-action@v1 # Updated to the correct action
               with:
                   openai_api_key: ${{ secrets.OPENAI_API_KEY }}
                   cohere_api_key: ${{ secrets.COHERE_API_KEY }} # Add COHERE_API_KEY for semantic retrieval
@@ -130,7 +130,7 @@ We believe in eating our own dog food. This repository's documentation is mainta
 
 ### What is Multi-Agent AI?
 
-**Multi-Agent AI** refers to the use of multiple specialized agents that work collaboratively to achieve a common goal. In the context of Sintesi, these agents (Planner, Writer, Reviewer, and Researcher) each have distinct roles that enhance the quality and accuracy of the documentation process. This approach allows for a more nuanced understanding of the codebase, resulting in documentation that is not only comprehensive but also contextually relevant.
+**Multi-Agent AI** refers to the use of multiple specialized agents that work collaboratively to achieve a common goal. In the context of Sintesi, these agents (Planner, Writer, Reviewer, and Researcher) each have distinct roles that enhance the quality and accuracy of the documentation process. For example, the Planner designs the structure, the Writer generates content, the Reviewer ensures quality, and the Researcher provides additional context. This collaborative approach allows for a more nuanced understanding of the codebase, resulting in documentation that is not only comprehensive but also contextually relevant.
 
 ---
 
@@ -142,15 +142,29 @@ Sintesi includes a **Retrieval-Augmented Generation (RAG)** pipeline that enhanc
 
 To utilize the RAG feature to its full potential, set the following environment variable:
 
-| Name           | Required? | Purpose                                    |
-| -------------- | --------- | ------------------------------------------ |
-| COHERE_API_KEY | no        | Enables `reranking` via Cohere Rerank API. |
+| Name             | Required? | Purpose                                           |
+| ---------------- | --------- | ------------------------------------------------- |
+| COHERE_API_KEY   | no        | Enables `reranking` via Cohere Rerank API.        |
+| OPENAI_API_KEY   | yes       | Required for AI-powered documentation generation. |
+| HELICONE_API_KEY | no        | Optional, for AI observability and cost tracking. |
 
-You should include `COHERE_API_KEY` in your `.env` configuration:
+You should include these keys in your `.env` configuration:
 
 ```plaintext
+OPENAI_API_KEY=sk-your-openai-api-key-here
 COHERE_API_KEY=your-cohere-api-key-here
+# HELICONE_API_KEY=sk-helicone-your-api-key-here
 ```
+
+---
+
+## Troubleshooting
+
+If you encounter issues while using Sintesi, consider the following common problems and solutions:
+
+- **Documentation not updating:** Ensure that your code changes are committed and that the CI/CD pipeline is correctly configured to trigger Sintesi.
+- **API key errors:** Double-check that your API keys are correctly set in your environment variables and that they have the necessary permissions.
+- **Drift detection fails:** If Sintesi reports drift but you believe the documentation is accurate, consider running the `--no-strict` flag to bypass strict checks temporarily.
 
 ---
 
