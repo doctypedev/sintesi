@@ -23,6 +23,38 @@ The RAG pipeline consists of several key components:
 - **IndexingStateManager**: Tracks the state of indexed files to optimize updates.
 - **GenerationContextService**: Provides methods to ensure the RAG index is built and to retrieve context.
 
+## Incremental Indexing Feature
+
+### Overview
+
+The new incremental indexing feature optimizes the RAG pipeline by leveraging Git-based diffing to only process changed files. This is achieved through the `GitBinding` class, which analyzes changes between commits and maintains a local state file at `.sintesi/rag-state.json`.
+
+### Key Components
+
+- **GitBinding**: A Rust-powered NAPI binding that provides methods for analyzing changes in the Git repository.
+- **IndexingStateManager**: Manages the state of the indexing process, including the last processed commit SHA and metadata for each file.
+
+### How It Works
+
+1. **State Persistence**: The last indexed commit SHA and per-file embedding metadata are stored in `.sintesi/rag-state.json`.
+2. **Incremental Check**: On each run, the current commit SHA is compared with the last indexed SHA. If they match and the workspace is clean, the indexing process is short-circuited.
+3. **Diffing**: If the commit has changed, `GitBinding.analyzeChanges(lastSha)` is invoked to get a semantic diff of the modified files. If this fails, a fallback to file timestamps is used.
+4. **Updating State**: Stale vector chunks are deleted for removed or updated files, and new embeddings are created for changed files. The state is then updated with the new chunk IDs and timestamps.
+
+### Configuration and Caching
+
+To optimize performance, it is recommended to cache the `.sintesi` state in CI environments. Below is an example configuration for GitHub Actions:
+
+```yaml
+- name: Cache Sintesi RAG State
+  uses: actions/cache@v4
+  with:
+      path: .sintesi
+      key: sintesi-rag-${{ runner.os }}-${{ github.sha }}
+      restore-keys: |
+          sintesi-rag-${{ runner.os }}-
+```
+
 ## Environment Variable Setup
 
 To utilize the RAG pipeline, you need to configure the following environment variables in your `.env` file:

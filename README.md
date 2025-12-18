@@ -4,12 +4,12 @@
 
 # Sintesi
 
-[![npm version](https://badge.fury.io/js/@sintesi%2Fsintesi.svg)](https://www.npmjs.com/package/@sintesi/sintesi)
+[![npm version](https://badge.fury.io/js/sintesi-monorepo-root.svg)](https://www.npmjs.com/package/sintesi-monorepo-root)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **The intelligent documentation engine.**
 
-Sintesi guarantees your documentation never drifts from your codebase. It uses **multi-agent AI** and **RAG** to analyze your source code, plan a documentation structure, and write comprehensive, up-to-date docs. No outdated wikis, no "docs rot".
+Sintesi ensures your documentation remains aligned with your codebase. It leverages **Multi-Agent AI** and **Retrieval-Augmented Generation (RAG)** to analyze your source code, plan a documentation structure, and produce comprehensive, up-to-date documentation. Say goodbye to outdated wikis and "docs rot."
 
 ---
 
@@ -50,6 +50,15 @@ jobs:
               with:
                   fetch-depth: 0
 
+            - name: Cache Sintesi RAG State
+              if: steps.check_skip.outputs.should_skip != 'true'
+              uses: actions/cache@v4
+              with:
+                  path: .sintesi
+                  key: sintesi-rag-${{ runner.os }}-${{ github.sha }}
+                  restore-keys: |
+                      sintesi-rag-${{ runner.os }}-
+
             - name: Sintesi Check & Fix
               uses: doctypedev/action@v0
               with:
@@ -63,7 +72,7 @@ jobs:
 1.  **Install**
 
     ```bash
-    npm install -g @sintesi/sintesi
+    npm install -g sintesi-monorepo-root
     ```
 
 2.  **Generate Documentation**
@@ -151,6 +160,24 @@ You should include `COHERE_API_KEY` in your `.env` configuration:
 ```plaintext
 COHERE_API_KEY=your-cohere-api-key-here
 ```
+
+---
+
+## Troubleshooting & FAQs
+
+### Common Issues
+
+1. **Installation Errors**: Ensure you have the correct package name `sintesi-monorepo-root` and that your Node.js version is compatible.
+2. **Documentation Not Updating**: Check if the `sintesi check` command is included in your CI/CD pipeline and that it runs successfully.
+3. **API Key Issues**: Verify that your API keys are correctly set in your environment variables.
+
+### Frequently Asked Questions
+
+- **What is the purpose of the Multi-Agent AI?**
+  Multi-Agent AI enhances the documentation process by utilizing specialized agents for different tasks, ensuring high-quality and contextually relevant documentation.
+
+- **How does RAG improve documentation?**
+  RAG allows Sintesi to retrieve semantic context, making the generated documentation more accurate and relevant to the codebase.
 
 ---
 
