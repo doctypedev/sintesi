@@ -1,12 +1,14 @@
 import { Logger } from '../utils/logger';
 import { AIAgents, ObservabilityMetadata } from '../../../ai';
+import { DOC_REVIEW_PROMPT, DOC_REFINE_PROMPT } from '../prompts/documentation';
+import { extendMetadata } from '../utils/observability';
 
 export class ReviewService {
     constructor(private logger: Logger) {}
 
     /**
      * Reviews and refines content using the Review and Writer agents.
-     * If the reviewer flags issues, the writer is asked to refine the content once.
+     * Uses structured feedback (specific critiques) to guide the refinement.
      */
     async reviewAndRefine(
         content: string,
@@ -22,102 +24,88 @@ export class ReviewService {
 
         this.logger.info(`> Reviewing ${itemPath}...`);
 
-        const reviewPrompt = `
-    You are a Senior Technical Reviewer.
-    Your task is to review the following documentation file content.
-
-    File: "${itemPath}"
-    Purpose: ${itemDescription}
-
-    ## Content to Review:
-    \`\`\`markdown
-    ${content}
-    \`\`\`
-
-    ## Source Context (GROUND TRUTH):
-    Use this context to verify facts.
-    \`\`\`
-    ${sourceContext.substring(0, 20000)} 
-    \`\`\`
-
-    ## Evaluation Criteria:
-    1. **Accuracy (CRITICAL)**: Check if commands, flags, and APIs mentioned in the content ACTUALLY EXIST in the Source Context. Flag any hallucination as a CRITICAL issue.
-    2. **Clarity**: Is it easy to read?
-    3. **Consistency**: Does it follow the style guide?
-    4. **Completeness**: Does it cover the purpose?
-
-    ## Output
-    Return ONLY a JSON object:
-    {
-      "score": number, // 1-5 (5 is perfect)
-      "critique": string, // Detailed feedback. If hallucinations found, list them explicitly.
-      "critical_issues": boolean // True if factual errors (hallucinations) are found
-    }
-    `;
+        const reviewPrompt = DOC_REVIEW_PROMPT(
+            itemPath,
+            itemDescription,
+            content,
+            sourceContext || '(No specific source context available. Rely on general knowledge)',
+        );
 
         try {
+            const generatedOptions: any = {
+                maxTokens: 1500,
+                temperature: 0.1,
+            };
+
+            let metadataArg;
+            if (sessionMetadata) {
+                metadataArg = extendMetadata(sessionMetadata, {
+                    feature: 'content-review',
+                    properties: { documentPath: itemPath },
+                    tags: ['review', 'validation'],
+                });
+            }
+
             let reviewRaw = await agents.reviewer.generateText(
                 reviewPrompt,
-                {
-                    maxTokens: 1000,
-                    temperature: 0.1,
-                },
-                sessionMetadata
-                    ? {
-                          ...sessionMetadata,
-                          properties: {
-                              ...sessionMetadata.properties,
-                              feature: 'content-review',
-                              documentPath: itemPath,
-                          },
-                          tags: [...(sessionMetadata.tags || []), 'review', 'validation'],
-                      }
-                    : undefined,
+                generatedOptions,
+                metadataArg,
             );
+
             reviewRaw = reviewRaw
                 .replace(/```json/g, '')
                 .replace(/```/g, '')
                 .trim();
-            const review = JSON.parse(reviewRaw);
 
-            if (review.score < 4 || review.critical_issues) {
+            interface ReviewResult {
+                score: number;
+                critique: string;
+                specific_critiques?: string[];
+                critical_issues: boolean;
+            }
+
+            const review: ReviewResult = JSON.parse(reviewRaw);
+
+            if (
+                review.score < 4 ||
+                review.critical_issues ||
+                (review.specific_critiques && review.specific_critiques.length > 0)
+            ) {
+                const critiqueCount = review.specific_critiques?.length || 0;
                 this.logger.warn(
-                    `⚠ Reviewer flagged ${itemPath} (Score: ${review.score}/5): ${review.critique.substring(0, 100)}... Refining...`,
+                    `⚠ Reviewer flagged ${itemPath} (Score: ${review.score}/5). Issues: ${critiqueCount}. Refining...`,
                 );
+                if (critiqueCount > 0) {
+                    this.logger.debug(`Critiques: ${review.specific_critiques?.join(' | ')}`);
+                }
 
-                const refinePrompt = `
-        The previous draft of "${itemPath}" received the following CRITIQUE from the Reviewer:
-        "${review.critique}"
+                // If no specific critiques but low score, use the general critique
+                const critiquesToApply =
+                    review.specific_critiques && review.specific_critiques.length > 0
+                        ? review.specific_critiques
+                        : [review.critique];
 
-        ## Task
-        Refine the content to address the critique.
-        Fix factual errors and improve clarity.
-        Return the FULLY rewritten Markdown file.
+                const refinePrompt = DOC_REFINE_PROMPT(itemPath, critiquesToApply, content);
 
-        ## Previous Content:
-        \`\`\`markdown
-        ${content}
-        \`\`\`
-        `;
+                const refineOptions: any = {
+                    maxTokens: 4000,
+                    temperature: 0.1,
+                };
+
+                let refineMetadata;
+                if (sessionMetadata) {
+                    refineMetadata = extendMetadata(sessionMetadata, {
+                        feature: 'content-refinement',
+                        properties: { documentPath: itemPath },
+                        tags: ['refinement', 'revision'],
+                    });
+                }
 
                 // Use Writer to refine
                 let refinedContent = await agents.writer.generateText(
                     refinePrompt,
-                    {
-                        maxTokens: 4000,
-                        temperature: 0.1,
-                    },
-                    sessionMetadata
-                        ? {
-                              ...sessionMetadata,
-                              properties: {
-                                  ...sessionMetadata.properties,
-                                  feature: 'content-refinement',
-                                  documentPath: itemPath,
-                              },
-                              tags: [...(sessionMetadata.tags || []), 'refinement', 'revision'],
-                          }
-                        : undefined,
+                    refineOptions,
+                    refineMetadata,
                 );
 
                 // Clean content again
@@ -137,7 +125,7 @@ export class ReviewService {
             }
         } catch (e) {
             this.logger.warn(
-                'Review failed (using unknown/custom JSON?), keeping original draft: ' + e,
+                'Review failed (JSON parse error or agent error), keeping original draft: ' + e,
             );
             return content;
         }
