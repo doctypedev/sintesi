@@ -9,6 +9,7 @@ import { IndexingStateManager } from './indexing-state';
 import { statSync } from 'fs';
 import { execSync } from 'child_process';
 import { GitBinding } from '@sintesi/core';
+import { resolve } from 'path';
 
 export class RetrievalService {
     private vectorStore: VectorStoreService;
@@ -64,9 +65,7 @@ export class RetrievalService {
                 if (summary.changedFiles) {
                     // changedFiles from Rust are relative paths
                     changedFilesFromGit = new Set(
-                        summary.changedFiles.map((p) =>
-                            require('path').resolve(this.projectRoot, p),
-                        ),
+                        summary.changedFiles.map((p) => resolve(this.projectRoot, p)),
                     );
                     useGitDiff = true;
                     this.logger.debug(
