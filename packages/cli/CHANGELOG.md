@@ -1,5 +1,18 @@
 # @sintesi/sintesi
 
+## 0.20.0
+
+### Minor Changes
+
+- f8f0da8: - Improve incremental indexing: use GitBinding to diff commits and process only changed files
+    - Persist last processed commit SHA in index state for accurate incremental runs
+- 3869198: - Introduce DOC_DISCOVERY_PROMPT for high-level architectural discovery
+    - Integrate a discovery step in DocumentationPlanner leveraging AI researcher agent
+
+### Patch Changes
+
+- @sintesi/core@0.20.0
+
 ## 0.19.0
 
 ### Minor Changes
