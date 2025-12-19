@@ -244,7 +244,7 @@ export class DocumentationBuilder {
                     this.logger.error(`✖ Failed ${item.path}: ${e}`);
                 }
             },
-            3, // Concurrency for Writing (Keep manageable)
+            10, // Concurrency for Writing
         );
 
         // Save Lineage Data with SHA
@@ -365,7 +365,7 @@ export class DocumentationBuilder {
                     relevantFiles: sourceFiles,
                 });
             },
-            5, // Higher concurrency for Research
+            10, // Higher concurrency for Research (I/O bound)
         );
 
         return results;

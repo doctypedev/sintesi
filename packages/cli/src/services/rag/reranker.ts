@@ -34,12 +34,20 @@ export class RerankingService {
 
         try {
             this.logger.debug(`Reranking ${documents.length} documents...`);
-            const response = await this.cohere.rerank({
+
+            // Timeout promise
+            const timeout = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Reranking timed out (10s)')), 10000),
+            );
+
+            const cohereCall = this.cohere.rerank({
                 documents: documents.map((doc) => ({ text: doc })),
                 query: query,
                 topN: topN,
                 model: 'rerank-english-v3.0', // Standard high-performance model
             });
+
+            const response = await Promise.race([cohereCall, timeout]);
 
             // Map result indices back
             return response.results.map((r) => r.index);
