@@ -8,6 +8,7 @@ import { ChangeAnalysisService } from './analysis-service';
 import { createAIAgentsFromEnv, AIAgents, AIAgentRoleConfig } from '../../../ai';
 import { getContextPrompt } from '../prompts/analysis';
 import { RetrievalService } from './rag';
+import { SkeletonizerService } from './skeletonizer';
 
 export interface ProjectConfig {
     binName?: string;
@@ -26,12 +27,14 @@ export interface TechStack {
 
 export class GenerationContextService {
     private retrievalService: RetrievalService;
+    private skeletonizer: SkeletonizerService;
 
     constructor(
         private logger: Logger,
         private cwd: string,
     ) {
         this.retrievalService = new RetrievalService(logger, cwd);
+        this.skeletonizer = new SkeletonizerService(logger);
     }
 
     /**
@@ -58,6 +61,18 @@ export class GenerationContextService {
             return await this.retrievalService.retrieveContext(query);
         } catch (e) {
             this.logger.debug('RAG retrieval failed: ' + e);
+            return '';
+        }
+    }
+
+    /**
+     * Retrieve high-level conceptual context.
+     */
+    async retrieveConceptualContext(query: string): Promise<string> {
+        try {
+            return await this.retrievalService.retrieveConceptualContext(query);
+        } catch (e) {
+            this.logger.debug('RAG conceptual retrieval failed: ' + e);
             return '';
         }
     }
@@ -381,7 +396,7 @@ export class GenerationContextService {
                         entryPoint = candidatePath;
                     }
                 } catch (e) {
-                    /* ignore */
+                    // Ignore
                 }
             }
         }
@@ -509,13 +524,10 @@ export class GenerationContextService {
 
     /**
      * Reads the content of relevant files to provide context to the LLM.
-     */
-    /**
-     * Reads the content of relevant files to provide context to the LLM.
      * Returns simply the content string for backward compatibility.
      */
     readRelevantContext(
-        item: { path: string; description: string; relevantPaths?: string[] },
+        item: { path: string; description: string; relevantPaths?: string[]; type?: string },
         context: ProjectContext,
     ): string {
         return this.readRelevantContextWithFiles(item, context).content;
@@ -525,13 +537,21 @@ export class GenerationContextService {
      * Reads relevant context and returns both content string and list of utilized file paths.
      */
     readRelevantContextWithFiles(
-        item: { path: string; description: string; relevantPaths?: string[] },
+        item: { path: string; description: string; relevantPaths?: string[]; type?: string },
         context: ProjectContext,
     ): { content: string; files: string[] } {
         const MAX_CONTEXT_CHARS = 30000;
         let content = '';
         let chars = 0;
         const utilizedFiles: string[] = [];
+
+        // Is this a User Guide? If so, we use the Skeletonizer to hide implementation details.
+        // We consider 'guide', 'tutorial', 'concept' as user-facing types.
+        const isUserDocs =
+            item.type === 'guide' ||
+            item.type === 'tutorial' ||
+            item.type === 'concepts' ||
+            item.type === 'intro';
 
         // 1. Identify Target Files (Seeds)
         let targetFiles: string[] = [];
@@ -637,8 +657,18 @@ export class GenerationContextService {
                 // Give more space to configuration/entry files
                 const limit = isSeed || priorityFiles.includes(filePath) ? 8000 : 2000;
 
-                content += `\n\n--- FILE: ${filePath} ---\n${fileContent.substring(0, limit)}`;
-                chars += Math.min(fileContent.length, limit);
+                content += `\n\n--- FILE: ${filePath} ---\n`;
+
+                if (isUserDocs && (filePath.endsWith('.ts') || filePath.endsWith('.tsx'))) {
+                    // Smart Skeleton text
+                    const skeleton = this.skeletonizer.generateSkeleton(filePath, fileContent);
+                    content += skeleton.substring(0, limit);
+                    chars += Math.min(skeleton.length, limit);
+                } else {
+                    // Full Content
+                    content += fileContent.substring(0, limit);
+                    chars += Math.min(fileContent.length, limit);
+                }
 
                 // 4. Associated Tests (Usage Examples)
                 const testCandidates = [

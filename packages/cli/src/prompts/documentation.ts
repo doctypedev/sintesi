@@ -89,6 +89,12 @@ ${repoInstructions}
 ## Source Code (GROUND TRUTH)
 ${sourceContext}
 
+> **NOTE ON CONTEXT**: 
+> - If code appears as a "Skeleton" (bodies hidden), TRUST the signatures and JSDoc. Do NOT hallucinate implementation details.
+> - **USAGE EXAMPLES**: Rely heavily on "ASSOCIATED TEST" sections found in the context. They are the executable truth.
+>   - **CRITICAL**: Transform test cases into clean user-friendly code snippets. Remove assertions (e.g., 'expect(result).toBe(...)') and setup boilerplate. Show only the usage path.
+> - **CONCEPTS**: Use "CONCEPT / GUIDE" sections from RAG for high-level explanations.
+
 ## Recent Changes (Diff)
 ${gitDiff || 'None'}
 
@@ -108,9 +114,17 @@ ${currentContent}
 ${SHARED_SAFETY_RULES}
 
 # FORMAT RULES
-- **YAML Frontmatter**: title, description, icon (emoji), order.
-- **Mermaid**: Use for flows/processes.
+- **YAML Frontmatter**: title, description, icon (emoji), order. 
+  - **CRITICAL**: Use double quotes for all string values to prevent YAML errors (e.g., title: "My Title: Subtitle").
+- **Mermaid**: Use for flows/processes. **CRITICAL**: ALWAYS quote node labels (e.g., id["Label (text)"]) to prevent syntax errors with parentheses or special chars.
 - **Callouts**: <Callout type="info"> text </Callout>
+- **STRICT STYLING RULES**:
+  - **NO WALL OF BULLETS**: Do NOT use bullet points for everything. Use paragraphs for explanations.
+  - **BACKTICKS**: ALWAYS use backticks \`like this\` for: file paths, directory names, variable names, class names, function signatures, CLI flags.
+  - **BOLD**: Use **bold** for key concepts or emphasis.
+  - **HEADERS**: Use H2 (##) and H3 (###) to break up long sections. Do not nest bullets deeper than 2 levels.
+  - **TABLES**: MUST use Markdown tables for: CLI Flags, Config Properties, Arguments. Do NOT use bullet lists for these.
+  - **CODE BLOCKS**: Use fenced code blocks with language tags (e.g., \`\`\`typescript) for ALL examples.
 - **MARKDOWN ONLY**: Raw content. No chatter.
 `;
 
@@ -302,4 +316,6 @@ ${currentContent}
 - **NO** rephrasing unless needed.
 - **NO** touching unrelated sections.
 - Return brief summary of changes.
+- **YAML**: If updating frontmatter, ALWAYS use double quotes for string values (title: "Foo: Bar").
+- **STYLE**: Maintain rich formatting. Use backticks for code elements, tables for properties, and bold for emphasis.
 `;

@@ -244,7 +244,7 @@ export class DocumentationBuilder {
                     this.logger.error(`✖ Failed ${item.path}: ${e}`);
                 }
             },
-            3, // Concurrency for Writing (Keep manageable)
+            10, // Concurrency for Writing
         );
 
         // Save Lineage Data with SHA
@@ -255,6 +255,9 @@ export class DocumentationBuilder {
             this.logger.warn('Failed to capture current git SHA for lineage: ' + e);
         }
         this.lineageService.save();
+
+        // PHASE 3: FORMATTING
+        await this.formatDocumentation(outputDir);
 
         this.logger.success(`\nDocumentation successfully generated in ${outputDir}/\n`);
     }
@@ -323,9 +326,25 @@ export class DocumentationBuilder {
                             // RAG returns snippets, not full file identity easily in current impl.
                             // Future improvement: Return Metadata with RAG results.
                             const searchResults = await Promise.all(
-                                queries.map((q) =>
-                                    this.generationContextService.retrieveContext(q),
-                                ),
+                                queries.map((q) => {
+                                    // SMART RAG STRATEGY:
+                                    // If writing a User Guide/Concept, prioritize Markdown/Concepts.
+                                    // If writing API Ref, prioritize Code.
+                                    const isUserDoc = [
+                                        'guide',
+                                        'tutorial',
+                                        'concepts',
+                                        'intro',
+                                    ].includes(item.type);
+
+                                    if (isUserDoc) {
+                                        return this.generationContextService.retrieveConceptualContext(
+                                            q,
+                                        );
+                                    } else {
+                                        return this.generationContextService.retrieveContext(q);
+                                    }
+                                }),
                             );
                             ragContext = Array.from(new Set(searchResults)).join('\n\n');
                         }
@@ -346,9 +365,39 @@ export class DocumentationBuilder {
                     relevantFiles: sourceFiles,
                 });
             },
-            5, // Higher concurrency for Research
+            10, // Higher concurrency for Research (I/O bound)
         );
 
         return results;
+    }
+
+    /**
+     * Attempts to format the generated documentation using Prettier.
+     * Degrades gracefully if Prettier is not found or fails.
+     */
+    private async formatDocumentation(outputDir: string): Promise<void> {
+        this.logger.info('\n✨ PHASE 3: Formatting...');
+        try {
+            // We use npx to use the local project's prettier if available, or download if configured.
+            // We adding --no-install to avoid downloading if not present?
+            // Better: Just run it. If it fails, we catch.
+            // We target all markdown files in the output directory.
+            const targetPattern = `"${outputDir}/**/*.md"`;
+
+            // Check if prettier is runnable first?
+            // Simpler: Try running it.
+            this.logger.debug(`  Running: npx prettier --write ${targetPattern}`);
+            execSync(`npx prettier --write ${targetPattern}`, {
+                stdio: 'inherit', // Let user see output/errors if they want
+                encoding: 'utf-8',
+            });
+            this.logger.success('  ✔ Prettier formatting applied.');
+        } catch (e: any) {
+            // If exit code is non-zero, it likely means syntax errors or not found.
+            // We don't want to crash the whole process, just warn.
+            this.logger.warn(
+                `  ⚠ Prettier formatting skipped or failed (likely syntax errors in MD): ${e.message?.split('\n')[0]}`,
+            );
+        }
     }
 }
