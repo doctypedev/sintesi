@@ -1,296 +1,266 @@
 ---
-title: Getting Started with Sintesi
-description: 'Quick start guide for end users: installation (pnpm workspace), basic configuration (.env.example), running the CLI, and an end-to-end example that generates docs for a repository.'
-icon: 🚀
-order: 1
+title: 'Getting Started: Install & First Run'
+description: 'Step-by-step installation and first-run guide: installing `pnpm`, building the Rust N‑API core, running the CLI locally, and running the VitePress docs preview.'
+icon: '🚀'
+order: '1'
 ---
 
-# Getting Started with Sintesi
+<Callout type="info">
+This guide covers building and running the monorepo locally. The repository URL used in examples is `https://github.com/doctypedev/doctype.git`. The CLI loads environment variables from a `.env` file (`packages/cli` uses `dotenv`), so create one if your workflows require API keys or other secrets.
+</Callout>
 
-Welcome to Sintesi. This quick-start guide walks you through installing the monorepo, configuring the environment, running the CLI, and performing a simple end-to-end example that generates documentation for a repository.
+## Overview
+
+This document explains the minimal steps to:
+
+1. Install `pnpm`.
+2. Clone the repository.
+3. Install workspace dependencies.
+4. Build the Rust N‑API core (`crates/core`).
+5. Build and run the `sintesi` CLI locally.
+6. Start a VitePress preview of the docs.
+
+A high-level flow is shown below.
 
 ```mermaid
 flowchart TD
-    A[Clone or open repo] --> B[Install dependencies]
-    B --> C[Configure environment]
-    C --> D[Run CLI: sintesi documentation]
-    D --> E[Docs generated under docs/]
-    E --> F[Preview or build the docs site]
+  A["Clone repository"] --> B["Install dependencies (`pnpm install`)"]
+  B --> C["Build Rust N-API core (`crates/core`)"]
+  C --> D["Build monorepo (`pnpm run build`)"]
+  D --> E["Run CLI locally (`node packages/cli/dist/cli/src/index.js`)"]
+  D --> F["Preview docs (`pnpm run docs:preview` or `pnpm run docs:dev`)"]
 ```
-
-This guide assumes you’re working with the Sintesi monorepo root that uses pnpm workspaces. If you already have a Sintesi project, you can apply these steps to your repository to generate and maintain documentation with AI-assisted tooling.
-
----
-
-## What You’ll Need
-
-- **Node.js** (recommended: v18+)
-- **pnpm** (as the workspace manager)
-- **Access to AI services** via environment variables (OpenAI, Cohere, etc.)
-
-**Repository URL**: [https://github.com/doctypedev/sintesi.git](https://github.com/doctypedev/sintesi.git)
-
-> Note: The CLI in these examples uses OpenAI as the primary AI provider. Actual AI provider selection and usage depend on the environment variables you set (e.g., `OPENAI_API_KEY`, `COHERE_API_KEY`) and the active pipeline configured in your environment or deployment.
-
-> The root monorepo uses a pnpm workspace configuration (`pnpm-workspace.yaml`) and exposes a CLI at `packages/cli`. The CLI commands are designed to verify, readme, document, and generate changesets with AI assistance.
-
----
 
 ## Prerequisites
 
-- Ensure you have **Node.js** and **pnpm** installed.
-- Confirm you’re at the repository root (where `pnpm-workspace.yaml` lives).
+Ensure you have these installed:
 
----
+- `Node.js` (supported by the repo)
+- `npm` (bundled with Node)
+- Rust toolchain (`rustc`, `cargo`) for building the native core
+- `pnpm` (the repo's `packageManager` is `pnpm@8.15.5`)
 
-## Installation (pnpm workspace)
+Important: the project pins pnpm to 8.15.5 (see `packageManager` and root scripts). To avoid CI drift, make sure automated environments (CI runners, GitHub Actions, etc.) use pnpm@8.15.5.
 
-1.  **Install dependencies at the workspace root**
-
-    From the repository root:
-
-    ```bash
-    pnpm install
-    ```
-
-2.  **Verify the CLI is available**
-
-    You can install the CLI globally (recommended for CI or convenient local use):
-
-    ```bash
-    npm install -g sintesi-monorepo-root
-    sintesi --version
-    ```
-
-    Or run it via `npx` without a global install:
-
-    ```bash
-    npx sintesi --version
-    ```
-
-    This should print a version like `0.1.0` (as defined in the CLI entry).
-
-> **Tip**: In a pnpm workspace, you can also run scripts from the root without needing to install globally:
->
-> - `pnpm run docs:dev`
-> - `pnpm run docs:build`
-> - `pnpm run docs:preview`
-
----
-
-## Environment Configuration
-
-The AI-powered features require API keys. Start by copying the example and filling in your keys.
-
-1.  **Copy and edit**:
-
-    ```bash
-    cp .env.example .env
-    ```
-
-2.  **Required Values**:
-    - `OPENAI_API_KEY`: Required for AI-powered documentation generation.
-
-3.  **Optional Keys** (enable additional capabilities):
-    - `COHERE_API_KEY`: For embeddings/RAG.
-    - `HELICONE_API_KEY`: Optional, for observability and telemetry. Note: Helicone is available for optional observability; the CLI does not currently wire Helicone into the AI inference pipeline by default.
-    - `GEMINI_API_KEY`: Optional, reserved for future integrations. Gemini is included in environment examples for potential future use but is not currently wired into the active AI pipeline.
-
-**Example contents**:
-
-```env
-OPENAI_API_KEY=sk-your-openai-api-key-here
-HELICONE_API_KEY=sk-helicone-your-api-key-here
-COHERE_API_KEY=your-cohere-api-key-here
-GEMINI_API_KEY=your-gemini-api-key-here
-```
-
-> **Important**: `OPENAI_API_KEY` is **REQUIRED** for AI-powered documentation generation. The other keys enable optional features like observability and semantic retrieval or are reserved for future integrations.
-
-> **Safety Tip**: Keep `.env` private and do not commit it to version control.
-
----
-
-## Running the CLI
-
-Sintesi exposes several commands.
-
-### Available Commands
-
-- `check`: Verify documentation is in sync with code.
-- `readme`: Generate a `README.md` based on project context.
-- `documentation`: Generate comprehensive documentation site structure.
-- `changeset`: Generate a changeset file from code changes using AI.
-
-> Command-line flags and their names can change across releases; consult the official CLI reference for the authoritative, up-to-date list of options:  
-> 👉 CLI Reference: https://sintesicli.dev/reference/commands.html
-
-### Key Flags
-
-#### `readme`
-
-| Flag        | Alias | Description             | Default     |
-| :---------- | :---- | :---------------------- | :---------- |
-| `--output`  | `-o`  | Output file path        | `README.md` |
-| `--force`   | `-f`  | Overwrite existing file |             |
-| `--verbose` |       | Enable verbose logging  |             |
-
-#### `documentation`
-
-| Flag           | Alias | Description             | Default |
-| :------------- | :---- | :---------------------- | :------ |
-| `--output-dir` | `-o`  | Output directory        | `docs`  |
-| `--force`      | `-f`  | Force full regeneration |         |
-| `--verbose`    |       | Enable verbose logging  |         |
-
-#### `check`
-
-| Flag              | Alias   | Description                                        | Default |
-| :---------------- | :------ | :------------------------------------------------- | :------ |
-| `--verbose`       |         | Enable verbose logging                             |         |
-| `--strict`        |         | Exit with error if drift detected (can be negated) | `true`  |
-| `--smart`         |         | Use AI to detect high-level drift                  |         |
-| `--base`          |         | Base branch for smart check                        |         |
-| `--readme`        |         | Check only README drift                            |         |
-| `--documentation` | `--doc` | Check only documentation drift (alias: `--doc`)    |         |
-| `--output`        | `-o`    | Output file path for README check                  |         |
-| `--output-dir`    | `-d`    | Output directory for documentation check           |         |
-
-Note: The CLI uses yargs for flag parsing. `--strict` defaults to true; yargs supports negation, so you can pass `--no-strict` to disable strict behavior (useful in CI where you want a non-error exit code while still reporting drift).
-
-#### `changeset`
-
-| Flag             | Alias | Description                         |
-| :--------------- | :---- | :---------------------------------- |
-| `--base-branch`  | `-b`  | Base branch to compare against      |
-| `--staged-only`  | `-s`  | Only analyze staged changes         |
-| `--package-name` | `-p`  | Package name for the changeset      |
-| `--output-dir`   | `-o`  | Output directory                    |
-| `--skip-ai`      |       | Skip AI analysis                    |
-| `--version-type` | `-t`  | `major` \| `minor` \| `patch`       |
-| `--description`  | `-d`  | Manually specify description        |
-| `--verbose`      |       | Enable verbose logging              |
-| `--interactive`  | `-i`  | Force interactive package selection |
-| `--force-fetch`  |       | Fetch latest changes from remote    |
-
-### Usage Examples
-
-Check for documentation drift with verbose and smart checks:
+If you don't have `pnpm` installed, install the exact version used by the project:
 
 ```bash
-npx sintesi check --verbose --smart --base main
+# Option A: install via npm (global)
+npm install -g pnpm@8.15.5
+
+# Option B: use corepack (recommended in CI)
+corepack enable
+corepack prepare pnpm@8.15.5 --activate
 ```
 
-Check only documentation drift (two equivalent forms: long and alias):
+## 1 — Clone the repository
 
 ```bash
-npx sintesi check --documentation --base main
-# or using the alias:
-npx sintesi check --doc --base main
+git clone https://github.com/doctypedev/doctype.git
+cd doctype
 ```
 
-Generate a README for the current project:
+## 2 — Install workspace dependencies
 
-```bash
-npx sintesi readme
-```
-
-Generate a changeset from current changes:
-
-```bash
-npx sintesi changeset --base-branch main
-```
-
-Generate documentation for the project:
-
-```bash
-npx sintesi documentation
-```
-
----
-
-## End-to-End Example: Generate Docs for a Repository
-
-**Goal**: From a fresh checkout, install, configure, and generate documentation for the repository, then preview the docs site locally.
-
-### Step 1: Install Workspace Dependencies
-
-From the repository root:
+At the repository root run:
 
 ```bash
 pnpm install
 ```
 
-### Step 2: Configure Environment
+This respects `pnpm-workspace.yaml` and installs dependencies for the root and workspace packages (including `packages/*` and `crates/core`).
 
-Copy and populate the environment file:
+## 3 — Build the Rust N‑API core
 
-```bash
-cp .env.example .env
-```
+The Rust core provides native Node bindings living in `crates/core`. The repository's canonical and up-to-date build instructions live in `crates/core/README.md` — check that file first. Below are the common workflows you may encounter; pick the one that matches what the crate's README or package files describe.
 
-Fill in `OPENAI_API_KEY` (required) and other optional keys. Note that `HELICONE_API_KEY` and `GEMINI_API_KEY` are included for observability and potential future integrations; they are optional and are not currently wired into the active AI inference pipeline by default.
+A. If `crates/core` provides Node-level scripts (package.json with a `build` script)
 
-### Step 3: Generate Documentation
-
-Generate the documentation site structure and content with AI planning:
+- Verify by inspecting `crates/core/package.json` for a `scripts.build` entry.
+- If present, run the crate's documented commands (use pnpm if the repo uses it):
 
 ```bash
-npx sintesi documentation
+cd crates/core
+pnpm install        # or npm install if pnpm is not used for that crate
+pnpm run build      # runs the crate's documented build/packaging steps
+# or, for a debug build (if supported by the crate)
+pnpm run build:debug
 ```
 
-This will analyze the project, plan the docs structure, and generate content in the `docs/` directory.
+B. If the crate is built directly with Cargo (no package.json build script)
 
-### Step 4: Preview Locally
+- Build the native library with Cargo and then run any repository-provided packaging helper (if present). The helper could live under `crates/core/scripts/` or be described in the crate README — follow that helper when available.
 
-Start the VitePress documentation site:
+```bash
+cd crates/core
+cargo build --release
+
+# If the repository includes a helper script to package/copy the produced native binary into
+# the platform npm package, run it from the repo root. Examples (check which exists):
+# ./crates/core/scripts/build.sh
+# node ./crates/core/scripts/packageNative.js
+# pnpm -w --filter ./crates/core run package
+```
+
+Notes:
+
+- Always follow the steps described in `crates/core/README.md` when present — the crate may include packaging/copy steps specific to this repo.
+- Building native addons requires a working Rust toolchain (`rustup`, `cargo`) and platform build tools (Xcode Command Line Tools on macOS, build-essential on Linux, Visual Studio Build Tools on Windows).
+- The crate commonly places platform-specific artifacts into `crates/core/npm/` or into `crates/core/target/*`. If you run into a runtime "missing native binary" error, inspect those locations or re-run the crate packaging helper.
+
+## 4 — Build the monorepo (TypeScript packages & CLI)
+
+From the repository root you can build all packages:
+
+```bash
+pnpm run build
+```
+
+The root `build` script runs the workspace build (`pnpm -r build`). On success it prints a helpful path to the built CLI:
+
+```
+✅ Build Completed. Run: $(pwd)/packages/cli/dist/cli/src/index.js
+```
+
+If you prefer to build only the CLI package (when a package-level `build` script exists), use a recursive or filtered build:
+
+```bash
+# run build for all packages that define it
+pnpm -r build
+
+# or run build only for the CLI package (if you prefer)
+pnpm -w --filter ./packages/cli run build
+```
+
+## 5 — Run the CLI locally
+
+After a successful build the CLI entrypoint is available as JavaScript under `packages/cli/dist/cli/src/index.js` (the `dist` tree is generated by the package build — typically TypeScript -> JS transpilation and bundling). You can run it directly with Node:
+
+```bash
+# run help
+node packages/cli/dist/cli/src/index.js --help
+
+# run a command, for example the README generator
+node packages/cli/dist/cli/src/index.js readme --output README.generated.md --force
+
+# run the documentation command (example)
+node packages/cli/dist/cli/src/index.js documentation --output-dir docs/generated --force
+```
+
+Alternative local invocation methods:
+
+- If the CLI package defines a bin in `packages/cli/package.json`, you can execute it via pnpm exec without referencing the dist path explicitly:
+
+```bash
+# run the package's declared binary (if the package exposes "bin": { "sintesi": "..." })
+pnpm -C packages/cli exec sintesi --help
+# or
+pnpm --filter ./packages/cli exec -- sintesi readme --output README.generated.md --force
+```
+
+- You can also use pnpm linking to make the CLI available globally in your development environment:
+
+```bash
+# from repository root or packages/cli
+pnpm -C packages/cli link
+# then run:
+sintesi --help
+```
+
+Notes:
+
+- The `packages/cli/dist/cli/src/index.js` path is produced by the package-level build. If the package build changes (different bundler or output path), follow the path printed by the root build or consult `packages/cli/package.json`/build scripts.
+- Running the built JS directly is a straightforward local workflow; using pnpm exec or pnpm link can be more convenient for iterative testing and scripting.
+
+### CLI Flags (reference)
+
+| Flag              |   Alias | Type    | Description                                                                |             Default |
+| ----------------- | ------: | ------- | -------------------------------------------------------------------------- | ------------------: |
+| `--output`        |    `-o` | string  | Output file path for commands that generate a single file (e.g., `readme`) |              (none) |
+| `--force`         |    `-f` | boolean | Overwrite existing files / force full regeneration                         |             `false` |
+| `--verbose`       |  (none) | boolean | Enable verbose logging                                                     |             `false` |
+| `--output-dir`    |    `-o` | string  | Output directory for generated documentation or changesets                 | (varies by command) |
+| `--strict`        |  (none) | boolean | Exit with error code if drift detected (used by `check`)                   |              `true` |
+| `--smart`         |  (none) | boolean | Use AI smart comparison in checks                                          |              `true` |
+| `--base`          |  (none) | string  | Base branch for comparisons (used by `check`)                              |              (none) |
+| `--readme`        |  (none) | boolean | Check only README drift (used by `check`)                                  |             `false` |
+| `--documentation` | `--doc` | boolean | Check only documentation drift                                             |             `false` |
+| `--base-branch`   |    `-b` | string  | Base branch for `changeset` command                                        |              `main` |
+| `--staged-only`   |    `-s` | boolean | Analyze only staged changes (`changeset`)                                  |             `false` |
+| `--package-name`  |    `-p` | string  | Package name for `changeset` (auto-detected if omitted)                    |              (none) |
+| `--skip-ai`       |  (none) | boolean | Skip AI analysis (`changeset`)                                             |             `false` |
+| `--version-type`  |    `-t` | string  | Manually specify version bump (`major`, `minor`, `patch`)                  |              (none) |
+| `--description`   |    `-d` | string  | Manually supply description for changeset                                  |              (none) |
+
+<Callout type="info">
+Boolean flags support implicit negation (e.g., `--no-strict`) via the CLI framework. Preserve explicit defaults when scripting automation.
+</Callout>
+
+## 6 — Preview the docs (VitePress)
+
+Documentation scripts live at the monorepo root. Two common workflows are available.
+
+Run the VitePress development server (hot reload):
 
 ```bash
 pnpm run docs:dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) to view the generated docs.
+Build and preview a production site:
 
-### Optional Steps
+```bash
+# generate sidebar + build preview server
+pnpm run docs:preview
+```
 
-- **Verify drift**:
+Note: the `docs:*` scripts invoke `generate:sidebar` first. Concretely, `generate:sidebar` (implemented in `tsx docs/scripts/generateSidebar.ts`) scans `docs/` and produces the sidebar config, and then the VitePress command runs (dev, build, or preview). Knowing this sequence helps if you need to modify sidebar generation or debug docs build issues.
 
-    ```bash
-    npx sintesi check
-    # or scoped:
-    npx sintesi check --readme
-    ```
+| Script                      | What it does                                                               |
+| --------------------------- | -------------------------------------------------------------------------- |
+| `pnpm run generate:sidebar` | Generates a VitePress sidebar config by scanning `docs/`                   |
+| `pnpm run docs:dev`         | Runs `generate:sidebar` then `vitepress dev docs` (dev server)             |
+| `pnpm run docs:build`       | Runs `generate:sidebar` then `vitepress build docs` (production build)     |
+| `pnpm run docs:preview`     | Runs `generate:sidebar` then `vitepress preview docs` (preview built site) |
 
-    If you run checks in CI and prefer not to fail the job on drift, you can disable strict mode. The `--strict` flag defaults to `true`; yargs supports negation, so use:
+Access the preview URL printed by VitePress after `docs:dev` or `docs:preview` starts.
 
-    ```bash
-    npx sintesi check --no-strict
-    ```
+## Troubleshooting
 
-- **Force update README**:
-    ```bash
-    npx sintesi readme --force
-    ```
+- Build failures for the Rust core: verify Rust toolchain is installed (`rustup`, `cargo`) and native build tools are available for your OS.
+- Missing native binary at runtime: ensure you built and packaged the native `.node` binary for your platform under `crates/core`'s output (commonly `crates/core/target/` or `crates/core/npm/{platform}`) or use the crate's packaging script described in `crates/core/README.md`.
+- CLI failing due to environment: create a `.env` file in the repository root or `packages/cli` when the command needs API keys (the CLI uses `dotenv`).
+- If `pnpm` version mismatches cause issues, install the pinned `pnpm@8.15.5` as shown above and ensure CI workers use the same pinned version (use Corepack in CI to activate a specific pnpm).
+- If a build or packaging helper script is referenced but not present, check the crate README for the correct command or open an issue in the repository for clarification.
 
----
+## Example: Full quick-run (macOS / Linux friendly)
 
-## What to Expect
+```bash
+# clone
+git clone https://github.com/doctypedev/doctype.git
+cd doctype
 
-1.  The CLI processes the repository, detects monorepo structure or single-package layout, and uses AI to draft documentation content.
-2.  Generated docs appear under the `docs` directory, ready for preview or further customization.
-3.  You can continue iterating: adjust code, re-run documentation generation, and verify drift with the `check` command.
+# install pnpm if needed (one-time)
+npm install -g pnpm@8.15.5
 
-- The docs site supports Mermaid diagrams — you can include Mermaid blocks in docs pages.
+# install workspace deps
+pnpm install
 
-## Next Steps
+# build native core (common flow: cargo build + package helper)
+cd crates/core
+cargo build --release
+# if crates/core provides a helper, run it from the repo root (see README)
+# e.g. ./crates/core/scripts/build.sh
 
-- Familiarize yourself with the CLI options to tailor the generation workflow to your project.
-- Explore the generated docs structure in `docs/` and adjust as needed for your team's workflow.
-- Integrate Sintesi into CI to ensure documentation stays in sync with code changes.
-- For more on the system architecture and RAG, see:
-    - Concepts — Architecture: https://sintesicli.dev/concepts/architecture.html
-    - Concepts — RAG: https://sintesicli.dev/concepts/rag.html
+cd ../..
 
-::: info Note
-This quick-start guide assumes a standard Sintesi monorepo setup using pnpm workspaces as defined in `pnpm-workspace.yaml` at the repository root. If your project uses a different workspace layout, adjust the commands accordingly (e.g., running from a subpackage directory or using `--filter` when invoking workspace scripts).
-:::
+# build monorepo packages (root)
+pnpm run build
+
+# run the CLI help (built JS path printed by the build)
+node packages/cli/dist/cli/src/index.js --help
+
+# run a docs preview (in a new terminal)
+pnpm run docs:preview
+```
+
+If you hit a specific error, run the failing command with `--verbose` where supported (e.g., `--verbose` on CLI commands) to get detailed logs. If the crate's README provides different or additional steps for packaging the native binary, follow that canonical source.

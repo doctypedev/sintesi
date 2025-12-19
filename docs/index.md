@@ -1,83 +1,109 @@
 ---
-layout: home
-
-hero:
-    name: 'Sintesi'
-    text: 'Autonomous Documentation Platform'
-    tagline: Keep your documentation in sync with your code using AI agents and RAG.
-    actions:
-        - theme: brand
-          text: Get Started
-          link: /guides/getting-started
-        - theme: alt
-          text: View on GitHub
-          link: https://github.com/doctypedev/doctype
-
-features:
-    - title: Multi-Agent AI Workflow
-      details: Planner, Writer, Reviewer, and Researcher agents collaborate to produce high-quality, up-to-date docs.
-      icon: 🤖
-    - title: RAG-Powered
-      details: Retrieval-Augmented Generation ensures your documentation is semantically accurate and context-aware.
-      icon: 🧠
-    - title: Monorepo Native
-      details: Built for complex workspaces with per-package change tracking and scalable orchestration.
-      icon: 🏢
+title: 'Sintesi — Quick Start & CLI'
+description: 'Landing page: what Sintesi is, where to get the CLI, and one-line command examples for core commands'
+icon: '⚡️'
+order: '1'
 ---
 
-## Quick Start
+## What is Sintesi
 
-Install the Sintesi CLI (global install recommended for CI or local usage):
+Sintesi is a self-maintaining documentation engine that keeps your documentation in sync with your codebase. It uses **multi-agent AI** and **Retrieval-Augmented Generation (RAG)** to analyze source code, plan documentation structure, generate content, and verify drift so docs never rot.
+
+Sintesi is monorepo-native and ships a CLI named `sintesi` that runs documentation generation, README generation, and drift checks.
+
+<Callout type="info">
+Install the CLI globally to use the `sintesi` commands shown below. For CI usage see the GitHub Action example.
+</Callout>
+
+## Get the code and install the CLI
+
+Clone the repository:
+
+```bash
+git clone https://github.com/doctypedev/sintesi.git
+cd sintesi
+```
+
+Install the published CLI globally:
 
 ```bash
 npm install -g @sintesi/sintesi
 ```
 
-### Core Workflow
+You can also build the monorepo locally (requires `pnpm`):
 
-```mermaid
-graph TD
-    A[Code Changes] --> B[Sintesi CLI]
-    B --> C[AI Agents]
-    C --> D[Updated Docs]
+```bash
+pnpm install
+pnpm -w build
 ```
 
-### Common Commands
+## One-line command examples
 
-::: code-group
+Use these one-liners to run the most common, verified workflows.
 
-```bash [Generate Docs]
-# Generate documentation for the current project
-sintesi documentation
+```bash
+# Release (runs changesets then publishes)
+pnpm run release
 ```
 
-```bash [Check Drift]
-# Verify documentation integrity
+```bash
+# Run drift checks (CI-friendly)
 sintesi check
 ```
 
-```bash [Update README]
-# Generate a README based on project context
+```bash
+# Generate or update README.md based on repository context
 sintesi readme
 ```
 
-:::
+```bash
+# Generate project documentation (site-friendly structure by default)
+sintesi documentation
+```
 
-## Primary Use-Cases
+Force regeneration (bypass existing docs checks):
 
-- **CLI for automated documentation**: A lightweight, scriptable command-line interface that drives documentation generation, verification, and changeset creation.
-- **RAG-enabled doc generation**: AI-assisted generation that reads actual source code, indexes context, and writes up-to-date documentation.
-- **Monorepo-aware workflows**: Detects monorepo structure, maps changes to affected packages, and supports per-package updates and changesets.
+```bash
+sintesi readme --force
+sintesi documentation --force
+```
 
----
+## CLI Flags (selected, verified)
 
-## CLI Reference Summary
+| Flag          | Applies To                | Description                                                          |
+| ------------- | ------------------------- | -------------------------------------------------------------------- |
+| `--force`     | `readme`, `documentation` | Ignore existing output and regenerate from scratch.                  |
+| `--no-strict` | `check`                   | Allow non-blocking CI usage (do not fail the pipeline on detection). |
+| `--readme`    | `check`                   | Run check only for the `README.md`.                                  |
+| `--doc`       | `check`                   | Run check only for the documentation site.                           |
 
-| Command         | Description                                           |
-| :-------------- | :---------------------------------------------------- |
-| `readme`        | Generate a `README.md` based on project context.      |
-| `documentation` | Generate comprehensive documentation site structure.  |
-| `check`         | Verify documentation is in sync with code.            |
-| `changeset`     | Generate a changeset file from code changes using AI. |
+> For a complete, up-to-date list of flags and options consult the CLI reference: https://sintesicli.dev/reference/commands.html
 
-> **Note**: The CLI surface is implemented in the `packages/cli` workspace. Commands documented here map to the code paths under `packages/cli`.
+## Typical workflow
+
+```mermaid
+flowchart TD
+  A["Analyze: scan project & code"] --> B["Plan: design docs structure"]
+  B --> C["Generate: Writer produces docs"]
+  C --> D["Review: Reviewer agent validates content"]
+  D --> E["Verify: `sintesi check` ensures no drift"]
+```
+
+## CI example (summary)
+
+Integrate Sintesi into CI to run checks and optionally create or update docs via a workflow step. In CI you typically provide AI/embedding credentials as secrets (for RAG features) and run the `sintesi` commands or use the supplied GitHub Action.
+
+- Provide OPENAI_API_KEY if you use OpenAI for embeddings (required when using OpenAI as the embeddings provider).
+- COHERE_API_KEY is optional and enables reranking in the RAG pipeline.
+
+See the repository README and the CLI reference for a full CI example and action inputs.
+
+## Notes
+
+Sintesi ships a root `pnpm` script:
+
+- `pnpm run release` — convenience script that runs `pnpm changeset version && pnpm changeset publish` as defined in the root `package.json`.
+
+The `documentation` command generates an opinionated, site-ready structure by default. The historical `--site` flag has been removed; the CLI now produces site-structured output without that flag.
+
+For more details about the architecture, RAG pipeline, and agent roles, see the project docs and CLI reference linked above.
