@@ -17,6 +17,7 @@ export class RetrievalService {
     private reranker: RerankingService;
     private chunker: CodeChunkingService;
     private stateManager: IndexingStateManager;
+    private queryCache = new Map<string, number[]>();
 
     constructor(
         private logger: Logger,
@@ -283,7 +284,15 @@ export class RetrievalService {
         this.logger.info(`🤖 [RAG] Researching context for: "${query.substring(0, 50)}..."`);
 
         // 1. Embed Query
-        const [queryVector] = await this.embeddingService.embedDocuments([query]);
+        let queryVector: number[] | undefined = this.queryCache.get(query);
+        if (!queryVector) {
+            const [embedded] = await this.embeddingService.embedDocuments([query]);
+            if (embedded) {
+                queryVector = embedded;
+                this.queryCache.set(query, queryVector);
+            }
+        }
+
         if (!queryVector) {
             return '';
         }
@@ -338,7 +347,15 @@ export class RetrievalService {
         this.logger.info(`🧠 [RAG] Searching concepts for: "${query.substring(0, 50)}..."`);
 
         // 1. Embed Query
-        const [queryVector] = await this.embeddingService.embedDocuments([query]);
+        let queryVector: number[] | undefined = this.queryCache.get(query);
+        if (!queryVector) {
+            const [embedded] = await this.embeddingService.embedDocuments([query]);
+            if (embedded) {
+                queryVector = embedded;
+                this.queryCache.set(query, queryVector);
+            }
+        }
+
         if (!queryVector) return '';
 
         // 2. Search deeper to find MD files
