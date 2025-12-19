@@ -114,9 +114,14 @@ ${currentContent}
 ${SHARED_SAFETY_RULES}
 
 # FORMAT RULES
-- **YAML Frontmatter**: title, description, icon (emoji), order.
+- **YAML Frontmatter**: title, description, icon (emoji), order. 
+  - **CRITICAL**: Use double quotes for all string values to prevent YAML errors (e.g., title: "My Title: Subtitle").
 - **Mermaid**: Use for flows/processes. **CRITICAL**: ALWAYS quote node labels (e.g., id["Label (text)"]) to prevent syntax errors with parentheses or special chars.
 - **Callouts**: <Callout type="info"> text </Callout>
+- **Rich Markdown**:
+  - **Avoid Bullet Point Fatigue**: Use paragraphs for detailed explanations and narrative.
+  - **Tables**: Use tables for lists of properties, flags, or configuration options.
+  - **Headers**: Use clear hierarchy.
 - **MARKDOWN ONLY**: Raw content. No chatter.
 `;
 
@@ -308,4 +313,5 @@ ${currentContent}
 - **NO** rephrasing unless needed.
 - **NO** touching unrelated sections.
 - Return brief summary of changes.
+- **YAML**: If updating frontmatter, ALWAYS use double quotes for string values (title: "Foo: Bar").
 `;
