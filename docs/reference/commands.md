@@ -11,7 +11,7 @@ This page documents the verified Sintesi CLI commands implemented in the reposit
 
 Repository (for clone instructions)
 
-- Use your project's repository URL. The CLI implementation and command wiring live under the repository's packages/cli directory (see packages/cli in your source tree).
+- Clone your project and inspect the CLI wiring under `packages/cli/src/index.ts` and command implementations in `packages/cli/src/commands/`.
 
 Note: These flags and behaviors reflect the CLI implementation present in the repository source. Do not assume flags or behaviors not present in the code.
 
@@ -46,11 +46,11 @@ Description:
 
 Flags
 
-| Flag        | Alias | Type    | Default | Description                                                                                                                                                         |
-| ----------- | ----- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--output`  | `-o`  | string  | (none)  | Output file path for the generated README. If not provided, the command logic defaults to `README.md` (the option definition itself does not hardcode the default). |
-| `--force`   | `-f`  | boolean | `false` | Overwrite existing file if present.                                                                                                                                 |
-| `--verbose` |       | boolean | `false` | Enable verbose logging during generation.                                                                                                                           |
+| Flag        | Alias | Type    | Default | Description                                                                                                                                                     |
+| ----------- | ----- | ------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--output`  | `-o`  | string  | (none)  | Output file path for the generated README. If not provided, the command logic defaults to `README.md` (the flag definition itself does not hardcode a default). |
+| `--force`   | `-f`  | boolean | `false` | Overwrite existing file if present.                                                                                                                             |
+| `--verbose` |       | boolean | `false` | Enable verbose logging during generation.                                                                                                                       |
 
 Exit behavior:
 
@@ -129,27 +129,29 @@ Description:
 
 - Performs drift detection for README and/or documentation using smart (AI-powered) checks.
 - By default it checks both README and documentation unless flags restrict to one target.
-- The command integrates with a local state or lineage state to determine a baseline (SHA) for change comparison.
+- The command determines a baseline (SHA/ref) for comparison dynamically: it uses the explicit `--base` if provided; otherwise it attempts to derive a baseline from saved lineage/lastGenerated SHAs or the project's saved state. The command does not hardcode a fixed default such as `origin/main`.
 
 Flags
 
-| Flag              | Alias   | Type    | Default | Description                                                                                                                                                                                                                                                  |
-| ----------------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--verbose`       |         | boolean | `false` | Enable verbose logging.                                                                                                                                                                                                                                      |
-| `--strict`        |         | boolean | `true`  | If true, the CLI will exit with an error code when drift is detected. (Yargs also provides `--no-strict` automatically.)                                                                                                                                     |
-| `--smart`         |         | boolean | `true`  | Use AI to detect high-level drift (default true).                                                                                                                                                                                                            |
-| `--base`          |         | string  | (none)  | Explicit base ref/branch/SHA to use for comparison (overrides cached state). If not provided, the command will attempt to compute a baseline from saved lineage/lastGenerated SHAs; there is no hardcoded default such as `origin/main` in the command code. |
-| `--readme`        |         | boolean | `false` | Check only README drift.                                                                                                                                                                                                                                     |
-| `--documentation` | `--doc` | boolean | `false` | Check only documentation site drift.                                                                                                                                                                                                                         |
-| `--output`        | `-o`    | string  | (none)  | Output path used by README-specific checks (if applicable).                                                                                                                                                                                                  |
-| `--output-dir`    | `-d`    | string  | (none)  | Output directory used by documentation checks (if applicable).                                                                                                                                                                                               |
+| Flag              | Alias   | Type    | Default | Description                                                                                                                                                                                                                           |
+| ----------------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--verbose`       |         | boolean | `false` | Enable verbose logging.                                                                                                                                                                                                               |
+| `--strict`        |         | boolean | `true`  | If true, the CLI will exit with an error code when drift is detected. (Yargs also provides `--no-strict` automatically.)                                                                                                              |
+| `--smart`         |         | boolean | `true`  | Use AI to detect high-level drift (default true).                                                                                                                                                                                     |
+| `--base`          |         | string  | (none)  | Explicit base ref/branch/SHA to use for comparison (overrides cached state). If not provided, the command derives the baseline from saved lineage/lastGenerated SHAs or other project state; there is no fixed `origin/main` default. |
+| `--readme`        |         | boolean | `false` | Check only README drift.                                                                                                                                                                                                              |
+| `--documentation` | `--doc` | boolean | `false` | Check only documentation site drift.                                                                                                                                                                                                  |
+| `--output`        | `-o`    | string  | (none)  | Output path used by README-specific checks (if applicable).                                                                                                                                                                           |
+| `--output-dir`    | `-d`    | string  | (none)  | Output directory used by documentation checks (if applicable).                                                                                                                                                                        |
 
-Important behavior (exit codes and conditions):
+Important behavior (result object, exit codes, and conditions):
 
-- If AI agents cannot be initialized (configuration error), the command returns a result containing `configError` and the CLI wrapper explicitly calls `process.exit(1)` (exit code 1). This configuration error causes an immediate exit with code 1 regardless of the `--strict`/`--no-strict` setting.
-- If drift is detected (the result `success` is false) and `--strict` is enabled (default), the CLI wrapper calls `process.exit(1)` (exit code 1).
-- If no baseline can be determined (no previous run state and no `--base` provided), the command logs warnings and returns failure (`success: false`). The CLI handler in this case will cause a failing exit if `--strict` is still true.
-- If `--no-strict` is provided (the Yargs-created negation for `--strict`), the command will not force a non-zero exit on drift, allowing non-blocking CI usage.
+- The command returns a result object (for example `{ success: boolean, configError?: string, details?: ... }`). The top-level CLI wrapper inspects this result and decides whether to call `process.exit`.
+- Configuration errors (for example, AI agent initialization failure) are reported via the result as `configError`. When a `configError` is present, the CLI wrapper explicitly calls `process.exit(1)` and the process exits with code 1. This happens regardless of `--strict`/`--no-strict`.
+- If drift is detected the command returns `success: false`. The CLI wrapper's behavior depends on the `--strict` flag:
+    - With `--strict` (default): the wrapper calls `process.exit(1)`, producing a non-zero exit code.
+    - With `--no-strict`: the wrapper does not force a non-zero exit. In this case the command may return `success: false` (indicating drift) but the process exit code will remain 0 unless another error/condition triggers a non-zero exit. This allows non-blocking CI usage while still exposing the detection result in the command output.
+- If no baseline can be determined (no previous run state and no `--base` provided), the command logs warnings and returns failure (`success: false`). Whether the process exits non-zero in that case depends on `--strict` as described above.
 
 Examples:
 
@@ -233,7 +235,9 @@ Tip: Ensure `@changesets/cli` is installed in the project before running this co
 - check
     - Exit 1: configuration error (AI agents cannot be initialized) — the CLI wrapper explicitly calls `process.exit(1)`. This exit happens regardless of the `--strict`/`--no-strict` setting.
     - Exit 1: drift detected and `--strict` enabled (default) — the CLI wrapper explicitly calls `process.exit(1)`.
-    - Exit 0: success (no drift, or `--no-strict` used and drift allowed).
+    - Exit 0: success (no drift).
+    - Non-zero exit may also occur for other fatal errors unrelated to drift/config.
+    - Note: when `--no-strict` is used, the command may return `{ success: false }` to indicate drift but the CLI wrapper will not force a non-zero process exit. In other words, result.success can be false while the process exit code remains 0 when `--no-strict` is used — this enables non-blocking CI while still surfacing detection results in output.
 - readme / documentation / changeset
     - Exit 0: success.
     - If a fatal, unhandled error occurs the process may exit non-zero (not explicitly governed by the top-level CLI wrapper in the repository for these commands).

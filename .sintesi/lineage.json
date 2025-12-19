@@ -1,17 +1,16 @@
 {
   "version": "1.0.0",
-  "lastGeneratedSha": "c46e1c8c176e7ff93c03d397428eaadcc171634e",
+  "lastGeneratedSha": "642d6b9a2527177aa6997b81942a13e95fd7172f",
   "dependencies": {
     "index.md": [
       "README.md",
-      "package.json",
-      "packages/cli/package.json"
+      "package.json"
     ],
     "guides/getting-started.md": [
-      "crates/core/src/napi/mod.rs",
+      ".env.example",
+      "README.md",
       "package.json",
-      "packages/cli/src/index.ts",
-      "pnpm-workspace.yaml"
+      "packages/cli/src/index.ts"
     ],
     "reference/commands.md": [
       "packages/cli/src/commands/changeset.ts",
@@ -19,53 +18,45 @@
       "packages/cli/src/commands/documentation.ts",
       "packages/cli/src/index.ts"
     ],
+    "guides/ci-and-checks.md": [
+      "packages/cli/src/commands/check.ts",
+      "packages/cli/src/utils/git-helper.ts"
+    ],
+    "guides/changeset-workflow.md": [
+      "packages/cli/CHANGELOG.md",
+      "packages/cli/src/changeset/analyzer.ts",
+      "packages/cli/src/changeset/generator.ts",
+      "packages/cli/src/changeset/version-detector.ts"
+    ],
     "concepts/architecture.md": [
       "crates/core/src/napi/ast.rs",
-      "crates/core/src/napi/content.rs",
-      "crates/core/src/napi/context.rs",
       "crates/core/src/napi/crawler.rs",
-      "crates/core/src/napi/git.rs",
-      "crates/core/src/napi/graph.rs"
+      "crates/core/src/napi/graph.rs",
+      "packages/cli/src/services/documentation-builder.ts",
+      "packages/cli/src/services/documentation-planner.ts"
     ],
-    "reference/napi.md": [
+    "concepts/rag.md": [
+      "packages/cli/src/services/rag/chunking.ts",
+      "packages/cli/src/services/rag/embedding-service.ts",
+      "packages/cli/src/services/rag/indexing-state.ts",
+      "packages/cli/src/services/rag/reranker.ts",
+      "packages/cli/src/services/rag/retrieval-service.ts",
+      "packages/cli/src/services/rag/vector-store.ts"
+    ],
+    "reference/rust-napi.md": [
       "crates/core/src/napi/ast.rs",
       "crates/core/src/napi/content.rs",
       "crates/core/src/napi/context.rs",
       "crates/core/src/napi/crawler.rs",
       "crates/core/src/napi/git.rs",
-      "crates/core/src/napi/graph.rs"
+      "crates/core/src/napi/graph.rs",
+      "crates/core/src/napi/utils.rs"
     ],
-    "guides/ci-integration.md": [
-      ".env.example",
-      "README.md",
-      "packages/cli/CHANGELOG.md",
-      "vercel.json"
-    ],
-    "developer/build-and-test.md": [
-      "crates/core/src/napi/mod.rs",
-      "package.json",
-      "packages/cli/__tests__/check.test.ts",
-      "packages/cli/tsconfig.json",
-      "packages/cli/vitest.config.ts",
-      "pnpm-lock.yaml",
-      "pnpm-workspace.yaml",
-      "vitest.config.ts"
-    ],
-    "reference/configuration.md": [
-      ".env.example",
-      ".eslintrc.js",
-      ".prettierignore",
-      ".prettierrc",
-      "tsconfig.json"
-    ],
-    "guides/troubleshooting.md": [
-      "packages/cli/__tests__/changeset.test.ts",
-      "packages/cli/__tests__/indexing-state.test.ts",
-      "packages/cli/__tests__/markdown-builder.test.ts",
-      "packages/cli/__tests__/package-selector.test.ts",
-      "packages/cli/__tests__/services/generation-context.test.ts",
-      "packages/cli/__tests__/services/impact-analyzer.test.ts",
-      "packages/cli/src/utils/logger.ts"
+    "developer/dev-setup.md": [
+      "docs/.vitepress/config.mts",
+      "docs/.vitepress/theme/index.ts",
+      "docs/scripts/generateSidebar.ts",
+      "package.json"
     ]
   }
 }
