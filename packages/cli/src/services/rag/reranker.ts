@@ -28,8 +28,8 @@ export class RerankingService {
      */
     async rerank(query: string, documents: string[], topN: number = 5): Promise<number[]> {
         if (!this.enabled || !this.cohere) {
-            // Fallback: Return first N indices as they are already sorted by vector similarity
-            return documents.slice(0, topN).map((_, i) => i);
+            // Fallback: Local Keyword Reranking
+            return this.localRerank(query, documents, topN);
         }
 
         try {
@@ -45,7 +45,44 @@ export class RerankingService {
             return response.results.map((r) => r.index);
         } catch (error: any) {
             this.logger.warn(`Reranking failed: ${error.message}. Falling back to vector order.`);
+            return this.localRerank(query, documents, topN);
+        }
+    }
+
+    /**
+     * A simple local reranker based on keyword overlap.
+     * It counts how many unique query terms appear in the document.
+     */
+    private localRerank(query: string, documents: string[], topN: number): number[] {
+        const queryTerms = query
+            .toLowerCase()
+            .replace(/[^\w\s]/g, '')
+            .split(/\s+/)
+            .filter((t) => t.length > 2); // Filter small words
+
+        if (queryTerms.length === 0) {
             return documents.slice(0, topN).map((_, i) => i);
         }
+
+        const scores = documents.map((doc, index) => {
+            const docLower = doc.toLowerCase();
+            let score = 0;
+            // 1. Exact phrase match bonus
+            if (docLower.includes(query.toLowerCase())) score += 10;
+
+            // 2. Term overlap
+            for (const term of queryTerms) {
+                if (docLower.includes(term)) score += 1;
+            }
+            return { index, score };
+        });
+
+        // Sort by score desc, then by original index (stable sort)
+        scores.sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return a.index - b.index;
+        });
+
+        return scores.slice(0, topN).map((s) => s.index);
     }
 }
