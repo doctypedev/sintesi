@@ -164,6 +164,69 @@ export class ChangeAnalysisService {
         };
     }
 
+    /**
+     * Filters a unified git diff string to only include changes to specified files.
+     * @param fullDiff The raw git diff string
+     * @param allowedFilePaths List of absolute or relative file paths to include
+     * @param projectRoot Root directory to resolve relative paths against
+     */
+    filterGitDiff(fullDiff: string, allowedFilePaths: string[], projectRoot: string): string {
+        if (!fullDiff || allowedFilePaths.length === 0) return '';
+
+        // Normalize allowed paths to relative for matching against git diff output (which uses relative paths)
+        const allowedRelative = new Set(
+            allowedFilePaths.map((p) => {
+                if (path.isAbsolute(p)) return path.relative(projectRoot, p);
+                return p;
+            }),
+        );
+
+        const lines = fullDiff.split('\n');
+        let output = '';
+        let currentBlock = '';
+        let insideAllowedBlock = false;
+
+        for (const line of lines) {
+            // New file block detection
+            if (line.startsWith('diff --git')) {
+                // If we were accumulating a valid block, append it to output
+                if (insideAllowedBlock) {
+                    output += currentBlock;
+                }
+
+                // Reset for next block
+                currentBlock = line + '\n';
+                insideAllowedBlock = false;
+
+                // Check if this new block is relevant
+                // Line format: diff --git a/src/foo.ts b/src/foo.ts
+                // Robust Regex to handle spaces in filenames:
+                const match = line.match(/^diff --git a\/(.*) b\/(.*)$/);
+                if (match) {
+                    const aPath = match[1];
+                    const bPath = match[2];
+
+                    // Check if either path is in our allowed list
+                    // Logic: imported file changed? Yes, we want to see it.
+                    // Target file changed? Yes.
+                    if (allowedRelative.has(aPath) || allowedRelative.has(bPath)) {
+                        insideAllowedBlock = true;
+                    }
+                }
+            } else {
+                // Accumulate lines for the current block
+                currentBlock += line + '\n';
+            }
+        }
+
+        // Handle the last block
+        if (insideAllowedBlock) {
+            output += currentBlock;
+        }
+
+        return output.trim();
+    }
+
     private isRelevantFile(file: string): boolean {
         return (
             (file.endsWith('.ts') ||

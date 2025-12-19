@@ -10,77 +10,54 @@ export const DOC_PLANNING_PROMPT = (
     existingDocsList: string[],
     recentChanges: string,
 ) => `
-You are an expert Product Manager and Technical Writer.
-Your goal is to design a documentation structure for the End User / Developer who uses this software.
+# ROLE: Product Manager & Tech Writer
+# GOAL: Design documentation structure for User/Developer.
 
-## Project Context
-Package.json:
+# CONTEXT
+## Package.json
 ${packageJsonSummary}
 
-## File Structure (Filtered for relevance):
+## Files
 ${fileSummary}
 ${specificContext}
 
-## Recent Changes / Logic (Git Diff)
+## Recent Changes
 ${recentChanges}
 
-## Existing Documentation (in ${outputDir}/)
+## Existing Docs (${outputDir}/)
 ${existingDocsSummary}
 
-## Task
-Analyze the project "DNA" to determine its TYPE.
-Then, propose a list of documentation files tailored SPECIFICALLY to that type.
-
-> **IMPORTANT**:
-> - **ONLY** propose files that need creation or updates based on the "Recent Changes" and "Impact Analysis Summary".
-> - **DO NOT** feel matched to propose 3-6 files. If only 1 file needs update, propose 1 file.
-> - **DO NOT** halluncinate features. If the git diff is about a "typo fix", do not propose "New Feature Guide".
-
+# TASK
+1. Analyze project "DNA" and TYPE.
+2. Propose tailored file structure.
+3. **IMPORTANT**:
+   - ONLY propose files needing updates/creation based on "Recent Changes".
+   - NO HALLUCINATIONS.
 
 ${strategyInstructions}
 
-## STRUCTURED DOCUMENTATION MODE
-- **Goal**: Create a rich, navigational structure (e.g. similar to commitlint.js.org).
-- **Recommended Archetypes**:
-    - \`guides/\`: Step-by-step tutorials.
-    - \`reference/\`: API/CLI specs.
-    - \`concepts/\`: Deep dives.
-- **Adaptability**: If the project fits better with other folders (like \`api/\` or \`examples/\`), use them. Do not force 3 folders if 2 are enough, or if 4 are needed.
-- **Index**: Ensure there is a 'index.md' or 'intro.md' as entry point.
+# MODE: STRUCTURED
+- **Goal**: Rich, navigational structure.
+- **Archetypes**: \`guides/\`, \`reference/\`, \`concepts/\`.
+- **Adaptability**: Use what fits (e.g., \`api/\`). Don't force 3 folders.
+- **Index**: Ensure 'index.md' or 'intro.md'.
 
-## Existing Flat Documentation for Reorganization
+# EXISTING FLAT DOCS (For Migration)
 ${existingDocsList.map((p) => `- ${p}`).join('\n')}
 
-**Instruction for MIGRATION:**
-When creating the 'Output' JSON, if a proposed file path (e.g., 'guide/installation.md') is conceptually similar or a direct migration of an existing flat file (e.g., 'installation.md'), include the 'originalPath' field in the JSON object like this:
+**MIGRATION INSTRUCTION**:
+If proposing a migration, include "originalPath":
 \`\`\`json
-{
-  "path": "guides/installation.md",
-  "description": "How to install the project",
-  "type": "guide",
-  "originalPath": "installation.md" // Path relative to outputDir
-}
+{ "path": "guides/install.md", "type": "guide", "originalPath": "install.md" }
 \`\`\`
-This indicates that the content for 'guides/installation.md' should be sourced from 'installation.md' (if it exists) and then updated.
 
-## Rules
-- **User-Centric**: Document *how to use it*, not just what it is.
-- **Smart Updates**: Reuse existing files if relevant.
+# RULES
+- **User-Centric**: "How-to", not just "What".
+- **Smart Updates**: Reuse existing.
 
-## Output
-Return ONLY a valid JSON array.
+# OUTPUT (JSON Array ONLY)
 [
-  {
-    "path": "reference/commands.md", 
-    "description": "Reference of all CLI commands.", 
-    "type": "guide",
-    "relevantPaths": ["packages/cli/src/commands/check.ts", "packages/cli/src/commands/readme.ts"]
-  },
-  {
-    "path": "guides/getting-started.md",
-    "description": "First steps for new users.",
-    "type": "guide"
-  }
+  { "path": "reference/commands.md", "description": "CLI cmd ref", "type": "guide", "relevantPaths": ["src/commands/check.ts"] }
 ]
 `;
 
@@ -94,58 +71,47 @@ export const DOC_GENERATION_PROMPT = (
     gitDiff: string,
     currentContent: string,
 ) => `
-You are writing technical documentation.
-Project Name: ${projectName}
+# ROLE: Tech Writer
+# PROJECT: ${projectName}
+# FILE: ${path}
+# DESC: ${description}
 
-## Task
-Write the content for the file: "${path}"
-Purpose: ${description}
+# GOAL
+Write/Update documentation based on context.
 
-## Source Code Context (IMPORTANT)
-The following is the ACTUAL source code relevant to this file. 
-Use it to extract real flags, parameters, exports, and logic.
-IF TESTS ARE INCLUDED, use them to write "Usage Examples".
-
-${sourceContext}
-
-## General Context
-Package.json:
+# CONTEXT
+## Package.json
 ${packageJsonSummary}
 
-## Repository Info
+## Repository
 ${repoInstructions}
 
-Recent Changes (Git Diff):
-${gitDiff || 'None'}
+## Source Code (GROUND TRUTH)
+${sourceContext}
 
+## Recent Changes (Diff)
+${gitDiff || 'None'}
 
 ${
     currentContent
-        ? `## Existing Content (UPDATE THIS)
+        ? `## Existing Content
 ${currentContent}
 
-User Instruction: Update this content to reflect recent changes/source code.
-IMPORTANT:
-1. **PRESERVE STYLE**: Keep the same tone, language, and formatting as the existing content.
-2. **MINIMAL DIFF**: Do NOT rephrase existing sentences unless they are factually incorrect. ONLY add new info or remove obsolete info.
-3. **USAGE EXAMPLES**: Do NOT modify "Usage Examples" code blocks unless the CLI command signature has changed in a way that breaks them.
-    - **BOOLEAN FLAGS**: If a boolean flag \`--foo\` exists in the source, the CLI likely supports \`--no-foo\` for negation. DO NOT remove \`--no-foo\` from examples just because you only see \`foo\` in the interface.
-    - **FLAGS**: Do NOT hallucinate new flags. Only use flags found in the Source Code Context.
-4. **NO HALLUCINATIONS**: If the "Recent Changes" are unrelated to this file's topic, make NO CHANGES or only minimal stylistic fixes.`
-        : 'User Instruction: Write this file from scratch. Be comprehensive and professional.'
+# INSTRUCTION (UPDATE)
+- **PRESERVE STYLE**: Keep tone/format.
+- **MINIMAL DIFF**: Only add/remove changed info.
+- **EXAMPLES**: Update ONLY if broken by changes.
+- **FLAGS**: Use source code truth. NO HALLUCINATIONS.`
+        : '# INSTRUCTION (CREATE)\nWrite comprehensive, professional content from scratch.'
 }
 
 ${SHARED_SAFETY_RULES}
 
-## SITE STRUCTURE MODE specific rules:
-1. **Frontmatter**: Start with YAML frontmatter containing 'title', 'description', 'icon' (emoji), and 'order' (number).
-2. **Mermaid**: If explaining a flow/process, use a \`\`\`mermaid\`\`\` block.
-3. **Components**: Use <Callout type="info"> text </Callout> for notes if appropriate.
-
-## OUTPUT FORMAT RULES (CRITICAL)
-- **STRICTLY MARKDOWN ONLY**: The output must be the raw file content.
-- **NO CONVERSATIONAL TEXT**: Do NOT write "Here is the file", "I have updated...", or "Let me know if...".
-- **NO CHATTER**: Just output the document.
+# FORMAT RULES
+- **YAML Frontmatter**: title, description, icon (emoji), order.
+- **Mermaid**: Use for flows/processes.
+- **Callouts**: <Callout type="info"> text </Callout>
+- **MARKDOWN ONLY**: Raw content. No chatter.
 `;
 
 export const DOC_RESEARCH_PROMPT = (
@@ -154,44 +120,37 @@ export const DOC_RESEARCH_PROMPT = (
     sourceContext: string,
     packageJsonSummary: string,
 ) => `
-You are the **Researcher** (The Scout).
-Your goal is to analyze the raw source code and extract ONLY the technical facts, API signatures, and configuration options required to write the documentation page: "${path}".
+# ROLE: Researcher (The Scout)
+# GOAL: Extract technical facts for writer. NO FLUFF.
 
-## Target Page
-- **Path**: ${path}
-- **Description**: ${description}
+# TARGET
+- Path: ${path}
+- Desc: ${description}
 
-## Raw Source Code Context
+# CONTEXT
+## Source Code
 ${sourceContext}
 
-## Project Context
+## Project
 ${packageJsonSummary}
 
-## Task
-Create a **Technical Brief** for the Writer.
-The Writer is lazy and will blindly trust your specific details. Do NOT provide "summary" or "fluff". Provide **HARD DATA**.
-
-### Required Output Format (Markdown)
-
+# OUTPUT (Markdown)
 #### 1. Core Concepts
-- Briefly explain the primary purpose of the code found in the context.
-- Identify key classes, functions, or commands.
+Brief purpose. Key classes/functions.
 
-#### 2. API / Interface Details (CRITICAL)
-- **Functions/Methods**: List precise signatures (arguments, types, return values).
-- **CLI Commands**: List precise command name, arguments, and flags (alias, type, default value, description).
-- **Configuration**: List interface properties and their types.
-- **REST/HTTP**: List endpoints, methods, and payload schemas.
+#### 2. API / Interface (CRITICAL)
+- **Signatures**: args, types, returns.
+- **CLI**: Name, flags, defaults.
+- **Config**: Properties, types.
+- **HTTP**: Endpoints, payloads.
 
 #### 3. Usage Patterns
-- Extract 1-2 code snippets or usage examples found in tests or comments.
-- Note any specific constraints or edge cases handled in the code.
+Snippets/examples from tests/comments. Constraints.
 
-#### 4. Changes / Deprecations
-- Note any code marked as @deprecated.
-- Note any new features that seem recently added (based on "New" comments or distinct lack of legacy patterns).
+#### 4. Changes
+New features, deprecations.
 
-**Constraint**: If the raw context contains NO relevant information for this page, explicitly state: "NO RELEVANT CONTEXT FOUND."
+**Constraint**: If no info, write "NO RELEVANT CONTEXT FOUND."
 `;
 
 export const DOC_QUERY_PROMPT = (
@@ -199,32 +158,24 @@ export const DOC_QUERY_PROMPT = (
     description: string,
     existingFileSummary: string,
 ) => `
-You are the **Researcher**.
-You need to search the project codebase to find information for writing the documentation page: "${path}".
+# ROLE: Researcher (RAG Specialist)
+# GOAL: Generate 3-5 search queries for vector DB.
 
-## Target
+# TARGET
 - Path: ${path}
-- Description: ${description}
+- Desc: ${description}
 
-## Existing File Context
+# CONTEXT
 ${existingFileSummary}
 
-## Task
-Generate 3-5 distinct, targeted search queries to retrieve relevant code chunks from the vector database.
-Focus on:
-1. High-level concepts (e.g., "Authentication flow").
-2. Specific class/function names implied by the description.
-3. Configuration files or schemas.
+# TASK
+Generate queries for:
+1. High-level concepts.
+2. Specific class/function names.
+3. Config schemas.
 
-Provide the output as a JSON array of strings.
-
-### Examples:
-- Target: "auth/login.md" (How to log in)
-  Output: ["UserLoginController.authenticate", "AuthConfig interface", "JWT token generation logic"]
-- Target: "cli/commands/deploy.ts" (Deploy command)
-  Output: ["DeployCommand definition", "DeployOptions interface", "uploadToS3 function"]
-
-Example Output: ["Authentication logic in user controller", "JWT configuration", "login function signature"]
+# OUTPUT (JSON Array of Strings)
+Example: ["Authentication logic", "UserLoginController", "JWT config"]
 `;
 
 export const DOC_DISCOVERY_PROMPT = (
@@ -232,36 +183,29 @@ export const DOC_DISCOVERY_PROMPT = (
     fileSummary: string,
     readmeSummary: string,
 ) => `
-You are the **Lead Architect Agent** (The Explorer).
-Your goal is to perform a high-level "Discovery" scan of this project to guide the Documentation Planner.
+# ROLE: Lead Architect
+# GOAL: Discovery scan for documentation planning.
 
-## Project Context
-Package.json:
+# CONTEXT
+## Package.json
 ${packageJsonSummary}
 
-## File Structure (Roots & Key Files)
+## Files
 ${fileSummary}
 
-## README Context (if available)
-${readmeSummary || 'No README found.'}
+## README
+${readmeSummary || 'None'}
 
-## Task
-Analyze the provided context to identify the core architectural patterns and domain concepts of the application.
-The Planner will use your output to decide **which documentation chapters** are needed.
+# TASK
+Identify:
+1. **App Type** (CLI, API, Web, Mono?)
+2. **Patterns** (CQRS, Plugins?)
+3. **Data Flows**
 
-### Focus on:
-1. **Application Type**: Is it a CLI? A REST API? A Next.js App? A Monorepo?
-2. **Key Concepts**: Does it use specific patterns like CQRS, Event Sourcing, Plugins, Adapters?
-3. **Data Flows**: What are the main data entities or pipelines implied by the file names?
-
-### Output format
-Return a concise **Technical Architectural Brief**.
-Use bullet points. Be technically precise.
-
-Example Output:
-- **Architecture**: Monorepo using Turborepo. Core logic is in \`packages/core\` (Rust), consumed by \`packages/cli\` (Node.js).
-- **Pattern**: The CLI uses a Command Pattern approach (see \`commands/\` folder).
-- **Key Flow**: The \`Planner\` service orchestrates \`Agents\` (see \`packages/ai\`).
+# OUTPUT (Architectural Brief)
+- **Architecture**: ...
+- **Pattern**: ...
+- **Key Flow**: ...
 `;
 
 export const DOC_REVIEW_PROMPT = (
@@ -270,63 +214,54 @@ export const DOC_REVIEW_PROMPT = (
     content: string,
     sourceContext: string,
 ) => `
-You are a Senior Technical Reviewer.
-Your task is to review the following documentation file content against the actual Source Code (Ground Truth).
+# ROLE: Senior Reviewer
+# GOAL: Review doc against code (Ground Truth).
 
-File: "${path}"
-Purpose: ${description}
+# TARGET
+- File: ${path}
+- Purpose: ${description}
 
-## Content to Review:
+# DOC CONTENT
 \`\`\`markdown
 ${content}
 \`\`\`
 
-## Source Context (GROUND TRUTH):
-Use this context to verify facts.
+# SOURCE CONTEXT (TRUTH)
 \`\`\`
 ${sourceContext}
 \`\`\`
 
-## Evaluation Criteria:
-1. **Hallucinations (CRITICAL)**: specific checks:
-    - Do explicitly mentioned flags/arguments exist in Source Context?
-    - Do mentioned API keys/Env vars exist?
-    - Do imported modules exist?
-2. **Accuracy**: Is the explanation technically correct?
-3. **Completeness**: Does it cover the purpose?
+# CRITERIA
+1. **Hallucinations** (Flags, env vars, modules MUST exist).
+2. **Accuracy**.
+3. **Completeness**.
 
-## Output
-Return ONLY a JSON object:
+# OUTPUT (JSON)
 {
-  "score": number, // 1-5 (5 is perfect)
-  "critique": string, // High level summary
-  "specific_critiques": [
-     // List specific, actionable fixes. Use "Line X" or "Section Y" references.
-     "The flag '--fast' does not exist in the source code. Remove it.",
-     "The function 'login' actually returns a Promise<void>, not boolean."
-  ],
-  "critical_issues": boolean // True if factual errors (hallucinations) are found
+  "score": number, // 1-5
+  "critique": string,
+  "specific_critiques": ["Line X: ..."],
+  "critical_issues": boolean
 }
 `;
 
 export const DOC_REFINE_PROMPT = (path: string, critiques: string[], originalContent: string) => `
-You are the Technical Writer.
-Your previous draft for "${path}" was reviewed and needs specific fixes.
+# ROLE: Tech Writer
+# FILE: ${path}
+# GOAL: Fix doc based on feedback.
 
-## Reviewer Feedback (Fix These Issues):
+# FEEDBACK
 ${critiques.map((c) => `- ${c}`).join('\n')}
 
-## Instruction
-Refine the content to address the feedback.
-- **APPLY FIXES**: Directly address the specific critiques.
-- **RESTORE**: Keep the rest of the document as is (unless it needs flow adjustments).
-- **OUTPUT**: Return the FULLY rewritten Markdown file.
-- **NO CONVERSATIONAL TEXT**: Do NOT include "Here is the fixed file" or "I updated section X". Just the file content.
-
-## Previous Content:
+# CONTENT
 \`\`\`markdown
 ${originalContent}
 \`\`\`
+
+# INSTRUCTION
+- **APPLY FIXES**.
+- **RESTORE** unaffected parts.
+- **OUTPUT**: Full Markdown file. No conversational text.
 `;
 
 export const DOC_UPDATE_PROMPT = (
@@ -337,40 +272,34 @@ export const DOC_UPDATE_PROMPT = (
     gitDiff: string,
     currentContent: string,
 ) => `
-You are the **Lead Technical Writer** maintaining the documentation.
-Project Name: ${projectName}
-File: "${path}"
-Purpose: ${description}
+# ROLE: Lead Tech Writer
+# PROJECT: ${projectName}
+# FILE: ${path}
+# DESC: ${description}
 
-## Goal
-Update the existing documentation file to reflect the latest code changes.
-**CRITICAL**: Do NOT rewrite the file. Use the \`patch_file\` tool to surgically modify ONLY the outdated sections.
+# GOAL
+Surgically update doc to match code.
 
-## Source Code Context (The New Truth)
+# CONTEXT
+## Source Code (New Truth)
 ${sourceContext}
 
-## Git Diff (What changed recently)
-${gitDiff || 'No specific git diff available. Rely on Source Code Context.'}
+## Diff
+${gitDiff || 'None'}
 
-## Existing File Content (Read-Only Reference)
+## Existing File
 \`\`\`markdown
 ${currentContent}
 \`\`\`
 
-## Instructions
-1. **Analyze**: Compare the "Existing File Content" with the "Source Code Context" and "Git Diff".
-2. **Identify Drift**: Find specific sentences, code blocks, or tables that are now factually incorrect.
-3. **Execute Patches**:
-   - Call \`patch_file(original_text, new_text)\` for each correction.
-   - You can make multiple tool calls in sequence.
-   - If the file is perfectly accurate, do nothing.
-4. **Preserve Style**: When writing \`new_text\`, match the existing tone and formatting exactly.
+# INSTRUCTION
+1. **Analyze** Drift.
+2. **Execute Patches**: Call \`patch_file(original, new)\`.
+3. **Style**: Match existing.
 
-## Constraints
-- **Do NOT** return the full file content in your final response.
-- **Do NOT** make stylistic changes (rephrasing) unless necessary for clarity.
-- **Do NOT** touch sections that are not related to the code changes.
-- If you cannot find a unique match for \`original_text\`, try to include more surrounding context in the snippet.
-
-Your final response should be a brief summary of changes applied (e.g., "Updated CLI flags table and added new 'auth' section.").
+# RULES
+- **NO** full file return.
+- **NO** rephrasing unless needed.
+- **NO** touching unrelated sections.
+- Return brief summary of changes.
 `;

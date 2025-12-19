@@ -16,16 +16,19 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { LineageService } from './lineage-service';
 import { execSync } from 'child_process';
+import { ChangeAnalysisService } from './analysis-service';
 
 interface PageContext {
     item: DocPlan;
     sourceContext: string; // The "Ground Truth" from file system
     ragContext: string; // The RAG search results
     researchBrief: string; // The brief from Researcher Agent
+    relevantFiles: string[]; // Files relevant to this page (for Diff filtering)
 }
 
 export class DocumentationBuilder {
     private lineageService: LineageService;
+    private changeAnalysisService: ChangeAnalysisService;
 
     constructor(
         private logger: Logger,
@@ -33,6 +36,7 @@ export class DocumentationBuilder {
         private generationContextService: GenerationContextService,
     ) {
         this.lineageService = new LineageService(logger);
+        this.changeAnalysisService = new ChangeAnalysisService(logger);
     }
 
     async buildDocumentation(
@@ -71,8 +75,22 @@ export class DocumentationBuilder {
         // PHASE 2: GENERATION & REVIEW (Standard Concurrency)
         this.logger.info(`\n✍ PHASE 2: Content Generation & Review...`);
 
-        const packageJsonSummary = context.packageJson
-            ? JSON.stringify(context.packageJson, null, 2)
+        const pkg = context.packageJson as any;
+        const packageJsonSummary = pkg
+            ? JSON.stringify(
+                  {
+                      name: pkg.name,
+                      version: pkg.version,
+                      description: pkg.description,
+                      main: pkg.main,
+                      bin: pkg.bin,
+                      engines: pkg.engines,
+                      dependencies: pkg.dependencies,
+                      peerDependencies: pkg.peerDependencies,
+                  },
+                  null,
+                  2,
+              )
             : 'No package.json found';
 
         const repoInstructions = this.generationContextService.getSafeRepoInstructions(
@@ -82,8 +100,22 @@ export class DocumentationBuilder {
         await pMap(
             pageContexts,
             async (pageCtx) => {
-                const { item, sourceContext, ragContext } = pageCtx;
+                const { item, sourceContext, ragContext, relevantFiles } = pageCtx;
                 const fullPath = join(outputDir, item.path);
+
+                // Filter Git Diff to reduce noise
+                // We assume process.cwd() is the project root, which is standard for this CLI
+                const filteredGitDiff = this.changeAnalysisService.filterGitDiff(
+                    gitDiff,
+                    relevantFiles,
+                    process.cwd(),
+                );
+
+                if (filteredGitDiff.length < gitDiff.length) {
+                    this.logger.debug(
+                        `  ↳ Filtered Git Diff for ${item.path}: ${filteredGitDiff.length} chars (was ${gitDiff.length})`,
+                    );
+                }
 
                 let currentContent = '';
                 // Check if the target file already exists OR if there's an originalPath to migrate from
@@ -121,7 +153,7 @@ export class DocumentationBuilder {
                             item.path,
                             item.description,
                             writerContext,
-                            gitDiff,
+                            filteredGitDiff,
                             currentContent,
                         );
 
@@ -158,7 +190,7 @@ export class DocumentationBuilder {
                             writerContext,
                             packageJsonSummary,
                             repoInstructions,
-                            gitDiff,
+                            filteredGitDiff,
                             currentContent,
                         );
 
@@ -311,6 +343,7 @@ export class DocumentationBuilder {
                     sourceContext: detailedSourceContext,
                     ragContext,
                     researchBrief,
+                    relevantFiles: sourceFiles,
                 });
             },
             5, // Higher concurrency for Research
