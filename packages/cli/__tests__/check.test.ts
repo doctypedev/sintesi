@@ -71,7 +71,9 @@ describe('CLI: check command', () => {
         // Setup GenerationContextService mock
         mockContextServiceInstance = {
             getAIAgents: vi.fn().mockResolvedValue({}), // Truthy agents
-            analyzeProject: vi.fn().mockResolvedValue({ gitDiff: 'some changes' }), // Truthy diff
+            analyzeProject: vi
+                .fn()
+                .mockResolvedValue({ gitDiff: 'some changes', changedFiles: [] }), // Truthy diff
         };
         vi.mocked(GenerationContextService).mockImplementation(() => mockContextServiceInstance);
 

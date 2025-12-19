@@ -161,14 +161,24 @@ describe('SmartChecker', () => {
 
         // Mock AnalysisService to return diff ONLY in README.md
         const mockAnalysisService = {
-            analyze: vi.fn().mockResolvedValue({
-                gitDiff: 'diff --git a/README.md b/README.md\n+ New text',
-                changedFiles: ['README.md'],
-                symbolChanges: [],
-                totalChanges: 1,
+            analyze: vi.fn().mockImplementation(async (options) => {
+                if (options?.excludePatterns?.includes('README.md')) {
+                    return {
+                        gitDiff: '',
+                        changedFiles: [],
+                        symbolChanges: [],
+                        totalChanges: 0,
+                    };
+                }
+                return {
+                    gitDiff: 'diff --git a/README.md b/README.md\n+ New text',
+                    changedFiles: ['README.md'],
+                    symbolChanges: [],
+                    totalChanges: 1,
+                };
             }),
         };
-        vi.mocked(ChangeAnalysisService).mockImplementation(() => mockAnalysisService);
+        vi.mocked(ChangeAnalysisService).mockImplementation(() => mockAnalysisService as any);
 
         smartChecker = new SmartChecker(logger, '/mock/root');
 
@@ -186,15 +196,32 @@ describe('SmartChecker', () => {
 
         // Mock AnalysisService to return diff in README.md with keyword "dependencies" which is a trigger word
         const mockAnalysisService = {
-            analyze: vi.fn().mockResolvedValue({
-                gitDiff:
-                    'diff --git a/README.md b/README.md\n+ Check your "dependencies" in package.json',
-                changedFiles: ['README.md'],
-                symbolChanges: [],
-                totalChanges: 1,
+            analyze: vi.fn().mockImplementation(async (options) => {
+                // Mimic the service: if exclusions contain README, return allowed diff vs excluded diff
+                if (
+                    options?.excludePatterns?.some(
+                        (p: string) => p.includes('README.md') || 'README.md'.includes(p),
+                    )
+                ) {
+                    // If asking to exclude README, return empty diff for this test case
+                    return {
+                        gitDiff: '',
+                        changedFiles: [],
+                        symbolChanges: [],
+                        totalChanges: 0,
+                    };
+                }
+                // Otherwise return the problematic diff
+                return {
+                    gitDiff:
+                        'diff --git a/README.md b/README.md\n+ Check your "dependencies" in package.json',
+                    changedFiles: ['README.md'],
+                    symbolChanges: [],
+                    totalChanges: 1,
+                };
             }),
         };
-        vi.mocked(ChangeAnalysisService).mockImplementation(() => mockAnalysisService);
+        vi.mocked(ChangeAnalysisService).mockImplementation(() => mockAnalysisService as any);
 
         smartChecker = new SmartChecker(logger, '/mock/root');
 

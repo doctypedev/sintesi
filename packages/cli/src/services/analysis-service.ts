@@ -13,6 +13,8 @@ import { execSync } from 'child_process';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { tmpdir } from 'os';
+import { filterGitDiff } from '../utils/diff-utils';
+import { SYSTEM_EXCLUSION_PATTERNS } from '../config/constants';
 
 export interface SymbolChange {
     symbolName: string;
@@ -37,6 +39,7 @@ export interface AnalysisOptions {
     forceFetch?: boolean;
     includeSymbols?: boolean;
     fallbackToLastCommit?: boolean;
+    excludePatterns?: string[];
 }
 
 export class ChangeAnalysisService {
@@ -53,6 +56,9 @@ export class ChangeAnalysisService {
     /**
      * Analyze changes in the repository
      */
+    /**
+     * Analyze changes in the repository
+     */
     async analyze(options: AnalysisOptions = {}): Promise<ChangeContext> {
         const {
             baseBranch = 'main',
@@ -60,6 +66,7 @@ export class ChangeAnalysisService {
             projectRoot = process.cwd(),
             forceFetch = false,
             includeSymbols = true,
+            excludePatterns = [],
         } = options;
 
         let effectiveBase = baseBranch;
@@ -150,11 +157,39 @@ export class ChangeAnalysisService {
             };
         }
 
-        // 3. Get Changed Files
-        // Filter to relevant files (TS/RS/etc) and make absolute
+        // 3. Filter Changes (Centralized Filtering)
+        // Combine system defaults with run-specific exclusions
+        const allExclusions = [...SYSTEM_EXCLUSION_PATTERNS, ...excludePatterns];
+
+        // Filter file list
+        // We filter out anything matching exclusions OR internal noise (node_modules, etc handled by isRelevantFile + custom)
         changedFiles = changedFiles
+            .filter((f) => {
+                // Check if it matches any exclusion pattern
+                const isExcluded = allExclusions.some((p) => f.includes(p));
+                return !isExcluded;
+            })
+            // Keep existing relevance check (TS/RS files, etc) - wait, maybe we want to report ALL changed files but filtered?
+            // The method signature returns ChangeContext.
+            // Documentation usually cares about Source Code changes.
+            // SmartChecker might care about other things?
+            // Let's keep isRelevantFile for now but make sure it doesn't conflict.
+            // Actually, isRelevantFile excludes node_modules and tests.
             .filter((f) => this.isRelevantFile(f))
             .map((f) => path.resolve(projectRoot, f));
+
+        // Filter git diff
+        // We pass the exclusions to filterGitDiff
+        if (gitDiff) {
+            gitDiff = filterGitDiff(gitDiff, excludePatterns); // filterGitDiff uses SYSTEM_EXCLUSION_PATTERNS internal default if we don't pass them?
+            // Wait, filterGitDiff implementation:
+            // export function filterGitDiff(fullDiff: string, excludePatterns: string[] = []): string { ... }
+            // It uses defaults inside. So passing excludePatterns adds to them.
+            // PERFECT.
+        }
+
+        // Recalculate meaningful changes based on filtered diff
+        const hasMeaningfulChanges = gitDiff.trim().length > 0;
 
         // 4. Symbol Analysis (if requested)
         let symbolChanges: SymbolChange[] = [];
@@ -171,74 +206,8 @@ export class ChangeAnalysisService {
             changedFiles,
             symbolChanges,
             totalChanges: symbolChanges.length > 0 ? symbolChanges.length : changedFiles.length,
-            hasMeaningfulChanges:
-                typeof summary !== 'undefined' && summary
-                    ? summary.hasMeaningfulChanges
-                    : undefined,
+            hasMeaningfulChanges,
         };
-    }
-
-    /**
-     * Filters a unified git diff string to only include changes to specified files.
-     * @param fullDiff The raw git diff string
-     * @param allowedFilePaths List of absolute or relative file paths to include
-     * @param projectRoot Root directory to resolve relative paths against
-     */
-    filterGitDiff(fullDiff: string, allowedFilePaths: string[], projectRoot: string): string {
-        if (!fullDiff || allowedFilePaths.length === 0) return '';
-
-        // Normalize allowed paths to relative for matching against git diff output (which uses relative paths)
-        const allowedRelative = new Set(
-            allowedFilePaths.map((p) => {
-                if (path.isAbsolute(p)) return path.relative(projectRoot, p);
-                return p;
-            }),
-        );
-
-        const lines = fullDiff.split('\n');
-        let output = '';
-        let currentBlock = '';
-        let insideAllowedBlock = false;
-
-        for (const line of lines) {
-            // New file block detection
-            if (line.startsWith('diff --git')) {
-                // If we were accumulating a valid block, append it to output
-                if (insideAllowedBlock) {
-                    output += currentBlock;
-                }
-
-                // Reset for next block
-                currentBlock = line + '\n';
-                insideAllowedBlock = false;
-
-                // Check if this new block is relevant
-                // Line format: diff --git a/src/foo.ts b/src/foo.ts
-                // Robust Regex to handle spaces in filenames:
-                const match = line.match(/^diff --git a\/(.*) b\/(.*)$/);
-                if (match) {
-                    const aPath = match[1];
-                    const bPath = match[2];
-
-                    // Check if either path is in our allowed list
-                    // Logic: imported file changed? Yes, we want to see it.
-                    // Target file changed? Yes.
-                    if (allowedRelative.has(aPath) || allowedRelative.has(bPath)) {
-                        insideAllowedBlock = true;
-                    }
-                }
-            } else {
-                // Accumulate lines for the current block
-                currentBlock += line + '\n';
-            }
-        }
-
-        // Handle the last block
-        if (insideAllowedBlock) {
-            output += currentBlock;
-        }
-
-        return output.trim();
     }
 
     private isRelevantFile(file: string): boolean {

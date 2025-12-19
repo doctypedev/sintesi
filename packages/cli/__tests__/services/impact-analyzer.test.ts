@@ -38,6 +38,6 @@ describe('ImpactAnalyzer', () => {
 
         await analyzer.shouldUpdateDocs('diff', 'documentation', agents);
 
-        expect(filterGitDiff).toHaveBeenCalledWith('diff', ['docs/', 'documentation/']);
+        expect(filterGitDiff).toHaveBeenCalledWith('diff', []);
     });
 });

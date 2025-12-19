@@ -16,7 +16,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { LineageService } from './lineage-service';
 import { execSync } from 'child_process';
-import { ChangeAnalysisService } from './analysis-service';
+import { filterDiffByInclusion } from '../utils/diff-utils';
 
 interface PageContext {
     item: DocPlan;
@@ -28,7 +28,6 @@ interface PageContext {
 
 export class DocumentationBuilder {
     private lineageService: LineageService;
-    private changeAnalysisService: ChangeAnalysisService;
 
     constructor(
         private logger: Logger,
@@ -36,7 +35,6 @@ export class DocumentationBuilder {
         private generationContextService: GenerationContextService,
     ) {
         this.lineageService = new LineageService(logger);
-        this.changeAnalysisService = new ChangeAnalysisService(logger);
     }
 
     async buildDocumentation(
@@ -105,7 +103,7 @@ export class DocumentationBuilder {
 
                 // Filter Git Diff to reduce noise
                 // We assume process.cwd() is the project root, which is standard for this CLI
-                const filteredGitDiff = this.changeAnalysisService.filterGitDiff(
+                const filteredGitDiff = filterDiffByInclusion(
                     gitDiff,
                     relevantFiles,
                     process.cwd(),
