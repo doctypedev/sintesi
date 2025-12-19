@@ -89,6 +89,12 @@ ${repoInstructions}
 ## Source Code (GROUND TRUTH)
 ${sourceContext}
 
+> **NOTE ON CONTEXT**: 
+> - If code appears as a "Skeleton" (bodies hidden), TRUST the signatures and JSDoc. Do NOT hallucinate implementation details.
+> - **USAGE EXAMPLES**: Rely heavily on "ASSOCIATED TEST" sections found in the context. They are the executable truth.
+>   - **CRITICAL**: Transform test cases into clean user-friendly code snippets. Remove assertions (e.g., 'expect(result).toBe(...)') and setup boilerplate. Show only the usage path.
+> - **CONCEPTS**: Use "CONCEPT / GUIDE" sections from RAG for high-level explanations.
+
 ## Recent Changes (Diff)
 ${gitDiff || 'None'}
 

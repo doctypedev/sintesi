@@ -323,9 +323,25 @@ export class DocumentationBuilder {
                             // RAG returns snippets, not full file identity easily in current impl.
                             // Future improvement: Return Metadata with RAG results.
                             const searchResults = await Promise.all(
-                                queries.map((q) =>
-                                    this.generationContextService.retrieveContext(q),
-                                ),
+                                queries.map((q) => {
+                                    // SMART RAG STRATEGY:
+                                    // If writing a User Guide/Concept, prioritize Markdown/Concepts.
+                                    // If writing API Ref, prioritize Code.
+                                    const isUserDoc = [
+                                        'guide',
+                                        'tutorial',
+                                        'concepts',
+                                        'intro',
+                                    ].includes(item.type);
+
+                                    if (isUserDoc) {
+                                        return this.generationContextService.retrieveConceptualContext(
+                                            q,
+                                        );
+                                    } else {
+                                        return this.generationContextService.retrieveContext(q);
+                                    }
+                                }),
                             );
                             ragContext = Array.from(new Set(searchResults)).join('\n\n');
                         }

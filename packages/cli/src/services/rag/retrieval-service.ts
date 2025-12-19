@@ -329,4 +329,50 @@ export class RetrievalService {
 
         return formattedContext;
     }
+
+    /**
+     * Retrieves "Conceptual" context by prioritizing Markdown files and Glossary terms.
+     * Useful for high-level documentation where code details are distractions.
+     */
+    async retrieveConceptualContext(query: string, limit: number = 3): Promise<string> {
+        this.logger.info(`🧠 [RAG] Searching concepts for: "${query.substring(0, 50)}..."`);
+
+        // 1. Embed Query
+        const [queryVector] = await this.embeddingService.embedDocuments([query]);
+        if (!queryVector) return '';
+
+        // 2. Search deeper to find MD files
+        const candidates = await this.vectorStore.search(queryVector, 40);
+        if (candidates.length === 0) return '';
+
+        // 3. Filter for Markdown OR high-relevance chunks
+        const mdCandidates = candidates.filter((c) => c.filePath.endsWith('.md'));
+        const codeCandidates = candidates.filter((c) => !c.filePath.endsWith('.md'));
+
+        // Strategy: Take all found MD files (up to limit), fill rest with high-score code if really needed?
+        // Actually for "Conceptual", we prefer MD.
+
+        let pool = mdCandidates;
+        if (pool.length < limit * 2) {
+            // If we don't have enough MD, maybe take top code chunks but treat them as lower priority
+            pool = [...mdCandidates, ...codeCandidates.slice(0, 5)];
+        }
+
+        if (pool.length === 0) return '';
+
+        // 4. Rerank
+        const poolTexts = pool.map((c) => c.content);
+        const bestIndices = await this.reranker.rerank(query, poolTexts, limit);
+        const bestChunks = bestIndices.map((i) => pool[i]);
+
+        // 5. Format
+        let formatted = '';
+        for (const chunk of bestChunks) {
+            const isMd = chunk.filePath.endsWith('.md');
+            const typeLabel = isMd ? 'CONCEPT / GUIDE' : 'SOURCE REF';
+            formatted += `\n--- ${typeLabel} [${chunk.filePath}] ---\n${chunk.content}\n`;
+        }
+
+        return formatted;
+    }
 }
