@@ -48,6 +48,7 @@ Notes:
 
 - The CLI option `--skip-ai` maps to the internal `noAI` option when calling the command implementation.
 - The command requires the `@changesets/cli` package to be installed in the project. If it's not present the command will fail with guidance on how to install it.
+- When running in a monorepo and one or more packages are selected, the analysis is filtered to only include symbol changes and changed files that belong to the selected package paths. This reduces noise and ensures the AI focuses only on relevant changes for the selected packages.
 
 ### Examples
 
