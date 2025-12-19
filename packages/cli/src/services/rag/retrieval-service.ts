@@ -301,13 +301,32 @@ export class RetrievalService {
 
         const bestChunks = bestIndices.map((i) => candidates[i]);
 
-        // 4. Format Output
-        // Return a formatted context string
-        return bestChunks
-            .map(
-                (chunk) =>
-                    `\n--- CONTEXT [File: ${chunk.filePath} | Lines: ${chunk.startLine}-${chunk.endLine}] ---\n${chunk.content}\n`,
-            )
-            .join('\n');
+        // 4. Format Output with Budgeting
+        // Limit total context to avoid pollution (~8000 chars is approx 2000 tokens)
+        const MAX_CONTEXT_CHARS = 8000;
+        let currentChars = 0;
+        let formattedContext = '';
+
+        for (const chunk of bestChunks) {
+            const header = `\n--- CONTEXT [File: ${chunk.filePath} | Lines: ${chunk.startLine}-${chunk.endLine}] ---\n`;
+            const content = chunk.content;
+            const entrySize = header.length + content.length;
+
+            if (currentChars + entrySize > MAX_CONTEXT_CHARS) {
+                // If this is the VERY first chunk and it's huge, maybe trim it?
+                // But generally, just stop adding chunks.
+                if (currentChars === 0) {
+                    // Add truncated version if it's the only thing we have
+                    formattedContext +=
+                        header + content.substring(0, MAX_CONTEXT_CHARS) + '\n... (truncated)';
+                }
+                break;
+            }
+
+            formattedContext += header + content + '\n';
+            currentChars += entrySize;
+        }
+
+        return formattedContext;
     }
 }

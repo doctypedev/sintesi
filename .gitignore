@@ -175,3 +175,5 @@ packages/cli/test.ts
 packages/cli/.changeset/*.md
 packages/cli/.changeset/*.test.ts
 packages/cli/.changeset/*.spec.ts
+
+.DS_Store

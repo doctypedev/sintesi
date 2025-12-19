@@ -35,18 +35,39 @@ export class CodeChunkingService {
             return this.chunkTypeScript(filePath, content);
         }
 
-        // Fallback for other files (simple whole file or naive split)
-        // For now, let's just return the whole file if it's not too huge,
-        // or split by paragraphs if Markdown.
-        // Keeping it simple: One chunk per file for non-code.
-        return [
-            {
-                content: content,
-                startLine: 1,
-                endLine: content.split('\n').length,
-                functionName: 'FILE_CONTENT',
-            },
-        ];
+        // Fallback for other files: Split by paragraphs with max size
+        const MAX_CHUNK_SIZE = 2000;
+        const chunks: Chunk[] = [];
+        const lines = content.split('\n');
+        let currentChunk = '';
+        let startLine = 1;
+        let currentLine = 1;
+
+        for (const line of lines) {
+            if (currentChunk.length + line.length > MAX_CHUNK_SIZE && currentChunk.length > 0) {
+                chunks.push({
+                    content: currentChunk,
+                    startLine: startLine,
+                    endLine: currentLine - 1,
+                    functionName: 'TEXT_BLOCK',
+                });
+                currentChunk = '';
+                startLine = currentLine;
+            }
+            currentChunk += line + '\n';
+            currentLine++;
+        }
+
+        if (currentChunk.trim().length > 0) {
+            chunks.push({
+                content: currentChunk,
+                startLine: startLine,
+                endLine: currentLine - 1,
+                functionName: 'TEXT_BLOCK',
+            });
+        }
+
+        return chunks;
     }
 
     private chunkTypeScript(filePath: string, content: string): Chunk[] {
