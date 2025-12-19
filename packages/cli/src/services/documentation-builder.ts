@@ -256,6 +256,9 @@ export class DocumentationBuilder {
         }
         this.lineageService.save();
 
+        // PHASE 3: FORMATTING
+        await this.formatDocumentation(outputDir);
+
         this.logger.success(`\nDocumentation successfully generated in ${outputDir}/\n`);
     }
 
@@ -366,5 +369,35 @@ export class DocumentationBuilder {
         );
 
         return results;
+    }
+
+    /**
+     * Attempts to format the generated documentation using Prettier.
+     * Degrades gracefully if Prettier is not found or fails.
+     */
+    private async formatDocumentation(outputDir: string): Promise<void> {
+        this.logger.info('\n✨ PHASE 3: Formatting...');
+        try {
+            // We use npx to use the local project's prettier if available, or download if configured.
+            // We adding --no-install to avoid downloading if not present?
+            // Better: Just run it. If it fails, we catch.
+            // We target all markdown files in the output directory.
+            const targetPattern = `"${outputDir}/**/*.md"`;
+
+            // Check if prettier is runnable first?
+            // Simpler: Try running it.
+            this.logger.debug(`  Running: npx prettier --write ${targetPattern}`);
+            execSync(`npx prettier --write ${targetPattern}`, {
+                stdio: 'inherit', // Let user see output/errors if they want
+                encoding: 'utf-8',
+            });
+            this.logger.success('  ✔ Prettier formatting applied.');
+        } catch (e: any) {
+            // If exit code is non-zero, it likely means syntax errors or not found.
+            // We don't want to crash the whole process, just warn.
+            this.logger.warn(
+                `  ⚠ Prettier formatting skipped or failed (likely syntax errors in MD): ${e.message?.split('\n')[0]}`,
+            );
+        }
     }
 }

@@ -115,7 +115,7 @@ ${SHARED_SAFETY_RULES}
 
 # FORMAT RULES
 - **YAML Frontmatter**: title, description, icon (emoji), order.
-- **Mermaid**: Use for flows/processes.
+- **Mermaid**: Use for flows/processes. **CRITICAL**: ALWAYS quote node labels (e.g., id["Label (text)"]) to prevent syntax errors with parentheses or special chars.
 - **Callouts**: <Callout type="info"> text </Callout>
 - **MARKDOWN ONLY**: Raw content. No chatter.
 `;
