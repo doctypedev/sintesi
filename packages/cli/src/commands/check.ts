@@ -11,7 +11,9 @@ import { GenerationContextService } from '../services/generation-context';
 import { LineageService } from '../services/lineage-service';
 import { SemanticVerifier } from '../services/semantic-verifier';
 import { existsSync, mkdirSync, writeFileSync, readdirSync, readFileSync } from 'fs';
-import { resolve, join } from 'path';
+import { resolve, join, relative } from 'path';
+
+import { execSync } from 'child_process';
 
 /**
  * Execute the check command
@@ -116,9 +118,13 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
         };
     }
 
-    // Analyze Project (Get Git Diff)
+    // Analyze Project (Get Git Diff & Changed Files)
     logger.info('Analyzing project changes...');
-    const { gitDiff } = await contextService.analyzeProject(baseRef);
+    const { gitDiff, changedFiles: absoluteChangedFiles } =
+        await contextService.analyzeProject(baseRef);
+
+    // Normalize to relative paths for compatibility with LineageService local logic
+    const changedFiles = absoluteChangedFiles.map((f) => relative(codeRoot, f));
 
     // 0. Existence Check
     let readmeExists = true;
@@ -203,16 +209,6 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
             logger.warn('⚠️ Drift detected: Documentation is missing');
         } else if (gitDiff) {
             logger.info('Performing Semantic Analysis (Documentation Site vs Code)...');
-
-            const childProcess = await import('child_process');
-            // Check if execSync is available directly or on default property (ESM/CJS interop)
-            const execSync = childProcess.execSync || (childProcess.default as any)?.execSync;
-            const changedFilesOutput = execSync(`git diff --name-only ${baseRef || 'HEAD'}`, {
-                cwd: codeRoot,
-            })
-                .toString()
-                .trim();
-            const changedFiles = changedFilesOutput.split('\n').filter((f) => f.length > 0);
 
             let impactedDocsSize = 0;
 

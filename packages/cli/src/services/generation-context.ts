@@ -153,12 +153,15 @@ export class GenerationContextService {
     /**
      * Analyzes the project structure and retrieves the git diff.
      */
-    async analyzeProject(baseRef?: string): Promise<{ context: ProjectContext; gitDiff: string }> {
+    async analyzeProject(
+        baseRef?: string,
+    ): Promise<{ context: ProjectContext; gitDiff: string; changedFiles: string[] }> {
         // Structural Context
         const context = getProjectContext(this.cwd);
 
         // Recent Changes Context
         let gitDiff = '';
+        let changedFiles: string[] = [];
         try {
             const analysisService = new ChangeAnalysisService(this.logger);
             const analysis = await analysisService.analyze({
@@ -169,6 +172,8 @@ export class GenerationContextService {
             });
 
             gitDiff = analysis.gitDiff;
+            changedFiles = analysis.changedFiles;
+
             if (gitDiff.length > 15000) {
                 gitDiff = gitDiff.substring(0, 15000) + '\n... (truncated)';
             }
@@ -176,7 +181,7 @@ export class GenerationContextService {
             this.logger.debug('Could not fetch git diff, skipping: ' + e);
         }
 
-        return { context, gitDiff };
+        return { context, gitDiff, changedFiles };
     }
 
     /**

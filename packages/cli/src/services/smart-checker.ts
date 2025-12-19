@@ -6,7 +6,6 @@ import { GitBinding } from '@sintesi/core';
 import { createObservabilityMetadata } from '../utils/observability';
 import { getSmartCheckReadmePrompt } from '../prompts/analysis';
 import { ChangeAnalysisService } from './analysis-service';
-import { filterGitDiff } from '../utils/diff-utils';
 
 export interface SmartCheckResult {
     hasDrift: boolean;
@@ -30,6 +29,9 @@ export class SmartChecker {
      * This saves tokens by avoiding AI calls for trivial changes
      */
     private shouldAnalyzeWithAI(changedFiles: string[], gitDiff: string): boolean {
+        // ... imports ...
+
+        // In shouldAnalyzeWithAI:
         // 1. File Name Filtering
         const relevantFiles = changedFiles.filter((file) => {
             // Ignore test files
@@ -39,12 +41,6 @@ export class SmartChecker {
                 file.includes('tests/')
             )
                 return false;
-            // Ignore lockfiles and internal configs
-            if (file.includes('lock.yaml') || file.includes('lock.json') || file.includes('lock'))
-                return false;
-            if (file.includes('.gitignore') || file.includes('.editorconfig')) return false;
-            // Ignore Changelogs and Changesets (Version bumps)
-            if (file.includes('CHANGELOG.md') || file.includes('.changeset/')) return false;
 
             // Focus on source code (TS/JS/Rust) and existing docs and configs
             return (
@@ -167,6 +163,7 @@ export class SmartChecker {
                 fallbackToLastCommit: true,
                 includeSymbols: false, // We don't need semantic symbol analysis for this, just diffs + files
                 stagedOnly: false,
+                excludePatterns: ['README.md', basename(readmePath)],
             });
 
             gitDiff = context.gitDiff;
@@ -176,10 +173,6 @@ export class SmartChecker {
                 this.logger.debug('No code changes detected to analyze.');
                 return { hasDrift: false };
             }
-
-            // FILTER: Remove README.md changes from the diff to prevent self-triggering
-            // Using shared utility for consistent logic
-            gitDiff = filterGitDiff(gitDiff, ['README.md', basename(readmePath)]);
 
             if (!gitDiff.trim()) {
                 this.logger.debug('No code changes detected (after filtering README changes).');

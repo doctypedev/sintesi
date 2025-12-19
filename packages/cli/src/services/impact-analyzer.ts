@@ -68,20 +68,17 @@ export class ImpactAnalyzer {
         }
 
         // 1. Clean the diff (remove lockfiles, noise)
+        // We now use centralized defaults from filterGitDiff (includes docs/, .changeset/, .sintesi/)
         const exclusions: string[] = [];
+
         if (docType === 'readme') {
             exclusions.push('README.md');
             if (outputDir) exclusions.push(outputDir);
         } else if (docType === 'documentation') {
+            // docs/ and documentation/ are already in defaults, but we add custom outputDir if present
             if (outputDir) {
-                // Ensure directory paths end with / for proper filtering if needed by filterGitDiff
-                // But filterGitDiff usually handles glob patterns.
-                // If outputDir is 'docs', we want to exclude 'docs/' and contents.
                 const dir = outputDir.endsWith('/') ? outputDir : `${outputDir}/`;
                 exclusions.push(dir);
-            } else {
-                exclusions.push('docs/');
-                exclusions.push('documentation/');
             }
         }
 
@@ -91,7 +88,7 @@ export class ImpactAnalyzer {
         if (!cleanDiff || cleanDiff.trim().length === 0) {
             return {
                 update: false,
-                reason: 'All changes were filtered out (likely docs-only changes).',
+                reason: 'All changes were filtered out (likely docs-only or system changes).',
             };
         }
 
