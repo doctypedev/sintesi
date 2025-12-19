@@ -118,10 +118,13 @@ ${SHARED_SAFETY_RULES}
   - **CRITICAL**: Use double quotes for all string values to prevent YAML errors (e.g., title: "My Title: Subtitle").
 - **Mermaid**: Use for flows/processes. **CRITICAL**: ALWAYS quote node labels (e.g., id["Label (text)"]) to prevent syntax errors with parentheses or special chars.
 - **Callouts**: <Callout type="info"> text </Callout>
-- **Rich Markdown**:
-  - **Avoid Bullet Point Fatigue**: Use paragraphs for detailed explanations and narrative.
-  - **Tables**: Use tables for lists of properties, flags, or configuration options.
-  - **Headers**: Use clear hierarchy.
+- **STRICT STYLING RULES**:
+  - **NO WALL OF BULLETS**: Do NOT use bullet points for everything. Use paragraphs for explanations.
+  - **BACKTICKS**: ALWAYS use backticks \`like this\` for: file paths, directory names, variable names, class names, function signatures, CLI flags.
+  - **BOLD**: Use **bold** for key concepts or emphasis.
+  - **HEADERS**: Use H2 (##) and H3 (###) to break up long sections. Do not nest bullets deeper than 2 levels.
+  - **TABLES**: MUST use Markdown tables for: CLI Flags, Config Properties, Arguments. Do NOT use bullet lists for these.
+  - **CODE BLOCKS**: Use fenced code blocks with language tags (e.g., \`\`\`typescript) for ALL examples.
 - **MARKDOWN ONLY**: Raw content. No chatter.
 `;
 
@@ -314,4 +317,5 @@ ${currentContent}
 - **NO** touching unrelated sections.
 - Return brief summary of changes.
 - **YAML**: If updating frontmatter, ALWAYS use double quotes for string values (title: "Foo: Bar").
+- **STYLE**: Maintain rich formatting. Use backticks for code elements, tables for properties, and bold for emphasis.
 `;
