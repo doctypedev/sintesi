@@ -1,9 +1,8 @@
-import { AIProvider, AIModel, AIAgentRoleConfig } from './types';
+import { AIProvider, AIModel } from './types';
 import { DEFAULT_MODELS, DEFAULT_TEMPERATURES } from './constants';
 
 export interface AIAgentsConfig {
-    roles: Record<string, AIAgentRoleConfig>;
-    globalModel: AIModel;
+    roles: Record<string, AIModel>;
 }
 
 export class ConfigLoader {
@@ -11,52 +10,67 @@ export class ConfigLoader {
      * Loads agent configurations from environment variables
      */
     static loadFromEnv(): AIAgentsConfig {
-        const provider = (process.env.AI_PROVIDER as AIProvider) || 'openai';
-        const apiKey = this.getApiKey(provider);
+        const globalProvider = (process.env.AI_PROVIDER as AIProvider) || 'openai';
 
-        const globalModel: AIModel = {
-            provider,
-            apiKey,
-            modelId: process.env.AI_MODEL_ID || DEFAULT_MODELS[provider],
+        const globalDefaults = {
+            provider: globalProvider,
+            modelId: process.env.AI_MODEL_ID || DEFAULT_MODELS[globalProvider],
             maxTokens: parseInt(process.env.AI_MAX_TOKENS || '2000'),
             temperature: parseFloat(
                 process.env.AI_TEMPERATURE || String(DEFAULT_TEMPERATURES.writer),
             ),
             endpoint: process.env.AI_ENDPOINT,
-            observability: {
-                heliconeApiKey: process.env.HELICONE_API_KEY,
-            },
+            heliconeApiKey: process.env.HELICONE_API_KEY,
         };
 
         const roles = {
-            planner: this.loadRoleConfig('PLANNER', globalModel, DEFAULT_TEMPERATURES.planner),
-            researcher: this.loadRoleConfig(
+            planner: this.loadRoleModel('PLANNER', globalDefaults, DEFAULT_TEMPERATURES.planner),
+            researcher: this.loadRoleModel(
                 'RESEARCHER',
-                globalModel,
+                globalDefaults,
                 DEFAULT_TEMPERATURES.researcher,
             ),
-            writer: this.loadRoleConfig('WRITER', globalModel, DEFAULT_TEMPERATURES.writer),
-            reviewer: this.loadRoleConfig('REVIEWER', globalModel, DEFAULT_TEMPERATURES.reviewer),
+            writer: this.loadRoleModel('WRITER', globalDefaults, DEFAULT_TEMPERATURES.writer),
+            reviewer: this.loadRoleModel('REVIEWER', globalDefaults, DEFAULT_TEMPERATURES.reviewer),
         };
 
-        return { globalModel, roles };
+        return { roles };
     }
 
-    private static loadRoleConfig(
+    private static loadRoleModel(
         prefix: string,
-        fallback: AIModel,
+        fallback: {
+            provider: AIProvider;
+            modelId: string;
+            maxTokens: number;
+            temperature: number;
+            endpoint?: string;
+            heliconeApiKey?: string;
+        },
         defaultTemp: number,
-    ): AIAgentRoleConfig {
+    ): AIModel {
         const provider = (process.env[`${prefix}_PROVIDER`] as AIProvider) || fallback.provider;
+        const apiKey = this.getApiKey(provider);
+
         return {
             provider,
-            modelId: process.env[`${prefix}_MODEL_ID`] || DEFAULT_MODELS[provider],
+            apiKey,
+            modelId:
+                process.env[`${prefix}_MODEL_ID`] ||
+                (provider === fallback.provider ? fallback.modelId : DEFAULT_MODELS[provider]),
             temperature: process.env[`${prefix}_TEMPERATURE`]
                 ? parseFloat(process.env[`${prefix}_TEMPERATURE`]!)
-                : defaultTemp,
+                : provider === fallback.provider
+                  ? fallback.temperature
+                  : defaultTemp,
             maxTokens: process.env[`${prefix}_MAX_TOKENS`]
                 ? parseInt(process.env[`${prefix}_MAX_TOKENS`]!)
                 : fallback.maxTokens,
+            endpoint: process.env[`${prefix}_ENDPOINT`] || fallback.endpoint,
+            observability: {
+                heliconeApiKey:
+                    process.env[`${prefix}_HELICONE_API_KEY`] || fallback.heliconeApiKey,
+            },
         };
     }
 

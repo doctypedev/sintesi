@@ -165,12 +165,9 @@ export function createAIAgentsFromEnv(
     const config = ConfigLoader.loadFromEnv();
     const agents: Partial<AIAgents> = {};
 
-    for (const [role, roleConfig] of Object.entries(config.roles)) {
+    for (const [role, modelConfig] of Object.entries(config.roles)) {
         const agentConfig: AIAgentConfig = {
-            model: {
-                ...config.globalModel,
-                ...roleConfig,
-            },
+            model: modelConfig,
             debug: options.debug,
             timeout: options.timeout,
             logger: options.logger,
@@ -180,7 +177,7 @@ export function createAIAgentsFromEnv(
 
         if (options.logger) {
             options.logger.debug(
-                `[AIAgentManager] ${role} initialized with ${roleConfig.modelId} (${roleConfig.provider || config.globalModel.provider})`,
+                `[AIAgentManager] ${role} initialized with ${modelConfig.modelId} (${modelConfig.provider})`,
             );
         }
     }
