@@ -13,8 +13,8 @@ import { generateObject, generateText } from 'ai';
 import {
     BatchDocumentationStructureSchema,
     DocumentationStructureSchema,
-    type DocumentationStructure,
 } from '../../structured-schema';
+import { DocumentationStructure } from '../../types';
 import { buildMarkdownFromStructure } from '../../markdown-builder';
 import { z } from 'zod';
 import { ModelFactory } from './model-factory';

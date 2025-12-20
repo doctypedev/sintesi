@@ -276,3 +276,62 @@ export interface GenerateOptions {
     /** Observability metadata for tracking */
     metadata?: ObservabilityMetadata;
 }
+
+/**
+ * Structured data for a single parameter
+ */
+export interface Parameter {
+    name: string;
+    type: string;
+    description: string;
+    optional?: boolean;
+    defaultValue?: string;
+}
+
+/**
+ * Structured data for return type information
+ */
+export interface ReturnTypeInfo {
+    type: string;
+    description: string;
+}
+
+/**
+ * Structured data for properties (interfaces, classes)
+ */
+export interface Property {
+    name: string;
+    type: string;
+    description: string;
+    optional?: boolean;
+    readonly?: boolean;
+}
+
+/**
+ * Core documentation structure
+ */
+export interface DocumentationStructure {
+    symbolName: string;
+    purpose: string;
+    parameters?: Parameter[];
+    returnType?: ReturnTypeInfo;
+    usageExample?: string;
+    notes?: string[];
+}
+
+/**
+ * Extended documentation structure for complex types
+ */
+export interface ExtendedDocumentation extends DocumentationStructure {
+    properties?: Property[];
+    methods?: DocumentationStructure[];
+    extends?: string;
+    implements?: string[];
+}
+
+/**
+ * Batch documentation structure
+ */
+export interface BatchDocumentationStructure {
+    documentations: DocumentationStructure[];
+}

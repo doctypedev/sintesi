@@ -6,7 +6,7 @@
  * JSON artifacts and ensures all documentation follows the same format.
  */
 
-import type { DocumentationStructure, Parameter, ReturnTypeInfo } from './structured-schema';
+import type { DocumentationStructure, Parameter, ReturnTypeInfo } from './types';
 
 /**
  * Build Markdown documentation from structured data

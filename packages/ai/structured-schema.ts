@@ -6,6 +6,14 @@
  */
 
 import { z } from 'zod';
+import type {
+    Parameter,
+    ReturnTypeInfo,
+    DocumentationStructure,
+    BatchDocumentationStructure,
+    Property,
+    ExtendedDocumentation,
+} from './types';
 
 /**
  * Schema for a single parameter
@@ -24,9 +32,7 @@ export const ParameterSchema = z.object({
         .describe('Brief description of what this parameter does'),
     optional: z.boolean().optional().describe('Whether this parameter is optional'),
     defaultValue: z.string().trim().optional().describe('Default value if any'),
-});
-
-export type Parameter = z.infer<typeof ParameterSchema>;
+}) as z.ZodType<Parameter>;
 
 /**
  * Schema for return type information
@@ -42,14 +48,12 @@ export const ReturnTypeSchema = z.object({
         .trim()
         .min(1, 'Return type description cannot be empty')
         .describe('Description of what is returned'),
-});
-
-export type ReturnTypeInfo = z.infer<typeof ReturnTypeSchema>;
+}) as z.ZodType<ReturnTypeInfo>;
 
 /**
- * Schema for a single documentation entry
+ * Internal Zod Object for DocumentationStructure to allow extension
  */
-export const DocumentationStructureSchema = z.object({
+const DocumentationStructureObject = z.object({
     symbolName: z
         .string()
         .trim()
@@ -78,16 +82,18 @@ export const DocumentationStructureSchema = z.object({
         .describe('Additional notes, caveats, or important information'),
 });
 
-export type DocumentationStructure = z.infer<typeof DocumentationStructureSchema>;
+/**
+ * Schema for a single documentation entry
+ */
+export const DocumentationStructureSchema =
+    DocumentationStructureObject as z.ZodType<DocumentationStructure>;
 
 /**
  * Schema for batch documentation generation
  */
 export const BatchDocumentationStructureSchema = z.object({
     documentations: z.array(DocumentationStructureSchema),
-});
-
-export type BatchDocumentationStructure = z.infer<typeof BatchDocumentationStructureSchema>;
+}) as z.ZodType<BatchDocumentationStructure>;
 
 /**
  * Schema for properties (interfaces, classes)
@@ -102,18 +108,14 @@ export const PropertySchema = z.object({
         .describe('What this property represents'),
     optional: z.boolean().optional().describe('Whether this property is optional'),
     readonly: z.boolean().optional().describe('Whether this property is readonly'),
-});
-
-export type Property = z.infer<typeof PropertySchema>;
+}) as z.ZodType<Property>;
 
 /**
  * Extended schema for complex types (classes, interfaces)
  */
-export const ExtendedDocumentationSchema = DocumentationStructureSchema.extend({
+export const ExtendedDocumentationSchema = DocumentationStructureObject.extend({
     properties: z.array(PropertySchema).optional().describe('Properties for classes/interfaces'),
     methods: z.array(DocumentationStructureSchema).optional().describe('Methods for classes'),
     extends: z.string().optional().describe('Parent class or extended interfaces'),
     implements: z.array(z.string()).optional().describe('Implemented interfaces'),
-});
-
-export type ExtendedDocumentation = z.infer<typeof ExtendedDocumentationSchema>;
+}) as z.ZodType<ExtendedDocumentation>;
