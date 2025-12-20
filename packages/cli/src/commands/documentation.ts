@@ -183,7 +183,6 @@ export async function documentationCommand(options: DocumentationOptions): Promi
             JSON.stringify(
                 {
                     timestamp: Date.now(),
-                    lastGeneratedSha: currentSha,
                     documentation: {
                         hasDrift: false,
                         reason: null,
