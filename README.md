@@ -67,7 +67,7 @@ jobs:
 1.  **Install**
 
     ```bash
-    npm install -g sintesi-monorepo-root
+    npm install -g @sintesi/sintesi
     ```
 
 2.  **Generate Documentation**
