@@ -1,5 +1,42 @@
 # @sintesi/sintesi
 
+## 0.21.0
+
+### Minor Changes
+
+- 169f74f: - Add surgical documentation update mode via patch_file tool (DOC_UPDATE_PROMPT & createPatchFileTool)
+    - Extend AI generateText options with tools and maxSteps
+- 655aabd: - Batch research & RAG: decouple research from writing for faster, more accurate context
+    - Structured review/refine: JSON reviewer output plus automated writer refinement
+    - Enforce strict markdown-only prompt output
+    - Update default AI models to gpt-5 variants
+- 34db7a6: - Implement state-based drift detection for documentation and README generation using cached Git SHAs
+- 5fe61c4: 🧠 Smarter Context & RAG
+  We've upgraded our Retrieval-Augmented Generation (RAG) capabilities. The system now utilizes query caching and reranking timeouts to ensure that the most relevant context is retrieved without bottlenecking the process. Furthermore, code skeletonization now allows the LLM to focus on logic rather than boilerplate.
+
+    💎 Polished Output & Formatting
+    - Prettier Integration: All generated code blocks and documentation are now automatically formatted via Prettier.
+    - Mermaid Diagrams: Refined prompt engineering significantly reduces syntax errors in generated diagrams.
+    - YAML & Metadata: Enhanced quoting and formatting rules ensure that all documentation headers are valid and parsable.
+    - Strict Styling: Introduced new styling rules to maintain a consistent tone and voice across all generated pages.
+    - ⚡ Performance & Scalability
+      High Concurrency: Documentation generation is now significantly faster thanks to increased task concurrency.
+    - Site Restructure: Optimized the underlying folder structure and navigation for a more intuitive user experience.
+
+- 3fb48a5: - Add state-based drift detection: cache last-generated SHAs for README and documentation and restore .sintesi state in CI
+    - Introduce lineage graph and SemanticVerifier to target which docs are impacted by code changes
+- a686914: - Introduce observability metadata for enhanced AI tracking
+    - Add logger support for AI agents
+    - Improve AI agent initialization with role-based configuration
+    - Enhance documentation generation with metadata tracking
+- 7478b4b: RAG Services: Improved non-TypeScript chunking, added local keyword reranking fallback, and implemented context budgeting for retrieved content.
+  Diff Analysis: Integrated git diff filtering into ChangeAnalysisService and DocumentationBuilder for more targeted context.
+  Documentation & Prompts: Refactored prompts for clarity, implemented selective package.json summarization.
+
+### Patch Changes
+
+- @sintesi/core@0.21.0
+
 ## 0.20.0
 
 ### Minor Changes
