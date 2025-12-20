@@ -2,10 +2,6 @@
   <img src="assets/full_logo.png" alt="Sintesi Logo" width="500" />
 </p>
 
-<!-- Markdown fallback for renderers that strip HTML (some renderers will display this image instead of the HTML block above) -->
-
-![Sintesi Logo](assets/full_logo.png)
-
 # Sintesi
 
 [![npm version](https://badge.fury.io/js/@sintesi%2Fsintesi.svg)](https://www.npmjs.com/package/@sintesi/sintesi)
