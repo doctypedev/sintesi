@@ -81,44 +81,14 @@ export class ChangeAnalysisService {
             }
         }
 
-        // 2. Auto-detect Post-Push/Merge scenario
-        // If HEAD is identical to the base branch (e.g. running in CI after a push to main),
-        // we must compare against the PREVIOUS commit to see what changed.
-        try {
-            if (!stagedOnly) {
-                const headSha = execSync('git rev-parse HEAD', {
-                    encoding: 'utf-8',
-                    cwd: projectRoot,
-                }).trim();
-                // Ensure effectiveBase is resolved to a SHA or valid ref for comparison
-                const baseSha = execSync(`git rev-parse ${effectiveBase}`, {
-                    encoding: 'utf-8',
-                    cwd: projectRoot,
-                }).trim();
-
-                if (headSha === baseSha) {
-                    this.logger.info(
-                        `ℹ HEAD is identical to ${effectiveBase}. Switching to ${effectiveBase}~1 to detect recent changes.`,
-                    );
-                    effectiveBase = `${effectiveBase}~1`;
-                }
-            }
-        } catch (e) {
-            // Ignore errors (e.g. shallow clone, no commits yet) and proceed with original base
-            this.logger.debug(`Could not verify HEAD vs Base alignment: ${e}`);
-        }
-
-        // 3. Analyze Changes using Rust Binding
-        // This replaces the old slow execSync/regex approach
+        // 2. Analyze Changes using Rust Binding
         let gitDiff = '';
         let changedFiles: string[] = [];
 
-        let summary; // Capture Rust summary
+        let summary;
         const gitBinding = new GitBinding(projectRoot);
 
         try {
-            // If stagedOnly is true, we haven't implemented that explicitly in the simple binding yet
-            // assuming the binding handles it or we pass a flag.
             summary = gitBinding.analyzeChanges(effectiveBase, stagedOnly);
             gitDiff = summary.gitDiff;
             changedFiles = summary.changedFiles;
@@ -126,8 +96,9 @@ export class ChangeAnalysisService {
             // Handle specific Git errors gracefully
             if (e.toString().includes('revspec') && e.toString().includes('not found')) {
                 this.logger.warn(
-                    `⚠ Base revision '${effectiveBase}' not found. Falling back to 'HEAD~1'.`,
+                    `⚠ Base revision '${effectiveBase}' not found (possibly from stale lineage or invalid --base).`,
                 );
+                this.logger.warn(`   Falling back to 'HEAD~1' to detect recent changes.`);
                 try {
                     summary = gitBinding.analyzeChanges('HEAD~1', stagedOnly);
                     gitDiff = summary.gitDiff;
@@ -136,14 +107,13 @@ export class ChangeAnalysisService {
                     this.logger.error(
                         `Fallback analysis failed: ${fallbackError}. Both requested base and HEAD~1 failed.`,
                     );
-                    // Critical Failure: We cannot determine what changed.
-                    // Throwing allows SmartChecker to "Fail Open" (assume drift)
-                    // and DocumentationCommand to abort instead of generating garbage using empty context.
+                    this.logger.error(
+                        `This may indicate a shallow clone or corrupted git history. Try running 'git fetch --unshallow'.`,
+                    );
                     throw new Error(`Git Analysis Critical Failure: ${fallbackError}`);
                 }
             } else {
-                this.logger.error(`Rust Git analysis failed: ${e}.`);
-                // Propagate error for the same reasons above
+                this.logger.error(`Git analysis failed: ${e}`);
                 throw e;
             }
         }
@@ -157,38 +127,20 @@ export class ChangeAnalysisService {
             };
         }
 
-        // 3. Filter Changes (Centralized Filtering)
-        // Combine system defaults with run-specific exclusions
+        // 3. Filter Changes
         const allExclusions = [...SYSTEM_EXCLUSION_PATTERNS, ...excludePatterns];
 
-        // Filter file list
-        // We filter out anything matching exclusions OR internal noise (node_modules, etc handled by isRelevantFile + custom)
+        // Filter changed files: exclude noise patterns and keep only source code files
         changedFiles = changedFiles
-            .filter((f) => {
-                // Check if it matches any exclusion pattern
-                const isExcluded = allExclusions.some((p) => f.includes(p));
-                return !isExcluded;
-            })
-            // Keep existing relevance check (TS/RS files, etc) - wait, maybe we want to report ALL changed files but filtered?
-            // The method signature returns ChangeContext.
-            // Documentation usually cares about Source Code changes.
-            // SmartChecker might care about other things?
-            // Let's keep isRelevantFile for now but make sure it doesn't conflict.
-            // Actually, isRelevantFile excludes node_modules and tests.
+            .filter((f) => !allExclusions.some((p) => f.includes(p)))
             .filter((f) => this.isRelevantFile(f))
             .map((f) => path.resolve(projectRoot, f));
 
-        // Filter git diff
-        // We pass the exclusions to filterGitDiff
+        // Filter git diff using same exclusion patterns
         if (gitDiff) {
-            gitDiff = filterGitDiff(gitDiff, excludePatterns); // filterGitDiff uses SYSTEM_EXCLUSION_PATTERNS internal default if we don't pass them?
-            // Wait, filterGitDiff implementation:
-            // export function filterGitDiff(fullDiff: string, excludePatterns: string[] = []): string { ... }
-            // It uses defaults inside. So passing excludePatterns adds to them.
-            // PERFECT.
+            gitDiff = filterGitDiff(gitDiff, excludePatterns);
         }
 
-        // Recalculate meaningful changes based on filtered diff
         const hasMeaningfulChanges = gitDiff.trim().length > 0;
 
         // 4. Symbol Analysis (if requested)
