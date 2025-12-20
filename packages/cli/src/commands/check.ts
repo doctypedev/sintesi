@@ -10,7 +10,7 @@ import { SmartChecker } from '../services/smart-checker';
 import { GenerationContextService } from '../services/generation-context';
 import { LineageService } from '../services/lineage-service';
 import { SemanticVerifier } from '../services/semantic-verifier';
-import { existsSync, mkdirSync, writeFileSync, readdirSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readdirSync } from 'fs';
 import { resolve, join, relative } from 'path';
 
 import { execSync } from 'child_process';
@@ -52,48 +52,16 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
         };
     }
 
-    // Load detailed state to check for last logic
-    let lastDocSha: string | undefined;
-    let lastReadmeSha: string | undefined;
-
     // Load Lineage Service early to check for shared baseline
     const lineageService = new LineageService(logger, codeRoot);
     const lineageSha = lineageService.getLastGeneratedSha();
 
-    try {
-        const sintesiDir = resolve(process.cwd(), '.sintesi');
-        if (existsSync(join(sintesiDir, 'documentation.state.json'))) {
-            const docState = JSON.parse(
-                readFileSync(join(sintesiDir, 'documentation.state.json'), 'utf-8'),
-            );
-            if (docState.lastGeneratedSha) {
-                lastDocSha = docState.lastGeneratedSha;
-                logger.info(
-                    `Found previous documentation state (SHA: ${(docState.lastGeneratedSha as string).substring(0, 7)})`,
-                );
-            }
-        }
-        if (existsSync(join(sintesiDir, 'readme.state.json'))) {
-            const readmeState = JSON.parse(
-                readFileSync(join(sintesiDir, 'readme.state.json'), 'utf-8'),
-            );
-            if (readmeState.lastGeneratedSha) {
-                lastReadmeSha = readmeState.lastGeneratedSha;
-            }
-        }
-    } catch (e) {
-        logger.debug(`Failed to load previous state: ${e}`);
-    }
-
     // Determine Base Ref
-    // If user provided --base, use it. Otherwise use last SHA if available.
-    // Note: If checking BOTH, and they have different SHAs, we might have a conflict if asking for a single "changes" analysis.
-    // 'analyzeProject' returns a single git diff.
+    // If user provided --base, use it. Otherwise use Lineage SHA.
     // Priority:
     // 1. Explicit --base flag
     // 2. Lineage SHA (Shared/Committed baseline)
-    // 3. Local State SHA (Local ephemeral state)
-    const baseRef = options.base || lineageSha || lastDocSha || lastReadmeSha;
+    const baseRef = options.base || lineageSha;
 
     if (baseRef && !options.base) {
         logger.info(
@@ -178,7 +146,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
             logger.info('Performing smart check (README vs Code)...');
             const smartChecker = new SmartChecker(logger, codeRoot);
             const smartResult = await smartChecker.checkReadme({
-                baseBranch: options.base || lastReadmeSha, // Use specific SHA for readme if available
+                baseBranch: options.base || lineageSha, // Prioritize explicit base, then lineage
                 readmePath: resolve(codeRoot, options.output || 'README.md'),
             });
 
@@ -342,7 +310,6 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
                 JSON.stringify(
                     {
                         timestamp: Date.now(),
-                        lastGeneratedSha: lastReadmeSha, // Preserve SHA
                         readme: {
                             hasDrift: readmeDriftDetected,
                             reason: readmeReason,
@@ -364,7 +331,6 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
                 JSON.stringify(
                     {
                         timestamp: Date.now(),
-                        lastGeneratedSha: lastDocSha, // Preserve SHA
                         documentation: {
                             hasDrift: docDriftDetected,
                             reason: docReason,

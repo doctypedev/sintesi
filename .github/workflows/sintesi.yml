@@ -82,6 +82,7 @@ jobs:
                   path: |
                       .sintesi
                       !.sintesi/lineage.json
+                      !.sintesi/*.state.json
                   key: sintesi-state-${{ runner.os }}-${{ github.sha }}
                   restore-keys: |
                       sintesi-state-${{ runner.os }}-
