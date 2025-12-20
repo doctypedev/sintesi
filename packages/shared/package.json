@@ -1,0 +1,15 @@
+{
+    "name": "@sintesi/shared",
+    "version": "0.1.0",
+    "private": true,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "clean": "rm -rf dist"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.6",
+        "typescript": "^5.3.3"
+    }
+}

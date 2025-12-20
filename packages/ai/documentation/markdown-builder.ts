@@ -1,41 +1,34 @@
 /**
  * Deterministic Markdown builder from structured documentation
- *
- * This module takes structured JSON documentation and builds consistent,
- * well-formatted Markdown output using templates. This approach eliminates
- * JSON artifacts and ensures all documentation follows the same format.
  */
 
-import type { DocumentationStructure, Parameter, ReturnTypeInfo } from './structured-schema';
+import type { DocumentationStructure, Parameter, ReturnTypeInfo } from '../core/types';
 
 /**
  * Build Markdown documentation from structured data
- *
- * This is the core function that converts JSON structure to Markdown.
- * The template is deterministic - the same input always produces the same output.
  */
 export function buildMarkdownFromStructure(doc: DocumentationStructure): string {
     const parts: string[] = [];
 
-    // 1. Purpose (always present)
-    parts.push(`**Purpose:** ${doc.purpose}`);
+    // 1. Purpose
+    parts.push('**Purpose:** ' + doc.purpose);
 
-    // 2. Parameters (if present)
+    // 2. Parameters
     if (doc.parameters && doc.parameters.length > 0) {
         parts.push('');
         parts.push('**Parameters:**');
-        doc.parameters.forEach((param) => {
+        for (const param of doc.parameters) {
             parts.push(formatParameter(param));
-        });
+        }
     }
 
-    // 3. Return Type (if present)
+    // 3. Return Type
     if (doc.returnType) {
         parts.push('');
         parts.push(formatReturnType(doc.returnType));
     }
 
-    // 4. Usage Example (if present)
+    // 4. Usage Example
     if (doc.usageExample) {
         parts.push('');
         parts.push('**Usage Example:**');
@@ -44,13 +37,13 @@ export function buildMarkdownFromStructure(doc: DocumentationStructure): string 
         parts.push('```');
     }
 
-    // 5. Notes (if present)
+    // 5. Notes
     if (doc.notes && doc.notes.length > 0) {
         parts.push('');
         parts.push('**Notes:**');
-        doc.notes.forEach((note) => {
-            parts.push(`- ${note}`);
-        });
+        for (const note of doc.notes) {
+            parts.push('- ' + note);
+        }
     }
 
     return parts.join('\n');
@@ -60,36 +53,30 @@ export function buildMarkdownFromStructure(doc: DocumentationStructure): string 
  * Format a single parameter
  */
 function formatParameter(param: Parameter): string {
-    const parts: string[] = [`- \`${param.name}\``];
+    let line = '- `' + param.name + '`';
 
-    // Add optional marker
     if (param.optional) {
-        parts.push('(optional)');
+        line += ' (optional)';
     }
 
-    // Add type
-    parts.push(`(\`${param.type}\`):`);
+    line += ' (`' + param.type + '`): ' + param.description;
 
-    // Add description
-    parts.push(param.description);
-
-    // Add default value if present
     if (param.defaultValue) {
-        parts.push(`Default: \`${param.defaultValue}\``);
+        line += ' Default: `' + param.defaultValue + '`';
     }
 
-    return parts.join(' ');
+    return line;
 }
 
 /**
  * Format return type information
  */
 function formatReturnType(returnType: ReturnTypeInfo): string {
-    return `**Returns:** \`${returnType.type}\` - ${returnType.description}`;
+    return '**Returns:** `' + returnType.type + '` - ' + returnType.description;
 }
 
 /**
- * Build markdown for multiple symbols (used in batch generation)
+ * Build markdown for multiple symbols
  */
 export function buildBatchMarkdown(
     docs: DocumentationStructure[],

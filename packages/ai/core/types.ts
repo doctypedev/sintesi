@@ -3,6 +3,8 @@
  */
 
 import { CodeSignature } from '@sintesi/core';
+import { ILogger } from '@sintesi/shared';
+export { ILogger };
 
 /**
  * Supported AI providers
@@ -30,18 +32,11 @@ export interface AIModel {
 
     /** API endpoint (optional, for custom endpoints) */
     endpoint?: string;
-}
 
-/**
- * Interface for a logger to be injected into the AI module
- */
-export interface ILogger {
-    debug(message: string, ...args: unknown[]): void;
-    info(message: string, ...args: unknown[]): void;
-    warn(message: string, ...args: unknown[]): void;
-    error(message: string, ...args: unknown[]): void;
-    success?(message: string, ...args: unknown[]): void;
-    log?(message: string, ...args: unknown[]): void;
+    /** Observability configuration (e.g., Helicone) */
+    observability?: {
+        heliconeApiKey?: string;
+    };
 }
 
 /**
@@ -118,11 +113,22 @@ export interface DocumentationResponse {
 }
 
 /**
+ * Common error codes for AI providers
+ */
+export type AIErrorCode =
+    | 'TIMEOUT'
+    | 'RATE_LIMIT'
+    | 'NETWORK_ERROR'
+    | 'INVALID_API_KEY'
+    | 'GENERATION_FAILED'
+    | 'MODEL_NOT_FOUND';
+
+/**
  * Error from AI provider
  */
 export class AIProviderError extends Error {
     /** Error code */
-    code: string;
+    code: AIErrorCode;
 
     /** Provider name */
     provider: AIProvider;
@@ -130,7 +136,7 @@ export class AIProviderError extends Error {
     /** Original error (if available) */
     originalError?: unknown;
 
-    constructor(code: string, message: string, provider: AIProvider, originalError?: unknown) {
+    constructor(code: AIErrorCode, message: string, provider: AIProvider, originalError?: unknown) {
         super(message);
         this.name = 'AIProviderError';
         this.code = code;
@@ -285,4 +291,63 @@ export interface GenerateOptions {
 
     /** Observability metadata for tracking */
     metadata?: ObservabilityMetadata;
+}
+
+/**
+ * Structured data for a single parameter
+ */
+export interface Parameter {
+    name: string;
+    type: string;
+    description: string;
+    optional?: boolean;
+    defaultValue?: string;
+}
+
+/**
+ * Structured data for return type information
+ */
+export interface ReturnTypeInfo {
+    type: string;
+    description: string;
+}
+
+/**
+ * Structured data for properties (interfaces, classes)
+ */
+export interface Property {
+    name: string;
+    type: string;
+    description: string;
+    optional?: boolean;
+    readonly?: boolean;
+}
+
+/**
+ * Core documentation structure
+ */
+export interface DocumentationStructure {
+    symbolName: string;
+    purpose: string;
+    parameters?: Parameter[];
+    returnType?: ReturnTypeInfo;
+    usageExample?: string;
+    notes?: string[];
+}
+
+/**
+ * Extended documentation structure for complex types
+ */
+export interface ExtendedDocumentation extends DocumentationStructure {
+    properties?: Property[];
+    methods?: DocumentationStructure[];
+    extends?: string;
+    implements?: string[];
+}
+
+/**
+ * Batch documentation structure
+ */
+export interface BatchDocumentationStructure {
+    documentations: DocumentationStructure[];
 }
