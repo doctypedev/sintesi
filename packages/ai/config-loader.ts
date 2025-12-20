@@ -23,6 +23,9 @@ export class ConfigLoader {
                 process.env.AI_TEMPERATURE || String(DEFAULT_TEMPERATURES.writer),
             ),
             endpoint: process.env.AI_ENDPOINT,
+            observability: {
+                heliconeApiKey: process.env.HELICONE_API_KEY,
+            },
         };
 
         const roles = {

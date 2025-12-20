@@ -62,7 +62,7 @@ export class ModelFactory {
     }
 
     private tryCreateHeliconeModel(metadata: ObservabilityMetadata) {
-        const heliconeApiKey = process.env.HELICONE_API_KEY;
+        const heliconeApiKey = this.#config.modelConfig.observability?.heliconeApiKey;
         if (!heliconeApiKey) return null;
 
         try {

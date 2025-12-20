@@ -32,6 +32,11 @@ export interface AIModel {
 
     /** API endpoint (optional, for custom endpoints) */
     endpoint?: string;
+
+    /** Observability configuration (e.g., Helicone) */
+    observability?: {
+        heliconeApiKey?: string;
+    };
 }
 
 /**
@@ -108,11 +113,22 @@ export interface DocumentationResponse {
 }
 
 /**
+ * Common error codes for AI providers
+ */
+export type AIErrorCode =
+    | 'TIMEOUT'
+    | 'RATE_LIMIT'
+    | 'NETWORK_ERROR'
+    | 'INVALID_API_KEY'
+    | 'GENERATION_FAILED'
+    | 'MODEL_NOT_FOUND';
+
+/**
  * Error from AI provider
  */
 export class AIProviderError extends Error {
     /** Error code */
-    code: string;
+    code: AIErrorCode;
 
     /** Provider name */
     provider: AIProvider;
@@ -120,7 +136,7 @@ export class AIProviderError extends Error {
     /** Original error (if available) */
     originalError?: unknown;
 
-    constructor(code: string, message: string, provider: AIProvider, originalError?: unknown) {
+    constructor(code: AIErrorCode, message: string, provider: AIProvider, originalError?: unknown) {
         super(message);
         this.name = 'AIProviderError';
         this.code = code;

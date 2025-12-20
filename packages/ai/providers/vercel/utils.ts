@@ -1,4 +1,4 @@
-import { AIProvider, AIProviderError, ILogger } from '../../types';
+import { AIProvider, AIProviderError, ILogger, AIErrorCode } from '../../types';
 
 /**
  * Check if the model is a reasoning model (like OpenAI o1/o3)
@@ -13,7 +13,7 @@ export function isReasoningModel(modelId: string): boolean {
 export function mapToProviderError(
     error: any,
     provider: AIProvider,
-    fallbackCode = 'GENERATION_FAILED',
+    fallbackCode: AIErrorCode = 'GENERATION_FAILED',
 ) {
     if (error?.name === 'APICallError' && error.statusCode === 429) {
         return new AIProviderError('RATE_LIMIT', error.message, provider, error);

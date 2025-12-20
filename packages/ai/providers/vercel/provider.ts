@@ -54,7 +54,7 @@ export class VercelAIProvider implements IAIProvider {
         try {
             return await task(this.#modelFactory.getModel(metadata));
         } catch (error) {
-            if (metadata && process.env.HELICONE_API_KEY) {
+            if (metadata && this.#modelConfig.observability?.heliconeApiKey) {
                 log(
                     this.#logger,
                     this.#debug,
