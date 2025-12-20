@@ -1,13 +1,6 @@
-/**
- * AI Agent module
- *
- * Provides AI-powered documentation generation using OpenAI, Gemini, Anthropic or Mistral APIs
- */
-
-export * from './types';
-export * from './constants';
-export * from './config-loader';
-export * from './ai-agent';
-export * from './structured-schema';
-export * from './markdown-builder';
+export * from './core';
+export * from './config/config-loader';
+export * from './agents/ai-agent';
+export * from './documentation/structured-schema';
+export * from './documentation/markdown-builder';
 export * from './providers/vercel';

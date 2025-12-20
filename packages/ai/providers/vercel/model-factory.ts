@@ -3,7 +3,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createMistral } from '@ai-sdk/mistral';
 import { createHelicone } from '@helicone/ai-sdk-provider';
-import { AIModel, ILogger, ObservabilityMetadata } from '../../types';
+import { AIModel, ILogger, ObservabilityMetadata } from '../../core/types';
 import { log } from './utils';
 
 export interface ModelFactoryConfig {

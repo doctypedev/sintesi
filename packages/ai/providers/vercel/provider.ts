@@ -8,14 +8,14 @@ import {
     ILogger,
     ObservabilityMetadata,
     GenerateTextOptions,
-} from '../../types';
+    DocumentationStructure,
+} from '../../core/types';
 import { generateObject, generateText } from 'ai';
 import {
     BatchDocumentationStructureSchema,
     DocumentationStructureSchema,
-} from '../../structured-schema';
-import { DocumentationStructure } from '../../types';
-import { buildMarkdownFromStructure } from '../../markdown-builder';
+} from '../../documentation/structured-schema';
+import { buildMarkdownFromStructure } from '../../documentation/markdown-builder';
 import { z } from 'zod';
 import { ModelFactory } from './model-factory';
 import { OptionsBuilder } from './options-builder';

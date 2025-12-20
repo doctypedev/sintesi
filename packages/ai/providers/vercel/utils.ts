@@ -1,4 +1,4 @@
-import { AIProvider, AIProviderError, ILogger, AIErrorCode } from '../../types';
+import { AIProvider, AIProviderError, ILogger, AIErrorCode } from '../../core/types';
 
 /**
  * Check if the model is a reasoning model (like OpenAI o1/o3)

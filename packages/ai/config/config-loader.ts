@@ -1,5 +1,5 @@
-import { AIProvider, AIModel } from './types';
-import { DEFAULT_MODELS, DEFAULT_TEMPERATURES } from './constants';
+import { AIProvider, AIModel } from '../core/types';
+import { DEFAULT_MODELS, DEFAULT_TEMPERATURES } from '../core/constants';
 
 export interface AIAgentsConfig {
     roles: Record<string, AIModel>;

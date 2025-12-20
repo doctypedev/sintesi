@@ -13,7 +13,7 @@ import type {
     BatchDocumentationStructure,
     Property,
     ExtendedDocumentation,
-} from './types';
+} from '../core/types';
 
 /**
  * Schema for a single parameter

@@ -1,4 +1,4 @@
-import { AIModel, GenerateTextOptions } from '../../types';
+import { AIModel, GenerateTextOptions } from '../../core/types';
 import { isReasoningModel } from './utils';
 
 export class OptionsBuilder {

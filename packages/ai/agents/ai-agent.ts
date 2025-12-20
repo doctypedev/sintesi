@@ -13,9 +13,9 @@ import {
     AIProvider,
     ILogger,
     ObservabilityMetadata,
-} from './types';
-import { VercelAIProvider } from './providers/vercel';
-import { ConfigLoader } from './config-loader';
+} from '../core/types';
+import { VercelAIProvider } from '../providers/vercel';
+import { ConfigLoader } from '../config/config-loader';
 
 /**
  * Collection of AI Agent instances for different roles.
