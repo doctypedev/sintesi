@@ -59,9 +59,7 @@ export class DocumentationBuilder {
 
         // PHASE 1: BATCH RESEARCH (High Concurrency)
         // We decouple research from writing to speed up the "reading" part.
-        this.logger.info(
-            `\n🚀 PHASE 1: Batch Research & Context Retrieval (${plan.length} items)...`,
-        );
+        this.logger.info(`\n🚀 Batch Research & Context Retrieval (${plan.length} items)...`);
 
         const pageContexts = await this.performBatchResearch(
             plan,
@@ -71,7 +69,7 @@ export class DocumentationBuilder {
         );
 
         // PHASE 2: GENERATION & REVIEW (Standard Concurrency)
-        this.logger.info(`\n✍ PHASE 2: Content Generation & Review...`);
+        this.logger.info(`\n✍ Content Generation & Review...`);
 
         const pkg = context.packageJson as any;
         const packageJsonSummary = pkg
