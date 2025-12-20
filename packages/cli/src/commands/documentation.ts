@@ -29,14 +29,11 @@ export async function documentationCommand(options: DocumentationOptions): Promi
     const planner = new DocumentationPlanner(logger);
     const builder = new DocumentationBuilder(logger, reviewService, contextService);
 
-    let forceSmartCheck = false;
-
     // 0. Pipeline Optimization: Check State File
     if (options.force) {
         logger.info(
             'Force flag detected: skipping state checks and treating as greenfield generation.',
         );
-        forceSmartCheck = true;
     } else {
         try {
             const statePath = resolve(cwd, '.sintesi/documentation.state.json');
@@ -58,7 +55,6 @@ export async function documentationCommand(options: DocumentationOptions): Promi
                             logger.info(
                                 'ℹ️  Pipeline check indicated drift. Proceeding with generation.',
                             );
-                            forceSmartCheck = true;
                         }
                     }
                 }
@@ -68,20 +64,7 @@ export async function documentationCommand(options: DocumentationOptions): Promi
         }
     }
 
-    // 0. Smart Check
-    if (!options.force) {
-        const checkDir = resolve(cwd, options.outputDir || 'docs');
-        const docsExist = existsSync(checkDir) && readdirSync(checkDir).length > 0;
-
-        if (!docsExist) {
-            logger.info(
-                'Documentation directory missing or empty. Skipping smart check and forcing generation.',
-            );
-        } else {
-            const hasChanges = await contextService.performSmartCheck(forceSmartCheck);
-            if (!hasChanges) return;
-        }
-    }
+    // Documentation generation will proceed based on state file or force flag
 
     const outputDir = resolve(cwd, options.outputDir || 'docs');
 

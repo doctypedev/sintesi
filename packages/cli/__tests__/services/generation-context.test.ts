@@ -1,19 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GenerationContextService } from '../../src/services/generation-context';
 import { Logger } from '../../src/utils/logger';
-import { SmartChecker } from '../../src/services/smart-checker';
-import { createAIAgentsFromEnv } from '../../../ai';
-import * as path from 'path';
-import * as fs from 'fs';
-import { execSync } from 'child_process';
-
-// Mock dependencies
-vi.mock('child_process', () => ({
-    execSync: vi.fn(),
-}));
-vi.mock('../../src/services/smart-checker');
-vi.mock('../../src/services/analysis-service');
-vi.mock('fs');
 vi.mock('path');
 vi.mock('../../src/utils/logger');
 vi.mock('../../../ai', () => ({
@@ -23,6 +10,17 @@ vi.mock('@sintesi/core', () => ({
     getProjectContext: vi.fn(),
 }));
 import { getProjectContext } from '@sintesi/core';
+import { createAIAgentsFromEnv } from '../../../ai';
+import * as path from 'path';
+import * as fs from 'fs';
+import { execSync } from 'child_process';
+
+// Mock dependencies
+vi.mock('child_process', () => ({
+    execSync: vi.fn(),
+}));
+vi.mock('../../src/services/analysis-service');
+vi.mock('fs');
 
 describe('GenerationContextService', () => {
     let logger: Logger;
@@ -44,25 +42,6 @@ describe('GenerationContextService', () => {
         (vi.mocked(getProjectContext) as any).mockReturnValue({
             files: [],
             packageJson: { name: 'test-pkg' },
-        });
-    });
-
-    describe('performSmartCheck', () => {
-        it('should return true immediately if force is true', async () => {
-            const result = await service.performSmartCheck(true);
-            expect(result).toBe(true);
-            expect(SmartChecker).not.toHaveBeenCalled();
-        });
-
-        it('should delegate to SmartChecker if force is false', async () => {
-            const mockSmartChecker = {
-                hasRelevantCodeChanges: vi.fn().mockResolvedValue(true),
-            };
-            (vi.mocked(SmartChecker) as any).mockImplementation(() => mockSmartChecker);
-
-            const result = await service.performSmartCheck(false);
-            expect(result).toBe(true);
-            expect(mockSmartChecker.hasRelevantCodeChanges).toHaveBeenCalled();
         });
     });
 

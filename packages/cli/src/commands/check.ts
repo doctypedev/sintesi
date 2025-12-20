@@ -6,7 +6,6 @@
 
 import { Logger } from '../utils/logger';
 import { CheckResult, CheckOptions } from '../types';
-import { SmartChecker } from '../services/smart-checker';
 import { GenerationContextService } from '../services/generation-context';
 import { LineageService } from '../services/lineage-service';
 import { SemanticVerifier } from '../services/semantic-verifier';
@@ -39,7 +38,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     const aiAgents = await contextService.getAIAgents(options.verbose || false);
 
     if (!aiAgents) {
-        logger.error('Failed to initialize AI agents. Cannot perform smart check.');
+        logger.error('Failed to initialize AI agents. Cannot perform semantic analysis.');
         return {
             totalEntries: 0,
             driftedEntries: 0,
@@ -130,36 +129,74 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     if (shouldCheckReadme && !readmeExists) logger.info('README.md is missing.');
     if (shouldCheckDocs && !docsExist) logger.info('Documentation directory is missing or empty.');
 
-    // 1. README Check (SmartChecker)
+    // 1. README Check (Lineage-based)
     let readmeDriftDetected = false;
     let readmeReason: string | undefined;
-    let readmeSuggestion: string | undefined;
 
     if (shouldCheckReadme) {
         if (!readmeExists) {
             readmeDriftDetected = true;
             readmeReason = 'README file is missing.';
-            readmeSuggestion = 'Generate a new README.';
             logger.warn('⚠️ Drift detected: README is missing');
         } else if (gitDiff) {
-            // Only run smart checker if we have diffs and the file exists
-            logger.info('Performing smart check (README vs Code)...');
-            const smartChecker = new SmartChecker(logger, codeRoot);
-            const smartResult = await smartChecker.checkReadme({
-                baseBranch: options.base || lineageSha, // Prioritize explicit base, then lineage
-                readmePath: resolve(codeRoot, options.output || 'README.md'),
-            });
+            logger.info('Performing Lineage Check (README vs Code)...');
 
-            if (smartResult.hasDrift) {
-                logger.warn('⚠️ Drift detected: README might be outdated');
-                if (smartResult.reason) logger.log(`  Reason: ${smartResult.reason}`);
-                if (smartResult.suggestion) logger.log(`  Suggestion: ${smartResult.suggestion}`);
+            // README is tracked in lineage with key 'README.md'
+            const readmeKey = options.output || 'README.md';
+            const readmeSources = lineageService.getSources(readmeKey);
 
+            if (readmeSources.length === 0) {
+                logger.warn('⚠️  README not found in lineage graph.');
+                logger.warn('   Run "sintesi readme" to establish a baseline.');
                 readmeDriftDetected = true;
-                readmeReason = smartResult.reason;
-                readmeSuggestion = smartResult.suggestion;
+                readmeReason = 'README not tracked in lineage. Run "sintesi readme" first.';
+            } else if (changedFiles.length > 0) {
+                // Check if any changed files are tracked as README sources
+                const impactedSources = readmeSources.filter((s) => changedFiles.includes(s));
+
+                if (impactedSources.length === 0) {
+                    logger.success('✅ No README source files changed (Lineage Check).');
+                } else {
+                    logger.info(
+                        `🔍 ${impactedSources.length} README source files changed. Verifying semantically...`,
+                    );
+
+                    // Perform semantic verification
+                    const semanticVerifier = new SemanticVerifier(logger);
+
+                    // Extract targeted diff for README sources
+                    let readmeSpecificDiff = '';
+                    try {
+                        const fileArgs = impactedSources.map((f) => `"${f}"`).join(' ');
+                        readmeSpecificDiff = execSync(
+                            `git diff ${baseRef || 'HEAD'} -- ${fileArgs}`,
+                            {
+                                cwd: codeRoot,
+                                encoding: 'utf-8',
+                            },
+                        ).trim();
+                    } catch (e) {
+                        logger.debug(`Failed to extract targeted diff for README: ${e}`);
+                        readmeSpecificDiff = gitDiff;
+                    }
+
+                    const verification = await semanticVerifier.verify(
+                        readmeKey,
+                        readmeSpecificDiff,
+                        `Changes involved: ${impactedSources.join(', ')}`,
+                        aiAgents,
+                    );
+
+                    if (verification.isDrift) {
+                        readmeDriftDetected = true;
+                        readmeReason = verification.reason || 'Semantic conflict detected';
+                        logger.warn(`⚠️ Drift detected in README: ${readmeReason}`);
+                    } else {
+                        logger.success('✅ README validated as safely in-sync.');
+                    }
+                }
             } else {
-                logger.success('README appears to be in sync.');
+                logger.success('No source files changed.');
             }
         }
     }
@@ -313,7 +350,6 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
                         readme: {
                             hasDrift: readmeDriftDetected,
                             reason: readmeReason,
-                            suggestion: readmeSuggestion,
                         },
                     },
                     null,

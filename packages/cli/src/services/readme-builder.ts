@@ -2,11 +2,13 @@ import { Logger } from '../utils/logger';
 import { ProjectContext } from '@sintesi/core';
 import { AIAgents, ObservabilityMetadata } from '../../../ai';
 import { GenerationContextService } from './generation-context';
+import { LineageService } from './lineage-service';
 import { createObservabilityMetadata, extendMetadata } from '../utils/observability';
 import { README_GENERATION_PROMPT } from '../prompts/readme';
 import { ReviewService } from './review-service';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { spinner } from '@clack/prompts';
+import { shouldExcludeFromLineage } from '../utils/diff-utils';
 
 interface ReadmeOptions {
     output?: string;
@@ -15,11 +17,15 @@ interface ReadmeOptions {
 }
 
 export class ReadmeBuilder {
+    private lineageService: LineageService;
+
     constructor(
         private logger: Logger,
         private reviewService: ReviewService,
         private contextService: GenerationContextService,
-    ) {}
+    ) {
+        this.lineageService = new LineageService(logger);
+    }
 
     async buildReadme(
         options: ReadmeOptions,
@@ -125,6 +131,17 @@ export class ReadmeBuilder {
             s.stop(isUpdate ? 'Update complete' : 'Generation complete');
 
             writeFileSync(outputPath, readmeContent);
+
+            // Track README in lineage with all analyzed source files (excluding noise)
+            const allFiles = context.files.map((f) => f.path);
+            const sourceFiles = allFiles.filter((f) => !shouldExcludeFromLineage(f));
+            const readmeKey = options.output || 'README.md';
+            this.lineageService.track(readmeKey, sourceFiles);
+            this.lineageService.save();
+            this.logger.debug(
+                `Tracked ${sourceFiles.length}/${allFiles.length} source files for ${readmeKey} (excluded ${allFiles.length - sourceFiles.length} noise files)`,
+            );
+
             if (isUpdate && !options.force) {
                 this.logger.success('README updated at ' + Logger.path(outputPath));
             } else {

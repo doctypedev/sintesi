@@ -16,7 +16,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { LineageService } from './lineage-service';
 import { execSync } from 'child_process';
-import { filterDiffByInclusion } from '../utils/diff-utils';
+import { filterDiffByInclusion, shouldExcludeFromLineage } from '../utils/diff-utils';
 
 interface PageContext {
     item: DocPlan;
@@ -59,9 +59,7 @@ export class DocumentationBuilder {
 
         // PHASE 1: BATCH RESEARCH (High Concurrency)
         // We decouple research from writing to speed up the "reading" part.
-        this.logger.info(
-            `\n🚀 PHASE 1: Batch Research & Context Retrieval (${plan.length} items)...`,
-        );
+        this.logger.info(`\n🚀 Batch Research & Context Retrieval (${plan.length} items)...`);
 
         const pageContexts = await this.performBatchResearch(
             plan,
@@ -71,7 +69,7 @@ export class DocumentationBuilder {
         );
 
         // PHASE 2: GENERATION & REVIEW (Standard Concurrency)
-        this.logger.info(`\n✍ PHASE 2: Content Generation & Review...`);
+        this.logger.info(`\n✍ Content Generation & Review...`);
 
         const pkg = context.packageJson as any;
         const packageJsonSummary = pkg
@@ -282,7 +280,9 @@ export class DocumentationBuilder {
                 const { content: detailedSourceContext, files: sourceFiles } =
                     this.generationContextService.readRelevantContextWithFiles(item, context);
 
-                this.lineageService.track(item.path, sourceFiles);
+                // Filter out noise files before tracking in lineage
+                const filteredSourceFiles = sourceFiles.filter((f) => !shouldExcludeFromLineage(f));
+                this.lineageService.track(item.path, filteredSourceFiles);
 
                 // 2. RAG Retrieval via Researcher (Dynamic)
                 let ragContext = '';
