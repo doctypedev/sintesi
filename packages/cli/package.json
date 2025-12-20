@@ -50,6 +50,7 @@
         "@helicone/ai-sdk-provider": "^1.0.11",
         "@lancedb/lancedb": "^0.23.0",
         "@sintesi/core": "workspace:*",
+        "@sintesi/shared": "workspace:*",
         "@types/uuid": "^10.0.0",
         "ai": "^5.0.106",
         "cohere-ai": "^7.20.0",

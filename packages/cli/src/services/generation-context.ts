@@ -4,7 +4,7 @@ import { resolve, relative, dirname, join } from 'path';
 import { readFileSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
 import { ChangeAnalysisService } from './analysis-service';
-import { createAIAgentsFromEnv, AIAgents, AIAgentRoleConfig } from '../../../ai';
+import { createAIAgentsFromEnv, AIAgents } from '../../../ai';
 import { getContextPrompt } from '../prompts/analysis';
 import { RetrievalService } from './rag';
 import { SkeletonizerService } from './skeletonizer';
@@ -79,34 +79,15 @@ export class GenerationContextService {
     /**
      * Initializes AI Agents from environment variables.
      */
-    async getAIAgents(
-        verbose: boolean,
-        plannerModelId?: string,
-        writerModelId?: string,
-    ): Promise<AIAgents | null> {
+    async getAIAgents(verbose: boolean): Promise<AIAgents | null> {
         try {
-            const plannerConfig: AIAgentRoleConfig = {
-                modelId: plannerModelId || process.env.SINTESI_PLANNER_MODEL_ID || '',
-                provider: process.env.SINTESI_PLANNER_PROVIDER as any,
-            };
-            const writerConfig: AIAgentRoleConfig = {
-                modelId: writerModelId || process.env.SINTESI_WRITER_MODEL_ID || '',
-                provider: process.env.SINTESI_WRITER_PROVIDER as any,
-            };
-
-            const aiAgents = createAIAgentsFromEnv(
-                { debug: verbose, logger: this.logger },
-                { planner: plannerConfig, writer: writerConfig },
-            );
+            const aiAgents = createAIAgentsFromEnv({
+                debug: verbose,
+                logger: this.logger,
+            });
 
             const writerConnected = await aiAgents.writer.validateConnection();
-
-            // If planner is different from writer, check it too, otherwise we assume if writer works, planner likely works (or it's the same)
-            // But let's be safe if they are distinct instances
-            let plannerConnected = true;
-            if (aiAgents.planner !== aiAgents.writer) {
-                plannerConnected = await aiAgents.planner.validateConnection();
-            }
+            const plannerConnected = await aiAgents.planner.validateConnection();
 
             if (!writerConnected || !plannerConnected) {
                 this.logger.error('AI provider connection failed. Please check your API key.');

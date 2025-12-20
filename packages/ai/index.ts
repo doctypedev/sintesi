@@ -5,8 +5,10 @@
  */
 
 export * from './types';
+export * from './config-loader';
 export * from './ai-agent'; // Exports AIAgent, createOpenAIAgent, createAIAgentsFromEnv
-export * from './providers/vercel-ai-provider';
+
+export * from './providers/vercel';
 export * from './constants';
 export * from './structured-schema';
 export * from './markdown-builder';

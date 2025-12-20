@@ -3,6 +3,8 @@
  */
 
 import { CodeSignature } from '@sintesi/core';
+import { ILogger } from '@sintesi/shared';
+export { ILogger };
 
 /**
  * Supported AI providers
@@ -30,18 +32,6 @@ export interface AIModel {
 
     /** API endpoint (optional, for custom endpoints) */
     endpoint?: string;
-}
-
-/**
- * Interface for a logger to be injected into the AI module
- */
-export interface ILogger {
-    debug(message: string, ...args: unknown[]): void;
-    info(message: string, ...args: unknown[]): void;
-    warn(message: string, ...args: unknown[]): void;
-    error(message: string, ...args: unknown[]): void;
-    success?(message: string, ...args: unknown[]): void;
-    log?(message: string, ...args: unknown[]): void;
 }
 
 /**
