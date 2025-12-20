@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastGeneratedSha": "c46e1c8c176e7ff93c03d397428eaadcc171634e",
+  "lastGeneratedSha": "8eaa5ba9f2d76e93ccbe1908b6f9bc07d253c654",
   "dependencies": {
     "index.md": [
       "README.md",
@@ -8,10 +8,9 @@
       "packages/cli/package.json"
     ],
     "guides/getting-started.md": [
-      "crates/core/src/napi/mod.rs",
+      "README.md",
       "package.json",
-      "packages/cli/src/index.ts",
-      "pnpm-workspace.yaml"
+      "packages/cli/src/commands/documentation.ts"
     ],
     "reference/commands.md": [
       "packages/cli/src/commands/changeset.ts",
@@ -36,10 +35,10 @@
       "crates/core/src/napi/graph.rs"
     ],
     "guides/ci-integration.md": [
-      ".env.example",
+      ".github/workflows/sintesi.yml",
       "README.md",
-      "packages/cli/CHANGELOG.md",
-      "vercel.json"
+      "packages/cli/src/commands/check.ts",
+      "packages/cli/src/services/lineage-service.ts"
     ],
     "developer/build-and-test.md": [
       "crates/core/src/napi/mod.rs",

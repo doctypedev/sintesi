@@ -38,10 +38,12 @@ flowchart TD
 - If you use the `--force` flag, Sintesi will regenerate docs from scratch and ignore existing markdown/state.
 - Sintesi supports incremental indexing (it persists the last-processed commit SHA for efficient runs).
 
+Add a new workflow in `.github/workflows/sintesi.yml`:
+
 Example (GitHub Actions using the official action):
 
 ```yaml
-name: 'Synthesise Docs'
+name: Sintesi
 on:
     push:
         branches: [main]
@@ -112,6 +114,14 @@ jobs:
                   COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
 ```
 
+Important: default baseline used by `sintesi check`
+
+- By default, `sintesi check` uses the Lineage SHA recorded in .sintesi/lineage.json as the baseline commit to compare against. This is the typical CI baseline to detect drift from the last indexed commit.
+- To override the baseline, pass `--base <ref-or-sha>`. Examples:
+    - `sintesi check --base origin/main`
+    - `sintesi check --base HEAD~1`
+    - `sintesi check --base 4f7a2b3` (explicit commit SHA)
+
 If you need non-blocking checks, add `--no-strict`:
 
 ```bash
@@ -127,12 +137,13 @@ sintesi check --doc
 
 ## CLI Flags Reference
 
-| Flag          | Description                                                                       |
-| ------------- | --------------------------------------------------------------------------------- |
-| `--force`     | Force full regeneration, ignoring previous state and existing docs.               |
-| `--no-strict` | Run `sintesi check` in non-blocking mode (returns zero even when drift detected). |
-| `--readme`    | Scope `sintesi check` to the README only.                                         |
-| `--doc`       | Scope `sintesi check` to the documentation site only.                             |
+| Flag          | Description                                                                        |
+| ------------- | ---------------------------------------------------------------------------------- |
+| `--force`     | Force full regeneration, ignoring previous state and existing docs.                |
+| `--no-strict` | Run `sintesi check` in non-blocking mode (returns zero even when drift detected).  |
+| `--readme`    | Scope `sintesi check` to the README only.                                          |
+| `--doc`       | Scope `sintesi check` to the documentation site only.                              |
+| `--base`      | Override the default baseline used by `sintesi check` (accepts commit SHA or ref). |
 
 ## Action Inputs (official action)
 
@@ -162,6 +173,37 @@ Sintesi includes several safeguards for CI environments:
 - CI concurrency: Configure your CI to avoid overlapping runs for the same branch. For GitHub Actions, use a `concurrency` group with `cancel-in-progress: true` (example provided above). This prevents race conditions where multiple jobs attempt to write docs simultaneously.
 - Use full checkout (`fetch-depth: 0`) so Sintesi can compute diffs based on real commit history.
 
+CI caching: exclude .sintesi state files
+
+- Do not cache ephemeral Sintesi state files (they can cause inconsistent behavior when restored across different runs). Exclude `.sintesi/*.state.json` from any CI cache. Preferred approaches:
+    - Do not include the .sintesi directory in cache paths.
+    - If you must cache parts of `.sintesi`, explicitly delete state files at the start (or before saving) of the job so they are not reused or saved into the cache.
+- GitHub Actions examples:
+
+Avoid caching `.sintesi` entirely:
+
+```yaml
+- name: Restore cache (example)
+  uses: actions/cache@v4
+  with:
+      path: |
+          node_modules
+          .cache
+      key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+```
+
+If your workflow or cache setup would otherwise capture the repository workspace, prune state files early in the job:
+
+```yaml
+- name: Prune Sintesi state files (avoid caching or using stale state)
+  run: |
+      if [ -d .sintesi ]; then
+        find .sintesi -type f -name "*.state.json" -print -delete || true
+      fi
+```
+
+Place the prune step before any cache-save or restore logic that might include workspace files, and/or before running Sintesi, so runs use fresh indexing state and CI caches do not store `.state.json` artifacts.
+
 <Callout type="warning">
 Do not run multiple concurrent jobs that write to the same documentation output directory for the same branch unless you have orchestration to serialize them. Prefer cancel-in-progress or a single scheduled job per branch.
 </Callout>
@@ -173,6 +215,8 @@ Do not run multiple concurrent jobs that write to the same documentation output 
 - Use the official action `doctypedev/action@v0` when you want a turnkey integration (it accepts `openai_api_key`, `cohere_api_key`, `targets`, `docs_output`).
 - Reserve `--force` for manual or maintenance runs — it disables smart, incremental checks.
 - When enforcing docs via `sintesi check`, prefer strict mode in protected branches (do not use `--no-strict`) and use `--no-strict` for optional CI lanes like nightly scans.
+- Exclude `.sintesi/*.state.json` from CI caches (or delete them early in the job) to avoid restoring stale state across runs.
+- By default `sintesi check` uses the Lineage SHA recorded in `.sintesi/lineage.json` as its baseline; use `--base` to override when needed.
 
 ## Example: Clone & Run Locally (CI-friendly)
 
@@ -202,6 +246,7 @@ jobs:
 - If the action or CLI cannot push updates, ensure `permissions.contents` and `permissions.pull-requests` are set appropriately (see examples).
 - If runs are unexpectedly expensive or slow, confirm incremental indexing is working (Sintesi persists commit state) and that `fetch-depth` is not truncated.
 - For regenerations that repeatedly trigger changes, try `sintesi documentation --force` locally to inspect the full output before applying to CI.
+- If CI shows inconsistent results between runs, verify that `.sintesi/*.state.json` files are not being restored from caches or otherwise reused across unrelated runs.
 
 ## Links
 

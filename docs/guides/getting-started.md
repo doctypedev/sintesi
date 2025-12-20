@@ -6,7 +6,7 @@ order: '1'
 ---
 
 <Callout type="info">
-This guide covers building and running the monorepo locally. The repository URL used in examples is `https://github.com/doctypedev/doctype.git`. The CLI loads environment variables from a `.env` file (`packages/cli` uses `dotenv`), so create one if your workflows require API keys or other secrets.
+This guide covers building and running the monorepo locally. The repository URL used in examples is `https://github.com/doctypedev/sintesi.git`. The CLI loads environment variables from a `.env` file (`packages/cli` uses `dotenv`), so create one if your workflows require API keys or other secrets.
 </Callout>
 
 ## Overview
@@ -55,9 +55,13 @@ corepack prepare pnpm@8.15.5 --activate
 
 ## 1 — Clone the repository
 
+Note: This repository does not publish a global `sintesi` binary (there is no `bin` entry in the root/workspace package.json that would expose a `sintesi` command after `npm install -g`). To run the CLI you should build it locally and run the built artifact, or use `pnpm exec` / `pnpm link` as described below.
+
+Clone the repository used in examples:
+
 ```bash
-git clone https://github.com/doctypedev/doctype.git
-cd doctype
+git clone https://github.com/doctypedev/sintesi.git
+cd sintesi
 ```
 
 ## 2 — Install workspace dependencies
@@ -147,6 +151,8 @@ node packages/cli/dist/cli/src/index.js readme --output README.generated.md --fo
 node packages/cli/dist/cli/src/index.js documentation --output-dir docs/generated --force
 ```
 
+Important: the `packages/cli/dist/...` path is a local, built artifact. It is not a published CLI executable. If you expect a global `sintesi` command to be present, verify that a published package with a `bin` entry exists; for this repository the recommended local workflows are:
+
 Alternative local invocation methods:
 
 - If the CLI package defines a bin in `packages/cli/package.json`, you can execute it via pnpm exec without referencing the dist path explicitly:
@@ -179,7 +185,7 @@ Notes:
 | `--output`        |    `-o` | string  | Output file path for commands that generate a single file (e.g., `readme`) |              (none) |
 | `--force`         |    `-f` | boolean | Overwrite existing files / force full regeneration                         |             `false` |
 | `--verbose`       |  (none) | boolean | Enable verbose logging                                                     |             `false` |
-| `--output-dir`    |    `-o` | string  | Output directory for generated documentation or changesets                 | (varies by command) |
+| `--output-dir`    |  (none) | string  | Output directory for generated documentation or changesets                 | (varies by command) |
 | `--strict`        |  (none) | boolean | Exit with error code if drift detected (used by `check`)                   |              `true` |
 | `--smart`         |  (none) | boolean | Use AI smart comparison in checks                                          |              `true` |
 | `--base`          |  (none) | string  | Base branch for comparisons (used by `check`)                              |              (none) |
@@ -236,8 +242,8 @@ Access the preview URL printed by VitePress after `docs:dev` or `docs:preview` s
 
 ```bash
 # clone
-git clone https://github.com/doctypedev/doctype.git
-cd doctype
+git clone https://github.com/doctypedev/sintesi.git
+cd sintesi
 
 # install pnpm if needed (one-time)
 npm install -g pnpm@8.15.5

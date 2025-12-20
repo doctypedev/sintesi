@@ -26,7 +26,7 @@ Traditional documentation often becomes outdated. Sintesi keeps your docs fresh 
 
 You can integrate Sintesi into your CI/CD pipeline or use it locally.
 
-Add a new workflow in `.github/workflows/docs.yml`:
+Add a new workflow in `.github/workflows/sintesi.yml`:
 
 ```yaml
 name: Sintesi - Documentation AI
@@ -63,7 +63,7 @@ jobs:
 1.  **Install**
 
     ```bash
-    npm install -g @sintesi/sintesi
+    npm install -g sintesi-monorepo-root
     ```
 
 2.  **Generate Documentation**
@@ -93,7 +93,19 @@ jobs:
     sintesi check --doc
     ```
 
-4.  **Force Overwrite**
+    Note about baselines and CI caching:
+    - By default `sintesi check` now uses the LineageService SHA (from .sintesi/lineage.json) as the baseline. Use `--base` to override this behavior and point the check at a different commit/branch.
+    - Sintesi no longer falls back to local state files in `.sintesi/*.state.json` as a baseline. Those local state files are intentionally excluded from CI caching to avoid restoring ephemeral state across runs.
+    - If your workflows cache the `.sintesi` directory, ensure the cache excludes `*.state.json` (for example, add an exclusion like `!.sintesi/*.state.json`) so CI runs do not restore local state files.
+
+4.  **Manage Releases**
+    Sintesi includes a changeset helper command for release-related workflows. You can invoke it from the CLI:
+
+    ```bash
+    sintesi changeset
+    ```
+
+5.  **Force Overwrite**
     If you need to regenerate documentation or README files and want to bypass existing content checks, you can use the `--force` flag:
 
     ```bash
@@ -103,7 +115,7 @@ jobs:
 
     This will ignore existing files and regenerate them from scratch.
 
-5.  **Output Options**
+6.  **Output Options**
     Output customization (for example, setting the directory where generated docs are written) is supported by specific commands and by the GitHub Action inputs (see `docs_output` in the workflow example above). Command-line flags and their names can change across releases; consult the official CLI reference for the authoritative, up-to-date list of options:
 
     👉 CLI Reference: https://sintesicli.dev/reference/commands.html
