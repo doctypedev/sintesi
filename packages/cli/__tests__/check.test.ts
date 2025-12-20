@@ -1,16 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
 import { checkCommand } from '../src/commands/check';
-import { SmartChecker } from '../src/services/smart-checker';
+import { LineageService } from '../src/services/lineage-service';
 import { GenerationContextService } from '../src/services/generation-context';
 import { ImpactAnalyzer } from '../src/services/impact-analyzer';
 import { Logger } from '../src/utils/logger'; // Import Logger to mock it
 import * as fs from 'fs';
 
 // Mock dependencies
-vi.mock('../src/services/smart-checker');
+vi.mock('../src/services/lineage-service');
 vi.mock('../src/services/generation-context');
-vi.mock('../src/services/impact-analyzer');
-vi.mock('fs');
 vi.mock('../src/services/impact-analyzer');
 vi.mock('fs');
 vi.mock('../src/utils/logger'); // Auto-mock first
@@ -35,7 +33,7 @@ vi.mock('child_process', async (importOriginal) => {
 });
 
 describe('CLI: check command', () => {
-    let mockSmartCheckerInstance: any;
+    let mockLineageServiceInstance: any;
     let mockContextServiceInstance: any;
     let mockImpactAnalyzerInstance: any;
 
@@ -62,11 +60,13 @@ describe('CLI: check command', () => {
             getVerbose: vi.fn(),
         }));
 
-        // Setup SmartChecker mock
-        mockSmartCheckerInstance = {
-            checkReadme: vi.fn(),
+        // Setup LineageService mock
+        mockLineageServiceInstance = {
+            getLastGeneratedSha: vi.fn().mockReturnValue('dummy-sha'),
+            getSources: vi.fn().mockReturnValue(['file1.ts', 'file2.ts']),
+            getImpactedDocs: vi.fn().mockReturnValue([]),
         };
-        vi.mocked(SmartChecker).mockImplementation(() => mockSmartCheckerInstance);
+        vi.mocked(LineageService).mockImplementation(() => mockLineageServiceInstance);
 
         // Setup GenerationContextService mock
         mockContextServiceInstance = {
@@ -88,62 +88,53 @@ describe('CLI: check command', () => {
         vi.clearAllMocks();
     });
 
-    it('should pass success=true when SmartChecker detects no drift', async () => {
-        // Setup mock return
-        mockSmartCheckerInstance.checkReadme.mockResolvedValue({
-            hasDrift: false,
+    it('should pass success=true when lineage check detects no drift', async () => {
+        // Setup: README exists in lineage but no files changed
+        mockLineageServiceInstance.getSources.mockReturnValue(['file1.ts', 'file2.ts']);
+        mockContextServiceInstance.analyzeProject.mockResolvedValue({
+            gitDiff: 'some changes',
+            changedFiles: [], // No changed files
         });
 
         const result = await checkCommand({
             verbose: false,
-            smart: true,
+            readme: true,
             base: 'main',
         });
 
         expect(result.success).toBe(true);
         expect(result.driftedEntries).toBe(0);
-        expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith(
-            expect.objectContaining({ baseBranch: 'main' }),
-        );
     });
 
-    it('should pass success=false when SmartChecker detects drift', async () => {
-        // Setup mock return
-        mockSmartCheckerInstance.checkReadme.mockResolvedValue({
-            hasDrift: true,
-            reason: 'Missing docs',
-            suggestion: 'Update docs',
-        });
+    it('should pass success=false when README not in lineage', async () => {
+        // Setup: README not tracked in lineage
+        mockLineageServiceInstance.getSources.mockReturnValue([]);
 
         const result = await checkCommand({
             verbose: false,
-            smart: true,
+            readme: true,
             base: 'main',
         });
 
         expect(result.success).toBe(false);
         expect(result.driftedEntries).toBe(1);
-        expect(mockSmartCheckerInstance.checkReadme).toHaveBeenCalledWith(
-            expect.objectContaining({ baseBranch: 'main' }),
-        );
-
-        // Should verify it tries to write context file
-        expect(fs.writeFileSync).toHaveBeenCalled();
     });
 
-    it('should default to smart check even if not explicitly enabled (as it is the only check)', async () => {
-        // Setup mock return
-        mockSmartCheckerInstance.checkReadme.mockResolvedValue({
-            hasDrift: false,
+    it('should use lineage SHA as baseline if no --base provided', async () => {
+        mockLineageServiceInstance.getLastGeneratedSha.mockReturnValue('lineage-sha-123');
+        mockLineageServiceInstance.getSources.mockReturnValue(['file1.ts']);
+        mockContextServiceInstance.analyzeProject.mockResolvedValue({
+            gitDiff: '',
+            changedFiles: [],
         });
 
         const result = await checkCommand({
             verbose: false,
-            base: 'main',
-            // smart option omitted, but command should run it
+            readme: true,
+            // No base provided
         });
 
+        expect(mockContextServiceInstance.analyzeProject).toHaveBeenCalledWith('lineage-sha-123');
         expect(result.success).toBe(true);
-        expect(SmartChecker).toHaveBeenCalled(); // Should still instantiate SmartChecker
     });
 });

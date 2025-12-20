@@ -16,7 +16,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { LineageService } from './lineage-service';
 import { execSync } from 'child_process';
-import { filterDiffByInclusion } from '../utils/diff-utils';
+import { filterDiffByInclusion, shouldExcludeFromLineage } from '../utils/diff-utils';
 
 interface PageContext {
     item: DocPlan;
@@ -282,7 +282,9 @@ export class DocumentationBuilder {
                 const { content: detailedSourceContext, files: sourceFiles } =
                     this.generationContextService.readRelevantContextWithFiles(item, context);
 
-                this.lineageService.track(item.path, sourceFiles);
+                // Filter out noise files before tracking in lineage
+                const filteredSourceFiles = sourceFiles.filter((f) => !shouldExcludeFromLineage(f));
+                this.lineageService.track(item.path, filteredSourceFiles);
 
                 // 2. RAG Retrieval via Researcher (Dynamic)
                 let ragContext = '';

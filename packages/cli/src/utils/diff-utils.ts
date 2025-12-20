@@ -117,3 +117,33 @@ export function filterDiffByInclusion(
 
     return output.trim();
 }
+
+/**
+ * Checks if a file path should be excluded from lineage tracking.
+ * Uses SYSTEM_EXCLUSION_PATTERNS to filter out noise files.
+ *
+ * @param filePath The file path to check (can be absolute or relative)
+ * @returns true if the file should be excluded from lineage
+ */
+export function shouldExcludeFromLineage(filePath: string): boolean {
+    // Normalize path separators for consistent matching
+    const normalizedPath = filePath.replace(/\\/g, '/');
+
+    return SYSTEM_EXCLUSION_PATTERNS.some((pattern) => {
+        // Pattern matching logic:
+        // 1. Exact filename match (e.g., 'package-lock.json')
+        if (normalizedPath.endsWith(pattern)) return true;
+
+        // 2. Directory match (e.g., 'node_modules/', '.changeset/')
+        if (pattern.endsWith('/') && normalizedPath.includes(pattern)) return true;
+
+        // 3. Extension match (e.g., '.map', '.snap')
+        if (pattern.startsWith('.') && !pattern.includes('/') && normalizedPath.endsWith(pattern))
+            return true;
+
+        // 4. Contains pattern (e.g., for paths like 'docs/foo.md' matching 'docs/')
+        if (normalizedPath.includes(pattern)) return true;
+
+        return false;
+    });
+}

@@ -3,7 +3,6 @@ import { getProjectContext, ProjectContext } from '@sintesi/core';
 import { resolve, relative, dirname, join } from 'path';
 import { readFileSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
-import { SmartChecker } from './smart-checker';
 import { ChangeAnalysisService } from './analysis-service';
 import { createAIAgentsFromEnv, AIAgents, AIAgentRoleConfig } from '../../../ai';
 import { getContextPrompt } from '../prompts/analysis';
@@ -75,24 +74,6 @@ export class GenerationContextService {
             this.logger.debug('RAG conceptual retrieval failed: ' + e);
             return '';
         }
-    }
-
-    /**
-     * Performs a smart check to see if generation is necessary based on code changes.
-     */
-    async performSmartCheck(force: boolean = false): Promise<boolean> {
-        if (force) return true;
-
-        this.logger.info('Performing smart check (Code Changes)...');
-        const smartChecker = new SmartChecker(this.logger, this.cwd);
-        const hasChanges = await smartChecker.hasRelevantCodeChanges();
-
-        if (!hasChanges) {
-            this.logger.success(
-                'No relevant code changes detected (heuristic check). Content is likely up to date.',
-            );
-        }
-        return hasChanges;
     }
 
     /**

@@ -9,7 +9,6 @@ import { resolve } from 'path';
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'fs';
 import { GenerationContextService } from '../services/generation-context';
 import { ReviewService } from '../services/review-service';
-import { SmartChecker } from '../services/smart-checker';
 import { ReadmeBuilder } from '../services/readme-builder';
 
 export interface ReadmeOptions {
@@ -65,21 +64,9 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
             if (!existsSync(readmeTarget)) {
                 logger.info('README file not found. Skipping smart check and forcing generation.');
             } else {
-                logger.info('Performing standalone smart check...');
-                const smartChecker = new SmartChecker(logger, cwd);
-                const result = await smartChecker.checkReadme();
-
-                if (!result.hasDrift) {
-                    logger.success(
-                        '✅ No relevant changes detected (AI Smart Check). README is up to date.',
-                    );
-                    return;
-                }
-
-                if (result.suggestion) {
-                    smartSuggestion = result.suggestion;
-                    logger.info('💡 Drift detected. Suggestion: ' + smartSuggestion);
-                }
+                logger.info(
+                    'Skipping standalone smart check (lineage-based check will run in pipeline).',
+                );
             }
         }
     }

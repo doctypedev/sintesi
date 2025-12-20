@@ -26,7 +26,7 @@ Traditional documentation often becomes outdated. Sintesi keeps your docs fresh 
 
 You can integrate Sintesi into your CI/CD pipeline or use it locally.
 
-Add a new workflow in `.github/workflows/docs.yml`:
+Add a new workflow in `.github/workflows/sintesi.yml`:
 
 ```yaml
 name: Sintesi - Documentation AI
@@ -86,13 +86,6 @@ jobs:
     sintesi check
     ```
 
-    The `check` command performs dual drift detection for both the README and the documentation site. You can use the `--no-strict` flag to allow non-blocking CI usage. You can also run separate checks for the README or documentation site using:
-
-    ```bash
-    sintesi check --readme
-    sintesi check --doc
-    ```
-
 4.  **Force Overwrite**
     If you need to regenerate documentation or README files and want to bypass existing content checks, you can use the `--force` flag:
 
@@ -107,6 +100,15 @@ jobs:
     Output customization (for example, setting the directory where generated docs are written) is supported by specific commands and by the GitHub Action inputs (see `docs_output` in the workflow example above). Command-line flags and their names can change across releases; consult the official CLI reference for the authoritative, up-to-date list of options:
 
     👉 CLI Reference: https://sintesicli.dev/reference/commands.html
+
+6.  **Manage Changesets**
+    Sintesi integrates with Changesets for versioning and releases. Use the changeset command to create or manage changeset metadata and prepare packages for release:
+
+    ```bash
+    sintesi changeset
+    ```
+
+    This command helps manage the Changesets used by the project for changelogs and package publishing.
 
 ## 🧠 How it Works
 
@@ -136,20 +138,6 @@ We believe in eating our own dog food. This repository's documentation is mainta
 ## Retrieval-Augmented Generation (RAG)
 
 Sintesi includes a **Retrieval-Augmented Generation (RAG)** pipeline that enhances the documentation generation process. This feature allows for semantic context retrieval, improving the accuracy and relevance of generated documentation.
-
-### Environment Variables
-
-To utilize the RAG feature to its full potential, set the following environment variable:
-
-| Name           | Required? | Purpose                                    |
-| -------------- | --------- | ------------------------------------------ |
-| COHERE_API_KEY | no        | Enables `reranking` via Cohere Rerank API. |
-
-You should include `COHERE_API_KEY` in your `.env` configuration:
-
-```plaintext
-COHERE_API_KEY=your-cohere-api-key-here
-```
 
 ---
 
