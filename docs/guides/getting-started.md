@@ -204,18 +204,6 @@ Boolean flags support implicit negation (e.g., `--no-strict`) via the CLI framew
 
 ## 6 — Preview the docs (VitePress)
 
-If your docs site pulls the repository `README.md` or displays a project logo on the landing page, include both an HTML `<img>` block and a Markdown fallback image in the README. Some renderers (or docs pipelines) strip raw HTML; providing a Markdown fallback ensures a visible logo in those cases. Example (this repository):
-
-```markdown
-<p align="center">
-  <img src="assets/full_logo.png" alt="Sintesi Logo" width="500" />
-</p>
-
-<!-- Markdown fallback for renderers that strip HTML (some renderers will display this image instead of the HTML block above) -->
-
-![Sintesi Logo](assets/full_logo.png)
-```
-
 Documentation scripts live at the monorepo root. Two common workflows are available.
 
 Run the VitePress development server (hot reload):
