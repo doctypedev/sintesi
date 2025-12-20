@@ -127,6 +127,8 @@ We believe in eating our own dog food. This repository's documentation is mainta
 👉 **[Concepts — RAG](https://sintesicli.dev/concepts/rag.html)**  
 👉 **[CLI Reference](https://sintesicli.dev/reference/commands.html)**
 
+To contribute to the docs or the project, see the repository: https://github.com/doctypedev/sintesi
+
 ---
 
 ### What is Multi-Agent AI?
@@ -143,10 +145,15 @@ Sintesi includes a **Retrieval-Augmented Generation (RAG)** pipeline that enhanc
 
 ## Contributing
 
-We love contributions! Please check out our [Contributing Guide](./docs/community/contributing.md).
+We love contributions! Please check out our Contributing Guide:
+
+- Repository-level CONTRIBUTING.md: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Docs-level guide: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+
+If you'd like to contribute to the docs site itself, please open issues or PRs in the main repository: https://github.com/doctypedev/sintesi
 
 ---
 
 ## License
 
-MIT © [Doctypedev](https://github.com/doctypedev)
+MIT © [Doctypedev/sintesi](https://github.com/doctypedev/sintesi)

@@ -13,7 +13,7 @@ Repository (for clone instructions)
 
 - Use your project's repository URL. The CLI implementation and command wiring live under the repository's packages/cli directory (see packages/cli in your source tree).
 
-Note: These flags and behaviors reflect the CLI implementation present in the repository source. Do not assume flags or behaviors not present in the code.
+Note: These flags and behaviors reflect the CLI implementation present in the repository source. Do not assume flags or behaviors not present in the code. Aliases and certain behaviors are wired at the CLI entrypoint; when in doubt, consult packages/cli/src/index.ts and the command implementations under packages/cli/src/commands/ for authoritative wiring and behavior.
 
 ---
 
@@ -42,20 +42,21 @@ sintesi readme [options]
 Description:
 
 - Generates a README for the current project using project context and AI helpers (if configured).
-- Will not overwrite an existing file unless `--force` is provided.
+- The command will not overwrite an existing file unless a force option is provided; note that the concrete overwrite behavior is enforced by the underlying ReadmeBuilder implementation. The CLI command passes the `force` option to that builder — see the readme command implementation in packages/cli/src/commands/readme.ts and the referenced builder implementation for exact overwrite semantics.
 
 Flags
 
-| Flag        | Alias | Type    | Default | Description                                                                                                                                                         |
-| ----------- | ----- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--output`  | `-o`  | string  | (none)  | Output file path for the generated README. If not provided, the command logic defaults to `README.md` (the option definition itself does not hardcode the default). |
-| `--force`   | `-f`  | boolean | `false` | Overwrite existing file if present.                                                                                                                                 |
-| `--verbose` |       | boolean | `false` | Enable verbose logging during generation.                                                                                                                           |
+| Flag        | Alias | Type    | Default | Description                                                                                                                                                                   |
+| ----------- | ----- | ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--output`  | `-o`  | string  | (none)  | Output file path for the generated README. If not provided, the command logic defaults to `README.md` (the option definition itself does not hardcode the default).           |
+| `--force`   | `-f`  | boolean | `false` | Overwrite existing file if present. The actual overwrite enforcement is performed by the ReadmeBuilder implementation; the command forwards the `force` flag to that builder. |
+| `--verbose` |       | boolean | `false` | Enable verbose logging during generation.                                                                                                                                     |
 
 Exit behavior:
 
-- Exits with status `0` on success.
-- If the command encounters an unhandled fatal error the process may exit non-zero. (The CLI handler for `readme` does not explicitly call `process.exit` on command-level failures in the source.)
+- Commands generally return a result object to the caller; the top-level CLI wrapper (packages/cli/src/index.ts) is responsible for translating result values into process exit codes. The readme command implementation itself does not call `process.exit()` for normal failure conditions — instead it returns results or throws errors that the CLI wrapper may handle.
+- Successful generation returns an overall success result (which the CLI wrapper will usually translate to process exit 0).
+- Fatal, unhandled exceptions thrown in the command implementation may cause a non-zero process exit when the CLI wrapper or the node runtime translates those failures into a non-zero exit.
 
 Example:
 
@@ -97,8 +98,9 @@ Flags
 
 Exit behavior:
 
-- Exits with status `0` on success.
-- If the command encounters an unhandled fatal error the process may exit non-zero.
+- As with other commands, the documentation command returns result objects and relies on the top-level CLI wrapper to translate results into process exit codes. The command implementation itself does not typically call `process.exit()`; the wrapper is responsible for mapping failures to non-zero exits when appropriate.
+- Successful generation results in a success result (the CLI wrapper will normally translate this to exit 0).
+- Fatal, unhandled exceptions may produce non-zero process exit values depending on how the CLI wrapper or the runtime handles the thrown errors.
 
 Example:
 
@@ -133,16 +135,16 @@ Description:
 
 Flags
 
-| Flag              | Alias   | Type    | Default | Description                                                                                                                                                                                                                                                  |
-| ----------------- | ------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--verbose`       |         | boolean | `false` | Enable verbose logging.                                                                                                                                                                                                                                      |
-| `--strict`        |         | boolean | `true`  | If true, the CLI will exit with an error code when drift is detected. (Yargs also provides `--no-strict` automatically.)                                                                                                                                     |
-| `--smart`         |         | boolean | `true`  | Use AI to detect high-level drift (default true).                                                                                                                                                                                                            |
-| `--base`          |         | string  | (none)  | Explicit base ref/branch/SHA to use for comparison (overrides cached state). If not provided, the command will attempt to compute a baseline from saved lineage/lastGenerated SHAs; there is no hardcoded default such as `origin/main` in the command code. |
-| `--readme`        |         | boolean | `false` | Check only README drift.                                                                                                                                                                                                                                     |
-| `--documentation` | `--doc` | boolean | `false` | Check only documentation site drift.                                                                                                                                                                                                                         |
-| `--output`        | `-o`    | string  | (none)  | Output path used by README-specific checks (if applicable).                                                                                                                                                                                                  |
-| `--output-dir`    | `-d`    | string  | (none)  | Output directory used by documentation checks (if applicable).                                                                                                                                                                                               |
+| Flag              | Alias | Type    | Default | Description                                                                                                                                                                                                                                                  |
+| ----------------- | ----- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--verbose`       |       | boolean | `false` | Enable verbose logging.                                                                                                                                                                                                                                      |
+| `--strict`        |       | boolean | `true`  | If true, the CLI will exit with an error code when drift is detected. (Yargs also provides `--no-strict` automatically.)                                                                                                                                     |
+| `--smart`         |       | boolean | `true`  | Use AI to detect high-level drift (default true).                                                                                                                                                                                                            |
+| `--base`          |       | string  | (none)  | Explicit base ref/branch/SHA to use for comparison (overrides cached state). If not provided, the command will attempt to compute a baseline from saved lineage/lastGenerated SHAs; there is no hardcoded default such as `origin/main` in the command code. |
+| `--readme`        |       | boolean | `false` | Check only README drift.                                                                                                                                                                                                                                     |
+| `--documentation` |       | boolean | `false` | Check only documentation site drift. Note: some CLI builds may expose an alias like `--doc` via the CLI entrypoint wiring; consult packages/cli/src/index.ts if you expect the alias to be available.                                                        |
+| `--output`        | `-o`  | string  | (none)  | Output path used by README-specific checks (if applicable).                                                                                                                                                                                                  |
+| `--output-dir`    | `-d`  | string  | (none)  | Output directory used by documentation checks (if applicable).                                                                                                                                                                                               |
 
 Important behavior (exit codes and conditions):
 
@@ -164,7 +166,7 @@ sintesi check --readme --no-strict
 sintesi check --base origin/main
 
 # Check only documentation site
-sintesi check --doc
+sintesi check --documentation
 ```
 
 ---
@@ -206,7 +208,8 @@ Notes and important runtime behavior:
     - The command returns `{ success: false, error: '@changesets/cli not installed' }` rather than calling `process.exit()` in the changeset code path.
 - The command supports analyzing changes in a monorepo: it detects packages and filters the analysis so AI focuses only on changes relevant to the selected package(s).
 - When no changes are detected, the command returns a failure result indicating "No changes detected to generate changeset".
-- The CLI wrapper does not explicitly call `process.exit` based on the `changeset` result in the code; it returns the result to the caller. In CI you should check for the presence of generated files or inspect the exit code / output to determine success.
+- Some internal runtime options and logic exist that are not exposed as CLI flags. For example, the implementation includes internal `forceFetch` logic used during repository analysis; this is not exposed as a `--force-fetch` CLI flag. In short: the public flags listed above are the user-facing surface, but the implementation may accept or compute internal options that are not documented as CLI flags.
+- The CLI wrapper does not explicitly call `process.exit` based on the `changeset` result in the code; it returns the result to the caller. In CI you should check for the presence of generated files or inspect the command output/exit code as interpreted by your CI wrapper to determine success.
 
 Examples:
 
@@ -236,14 +239,16 @@ Tip: Ensure `@changesets/cli` is installed in the project before running this co
     - Exit 0: success (no drift, or `--no-strict` used and drift allowed).
 - readme / documentation / changeset
     - Exit 0: success.
-    - If a fatal, unhandled error occurs the process may exit non-zero (not explicitly governed by the top-level CLI wrapper in the repository for these commands).
-    - changeset returns failure results (e.g., `success: false` and `error` string) when preconditions fail (for example `@changesets/cli` missing or no changes detected) but the CLI wrapper does not call `process.exit(1)` in the same way `check` does.
+    - Individual command implementations typically return result objects to the caller; the top-level CLI wrapper (packages/cli/src/index.ts) is responsible for translating those results or thrown errors into process exit codes. As a result, whether a particular failure leads to a non-zero exit depends on how the wrapper is configured. For the `readme` and `documentation` commands the implementations do not themselves call `process.exit()` for normal failures; fatal, unhandled exceptions may still lead to non-zero exits depending on the runtime/wrapper behavior.
+    - The `changeset` command returns failure results (e.g., `success: false` and `error` string) when preconditions fail (for example `@changesets/cli` missing or no changes detected) but the CLI wrapper does not treat those failures the same way `check` does unless it's wired to do so.
 
 ---
 
 ## CI examples
 
 Below are minimal CI examples showing typical usage patterns. Adjust to your CI environment.
+
+Note: The examples assume certain environment prerequisites (for example API keys for OpenAI or other AI providers, and project dependencies such as `@changesets/cli` when running the `changeset` command). These prerequisites are environment- and project-specific and may differ by configuration — ensure your CI provides the required secrets and installs project devDependencies as appropriate.
 
 GitHub Actions — run checks and fail the build if documentation drift is found:
 
@@ -330,6 +335,7 @@ Notes for CI:
 
 - Provide the necessary AI API keys (for OpenAI, Anthropic, Cohere, Mistral, etc.) via secrets if you rely on the smart checks or generation features.
 - For `changeset` runs, ensure `@changesets/cli` is available (installed) in the repository before running the command.
+- The exact environment variables, secrets, and installed packages required can vary by project configuration; consult your project's README and packages/cli/src/index.ts for exact wiring and requirements.
 
 ---
 
