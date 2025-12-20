@@ -123,7 +123,7 @@ yargs(hideBin(process.argv))
                 })
                 .option('base', {
                     type: 'string',
-                    description: 'Base branch for smart check comparison (default: origin/main)',
+                    description: 'Base branch for comparison (default: origin/main)',
                 })
                 .option('readme', {
                     type: 'boolean',

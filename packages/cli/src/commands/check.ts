@@ -38,7 +38,7 @@ export async function checkCommand(options: CheckOptions): Promise<CheckResult> 
     const aiAgents = await contextService.getAIAgents(options.verbose || false);
 
     if (!aiAgents) {
-        logger.error('Failed to initialize AI agents. Cannot perform smart check.');
+        logger.error('Failed to initialize AI agents. Cannot perform semantic analysis.');
         return {
             totalEntries: 0,
             driftedEntries: 0,

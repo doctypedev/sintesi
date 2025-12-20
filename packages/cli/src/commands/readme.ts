@@ -28,7 +28,7 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
 
     let smartSuggestion = '';
 
-    // 0. Smart Check & State Verification
+    // 0. State Verification
     if (!options.force) {
         let stateFound = false;
 
@@ -58,15 +58,13 @@ export async function readmeCommand(options: ReadmeOptions): Promise<void> {
             logger.debug('Failed to read state file: ' + e);
         }
 
-        // Strategy B: Standalone Smart Check (if no valid state found)
+        // Strategy B: Standalone Verification (if no valid state found)
         if (!stateFound) {
             const readmeTarget = resolve(cwd, options.output || 'README.md');
             if (!existsSync(readmeTarget)) {
-                logger.info('README file not found. Skipping smart check and forcing generation.');
+                logger.info('README file not found. Forcing generation.');
             } else {
-                logger.info(
-                    'Skipping standalone smart check (lineage-based check will run in pipeline).',
-                );
+                // We proceed to analysis and generation
             }
         }
     }

@@ -64,7 +64,6 @@ export async function documentationCommand(options: DocumentationOptions): Promi
         }
     }
 
-    // 0. Smart Check - Removed (now handled by lineage-based check command)
     // Documentation generation will proceed based on state file or force flag
 
     const outputDir = resolve(cwd, options.outputDir || 'docs');
