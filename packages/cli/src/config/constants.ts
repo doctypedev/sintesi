@@ -39,3 +39,15 @@ export const SYSTEM_EXCLUSION_PATTERNS = [
     '.map',
     '.snap',
 ];
+
+/**
+ * Source code file extensions to include in analysis.
+ * Only files with these extensions are considered for drift detection.
+ */
+export const SOURCE_CODE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.rs'];
+
+/**
+ * Test file patterns to exclude from analysis.
+ * These files are excluded from drift detection as they don't affect documentation.
+ */
+export const TEST_FILE_PATTERNS = ['.test.', '.spec.'];

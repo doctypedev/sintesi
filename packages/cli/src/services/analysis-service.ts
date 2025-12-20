@@ -14,7 +14,11 @@ import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { tmpdir } from 'os';
 import { filterGitDiff } from '../utils/diff-utils';
-import { SYSTEM_EXCLUSION_PATTERNS } from '../config/constants';
+import {
+    SYSTEM_EXCLUSION_PATTERNS,
+    SOURCE_CODE_EXTENSIONS,
+    TEST_FILE_PATTERNS,
+} from '../config/constants';
 
 export interface SymbolChange {
     symbolName: string;
@@ -130,10 +134,11 @@ export class ChangeAnalysisService {
         // 3. Filter Changes
         const allExclusions = [...SYSTEM_EXCLUSION_PATTERNS, ...excludePatterns];
 
-        // Filter changed files: exclude noise patterns and keep only source code files
+        // Filter changed files: exclude noise, keep only source code, exclude tests
         changedFiles = changedFiles
             .filter((f) => !allExclusions.some((p) => f.includes(p)))
-            .filter((f) => this.isRelevantFile(f))
+            .filter((f) => SOURCE_CODE_EXTENSIONS.some((ext) => f.endsWith(ext)))
+            .filter((f) => !TEST_FILE_PATTERNS.some((p) => f.includes(p)))
             .map((f) => path.resolve(projectRoot, f));
 
         // Filter git diff using same exclusion patterns
@@ -160,18 +165,6 @@ export class ChangeAnalysisService {
             totalChanges: symbolChanges.length > 0 ? symbolChanges.length : changedFiles.length,
             hasMeaningfulChanges,
         };
-    }
-
-    private isRelevantFile(file: string): boolean {
-        return (
-            (file.endsWith('.ts') ||
-                file.endsWith('.tsx') ||
-                file.endsWith('.rs') ||
-                file.endsWith('.js')) &&
-            !file.includes('.test.') &&
-            !file.includes('.spec.') &&
-            !file.includes('node_modules')
-        );
     }
 
     private async analyzeSymbolChanges(
