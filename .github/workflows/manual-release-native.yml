@@ -13,100 +13,262 @@ permissions:
   id-token: write
 
 jobs:
-  release-native:
-    name: Release Native (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
-    runs-on: ${{ matrix.settings.host }}
-    strategy:
-      fail-fast: false
-      matrix:
-        settings:
-          - host: macos-latest
-            target: aarch64-apple-darwin
-            platform: darwin
-            arch: arm64
-            npm_dir: darwin-arm64
-          - host: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            platform: linux
-            arch: x64
-            npm_dir: linux-x64-gnu
-          - host: windows-latest
-            target: x86_64-pc-windows-msvc
-            platform: win32
-            arch: x64
-            npm_dir: win32-x64-msvc
+    release-native:
+        name: Release Native (${{ matrix.settings.platform }}-${{ matrix.settings.arch }})
+        runs-on: ${{ matrix.settings.host }}
+        strategy:
+            fail-fast: false
+            matrix:
+                settings:
+                    - host: macos-latest
+                      target: aarch64-apple-darwin
+                      platform: darwin
+                      arch: arm64
+                      npm_dir: darwin-arm64
+                    - host: ubuntu-latest
+                      target: x86_64-unknown-linux-gnu
+                      platform: linux
+                      arch: x64
+                      npm_dir: linux-x64-gnu
+                    - host: windows-latest
+                      target: x86_64-pc-windows-msvc
+                      platform: win32
+                      arch: x64
+                      npm_dir: win32-x64-msvc
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 10
+            - uses: pnpm/action-setup@v3
+              with:
+                  version: 10
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org/'
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'pnpm'
+                  registry-url: 'https://registry.npmjs.org/'
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.settings.target }}
+            - name: Setup Rust
+              uses: dtolnay/rust-toolchain@stable
+              with:
+                  targets: ${{ matrix.settings.target }}
 
-      - name: Update npm
-        run: npm install -g npm@latest
+            - name: Update npm
+              run: npm install -g npm@latest
 
-      - name: Pull latest changes
-        run: git pull origin main
+            - name: Pull latest changes
+              run: git pull origin main
 
-      - name: Install dependencies
-        run: pnpm install
+            - name: Install dependencies
+              run: pnpm install
 
-      - name: Set version for native package
-        shell: bash
-        run: |
-          NPM_PACKAGE_DIR="crates/core/npm/${{ matrix.settings.npm_dir }}"
-          echo "Setting version to ${{ inputs.version }} in $NPM_PACKAGE_DIR"
-          cd "$NPM_PACKAGE_DIR"
-          npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version
+            - name: Set version for native package
+              shell: bash
+              run: |
+                  set -e
+                  NPM_PACKAGE_DIR="crates/core/npm/${{ matrix.settings.npm_dir }}"
+                  
+                  echo "ℹ️ Setting version to ${{ inputs.version }} in $NPM_PACKAGE_DIR"
+                  
+                  if [ ! -d "$NPM_PACKAGE_DIR" ]; then
+                    echo "❌ ERROR: Directory does not exist: $NPM_PACKAGE_DIR"
+                    exit 1
+                  fi
+                  
+                  cd "$NPM_PACKAGE_DIR"
+                  
+                  if [ ! -f "package.json" ]; then
+                    echo "❌ ERROR: package.json not found in $NPM_PACKAGE_DIR"
+                    exit 1
+                  fi
+                  
+                  npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version || {
+                    echo "❌ ERROR: Failed to update version in package.json"
+                    exit 1
+                  }
+                  
+                  echo "✅ Version updated successfully"
 
-      - name: Build and Publish Native Package
-        shell: bash
-        env:
-          CARGO_BUILD_TARGET: ${{ matrix.settings.target }}
-        run: |
-          # Build Rust binary
-          cd crates/core
-          pnpm install
-          pnpm run build
-          
-          # Copy binary to npm package location
-          # Copy binary to npm package location
-          NODE_BINARY_NAME="doctype-core.${{ matrix.settings.npm_dir }}.node"
-          NPM_PACKAGE_DIR="npm/${{ matrix.settings.npm_dir }}"
-          
-          # Ensure directory exists
-          mkdir -p "$NPM_PACKAGE_DIR"
-          
-          cp "$NODE_BINARY_NAME" "$NPM_PACKAGE_DIR/$NODE_BINARY_NAME"
-          
-          # Publish
-          cd "$NPM_PACKAGE_DIR"
-          echo "📦 Publishing native package from $(pwd)"
-          
-          # Check if version exists
-          PACKAGE_NAME="@doctypedev/core-${{ matrix.settings.npm_dir }}"
-          VERSION=$(node -p "require('./package.json').version")
-          PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "")
-
-          if [ "$VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "📦 Version $VERSION already published, skipping"
-          else
-            echo "🚀 Publishing $PACKAGE_NAME@$VERSION..."
-            # Publish with public access using OIDC (provenance)
-            # Note: OIDC requires --provenance
-            npm publish --access public --provenance
-          fi
+            - name: Build and Publish Native Package
+              shell: bash
+              env:
+                  CARGO_BUILD_TARGET: ${{ matrix.settings.target }}
+              run: |
+                  set -e
+                  
+                  # ============ BUILD PHASE ============
+                  echo "════════════════════════════════════════"
+                  echo "🏗️  BUILDING NATIVE PACKAGE"
+                  echo "════════════════════════════════════════"
+                  
+                  cd crates/core
+                  echo "ℹ️ Installing dependencies in crates/core..."
+                  pnpm install || {
+                    echo "❌ ERROR: Failed to install dependencies"
+                    exit 1
+                  }
+                  
+                  echo "ℹ️ Building Rust binary for ${{ matrix.settings.target }}..."
+                  pnpm run build || {
+                    echo "❌ ERROR: Failed to build Rust binary"
+                    exit 1
+                  }
+                  
+                  echo "✅ Build completed successfully"
+                  
+                  # ============ PREPARE PHASE ============
+                  echo ""
+                  echo "════════════════════════════════════════"
+                  echo "📦 PREPARING NATIVE PACKAGE"
+                  echo "════════════════════════════════════════"
+                  
+                  NODE_BINARY_NAME="sintesi-core.${{ matrix.settings.npm_dir }}.node"
+                  NPM_PACKAGE_DIR="npm/${{ matrix.settings.npm_dir }}"
+                  
+                  echo "ℹ️ Expected binary name: $NODE_BINARY_NAME"
+                  echo "ℹ️ Target npm directory: $NPM_PACKAGE_DIR"
+                  
+                  # Ensure directory exists
+                  mkdir -p "$NPM_PACKAGE_DIR" || {
+                    echo "❌ ERROR: Failed to create npm package directory"
+                    exit 1
+                  }
+                  
+                  if [ ! -f "$NODE_BINARY_NAME" ]; then
+                    echo "❌ ERROR: Binary not found at: $NODE_BINARY_NAME"
+                    echo "ℹ️ Files in current directory:"
+                    ls -la *.node 2>/dev/null || echo "  (no .node files found)"
+                    exit 1
+                  fi
+                  
+                  echo "ℹ️ Copying binary to npm package..."
+                  cp "$NODE_BINARY_NAME" "$NPM_PACKAGE_DIR/$NODE_BINARY_NAME" || {
+                    echo "❌ ERROR: Failed to copy binary file"
+                    exit 1
+                  }
+                  
+                  echo "✅ Binary copied successfully"
+                  
+                  # ============ VERSION CHECK PHASE ============
+                  echo ""
+                  echo "════════════════════════════════════════"
+                  echo "🔍 CHECKING VERSION INFORMATION"
+                  echo "════════════════════════════════════════"
+                  
+                  cd "$NPM_PACKAGE_DIR"
+                  echo "ℹ️ Current working directory: $(pwd)"
+                  
+                  if [ ! -f "package.json" ]; then
+                    echo "❌ ERROR: package.json not found in npm package directory"
+                    exit 1
+                  fi
+                  
+                  # Extract version with error handling
+                  LOCAL_VERSION=$(node -p "require('./package.json').version" 2>/dev/null) || {
+                    echo "❌ ERROR: Failed to extract version from package.json"
+                    exit 1
+                  }
+                  
+                  if [ -z "$LOCAL_VERSION" ]; then
+                    echo "❌ ERROR: Version is empty in package.json"
+                    exit 1
+                  fi
+                  
+                  PACKAGE_NAME="@sintesi/core-${{ matrix.settings.npm_dir }}"
+                  echo "ℹ️ Package name: $PACKAGE_NAME"
+                  echo "ℹ️ Local version: $LOCAL_VERSION"
+                  
+                  # ============ REGISTRY QUERY WITH RETRY ============
+                  echo ""
+                  echo "════════════════════════════════════════"
+                  echo "🌐 QUERYING NPM REGISTRY"
+                  echo "════════════════════════════════════════"
+                  
+                  REGISTRY_QUERY_ATTEMPTS=0
+                  MAX_RETRY_ATTEMPTS=3
+                  RETRY_DELAY=2
+                  PUBLISHED_VERSION=""
+                  REGISTRY_QUERY_SUCCESS=false
+                  
+                  while [ $REGISTRY_QUERY_ATTEMPTS -lt $MAX_RETRY_ATTEMPTS ]; do
+                    REGISTRY_QUERY_ATTEMPTS=$((REGISTRY_QUERY_ATTEMPTS + 1))
+                    echo "ℹ️ Registry query attempt $REGISTRY_QUERY_ATTEMPTS of $MAX_RETRY_ATTEMPTS..."
+                    
+                    # Use 10-second timeout to prevent hangs
+                    if timeout 10 npm view "$PACKAGE_NAME" version 2>/dev/null | read -r PUBLISHED_VERSION_OUTPUT; then
+                      PUBLISHED_VERSION="$PUBLISHED_VERSION_OUTPUT"
+                      REGISTRY_QUERY_SUCCESS=true
+                      echo "✅ Registry query successful"
+                      echo "ℹ️ Published version: ${PUBLISHED_VERSION:-not found}"
+                      break
+                    else
+                      QUERY_EXIT_CODE=$?
+                      if [ $QUERY_EXIT_CODE -eq 124 ]; then
+                        echo "⚠️  Registry query timed out (attempt $REGISTRY_QUERY_ATTEMPTS/$MAX_RETRY_ATTEMPTS)"
+                      else
+                        echo "⚠️  Registry query failed with exit code $QUERY_EXIT_CODE (attempt $REGISTRY_QUERY_ATTEMPTS/$MAX_RETRY_ATTEMPTS)"
+                      fi
+                      
+                      if [ $REGISTRY_QUERY_ATTEMPTS -lt $MAX_RETRY_ATTEMPTS ]; then
+                        echo "ℹ️ Waiting ${RETRY_DELAY}s before retry..."
+                        sleep $RETRY_DELAY
+                      fi
+                    fi
+                  done
+                  
+                  # ============ VERSION COMPARISON & PUBLISH DECISION ============
+                  echo ""
+                  echo "════════════════════════════════════════"
+                  echo "📋 DETERMINING PUBLISH ACTION"
+                  echo "════════════════════════════════════════"
+                  
+                  if [ "$REGISTRY_QUERY_SUCCESS" = false ]; then
+                    echo "⚠️  Registry query failed after $MAX_RETRY_ATTEMPTS attempts"
+                    echo "ℹ️ This may indicate transient network issues"
+                    echo "ℹ️ Attempting publish assuming version is new..."
+                    SHOULD_PUBLISH=true
+                  elif [ -z "$PUBLISHED_VERSION" ]; then
+                    echo "✅ Version not found in registry (new release)"
+                    SHOULD_PUBLISH=true
+                  elif [ "$LOCAL_VERSION" = "$PUBLISHED_VERSION" ]; then
+                    echo "ℹ️ Version match detected"
+                    echo "  Local version: $LOCAL_VERSION"
+                    echo "  Published version: $PUBLISHED_VERSION"
+                    echo "📦 This version is already published, skipping"
+                    SHOULD_PUBLISH=false
+                  else
+                    echo "⚠️  Version mismatch detected"
+                    echo "  Local version: $LOCAL_VERSION"
+                    echo "  Published version: $PUBLISHED_VERSION"
+                    echo "🚀 Publishing new version..."
+                    SHOULD_PUBLISH=true
+                  fi
+                  
+                  # ============ PUBLISH PHASE ============
+                  echo ""
+                  echo "════════════════════════════════════════"
+                  echo "🚀 PUBLISHING TO NPM REGISTRY"
+                  echo "════════════════════════════════════════"
+                  
+                  if [ "$SHOULD_PUBLISH" = true ]; then
+                    echo "ℹ️ Publishing $PACKAGE_NAME@$LOCAL_VERSION..."
+                    echo "ℹ️ Access level: public"
+                    echo "ℹ️ Provenance: enabled"
+                    
+                    npm publish --access public --provenance || {
+                      echo "❌ ERROR: npm publish failed"
+                      exit 1
+                    }
+                    
+                    echo "✅ Package published successfully!"
+                  else
+                    echo "⏭️  Skipping publish (version already published)"
+                  fi
+                  
+                  echo ""
+                  echo "════════════════════════════════════════"
+                  echo "✅ WORKFLOW COMPLETED SUCCESSFULLY"
+                  echo "════════════════════════════════════════"
